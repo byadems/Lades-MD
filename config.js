@@ -151,16 +151,29 @@ const sequelize = (() => {
     return sqliteInstance;
   }
 
-  return new Sequelize(DATABASE_URL, {
-    dialectOptions: { ssl: { require: true, rejectUnauthorized: false } },
-    logging: DEBUG,
-    pool: {
-      max: 20,
-      min: 5,
-      acquire: 30000,
-      idle: 10000,
-    },
-  });
+return new Sequelize(DATABASE_URL, {
+  dialectOptions: {
+    ssl: { require: true, rejectUnauthorized: false },
+    connectTimeout: 30000,
+  },
+  logging: DEBUG,
+  pool: {
+    max: 3,
+    min: 0,
+    acquire: 60000,
+    idle: 5000,
+    evict: 1000,
+  },
+  retry: {
+    max: 5,
+    match: [
+      /ECONNRESET/,
+      /ETIMEDOUT/,
+      /ConnectionError/,
+      /Operation timeout/,
+    ],
+  },
+});
 })();
 
 const SESSION_STRING = process.env.SESSION || process.env.SESSION_ID;
