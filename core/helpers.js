@@ -75,18 +75,20 @@ const jimp = require("jimp");
 
 async function genThumb(url) {
   try {
-    let size = 301;
+    const MAX_SIZE = 300;
     const img = await jimp.read(url);
-    function getPossibleRatio(a, b) {
-      for (var i = 0; size + 2 > size + 1; i++) {
-        a = a > size || b > size ? a / 1.001 : a;
-        b = a > size || b > size ? b / 1.001 : b;
-        if (parseInt(a) < size && parseInt(b) < size)
-          return { w: parseInt(a), h: parseInt(b) };
-      }
+    
+    let { width, height } = img.bitmap;
+    let w = width;
+    let h = height;
+
+    if (width > MAX_SIZE || height > MAX_SIZE) {
+      const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+      w = Math.floor(width * ratio);
+      h = Math.floor(height * ratio);
     }
-    var { w, h } = getPossibleRatio(img.bitmap.width, img.bitmap.height);
-    return await img.resize(w, h).getBufferAsync("image/jpeg");
+    
+    return await img.resize(w, h, jimp.RESIZE_NEAREST_NEIGHBOR).getBufferAsync("image/jpeg");
   } catch (error) {
     console.error("Error generating thumbnail:", error);
     return null;
