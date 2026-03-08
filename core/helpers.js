@@ -174,11 +174,11 @@ async function toBuffer(input) {
       return await require("../plugins/utils").getBuffer(url);
     }
     if (typeof url === "string" && fs.existsSync(url))
-      return fs.readFileSync(url);
+      return await fs.promises.readFile(url);
     if (Buffer.isBuffer(url)) return url;
   }
   if (typeof input === "string" && fs.existsSync(input))
-    return fs.readFileSync(input);
+    return await fs.promises.readFile(input);
   const d = input && (input.data || input.buffer);
   if (Buffer.isBuffer(d)) return d;
   if (Array.isArray(d)) return Buffer.from(d);
