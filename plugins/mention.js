@@ -134,7 +134,7 @@ Module(
 
               const uploadResult = await uploadToCatbox(downloadedFilePath);
 
-              try { await fs.promises.unlink(downloadedFilePath); } catch(e) {}
+              fs.unlinkSync(downloadedFilePath);
 
               if (uploadResult && uploadResult.url) {
                 mentionData.type = mediaType;

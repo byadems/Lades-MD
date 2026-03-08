@@ -370,7 +370,7 @@ ${cmdmenu}`;
         botImageLink === path.join(__dirname, "utils", "images", "default.png")
       ) {
         await message.client.sendMessage(message.jid, {
-          image: await fs.promises.readFile(botImageLink),
+          image: fs.readFileSync(botImageLink),
           caption: menu,
         });
       } else {
@@ -514,7 +514,7 @@ Module(
       const uploadRes = await uploadToImgbb(downloadedFile);
 
       try {
-        await fs.promises.unlink(downloadedFile);
+        fs.unlinkSync(downloadedFile);
       } catch (e) {
         console.log("Failed to delete temp file:", downloadedFile);
       }

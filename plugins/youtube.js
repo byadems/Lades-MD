@@ -297,7 +297,7 @@ Module(
 
       await message.edit("_Uploading video..._", message.jid, downloadMsg.key);
 
-      const stats = await fs.promises.stat(videoPath);
+      const stats = fs.statSync(videoPath);
 
       if (stats.size > VIDEO_SIZE_LIMIT) {
         const stream = fs.createReadStream(videoPath);
@@ -321,7 +321,7 @@ Module(
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (fs.existsSync(videoPath)) {
-        await fs.promises.unlink(videoPath);
+        fs.unlinkSync(videoPath);
       }
     } catch (error) {
       console.error("Video download error:", error);
@@ -332,7 +332,7 @@ Module(
       }
 
       if (videoPath && fs.existsSync(videoPath)) {
-        await fs.promises.unlink(videoPath);
+        fs.unlinkSync(videoPath);
       }
     }
   }
@@ -392,7 +392,7 @@ Module(
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (fs.existsSync(audioPath)) {
-        await fs.promises.unlink(audioPath);
+        fs.unlinkSync(audioPath);
       }
     } catch (error) {
       console.error("YTA download error:", error);
@@ -403,7 +403,7 @@ Module(
       }
 
       if (audioPath && fs.existsSync(audioPath)) {
-        await fs.promises.unlink(audioPath);
+        fs.unlinkSync(audioPath);
       }
     }
   }
@@ -478,7 +478,7 @@ Module(
 
         await new Promise((resolve) => setTimeout(resolve, 100));
         if (fs.existsSync(audioPath)) {
-          await fs.promises.unlink(audioPath);
+          fs.unlinkSync(audioPath);
         }
       } else {
         const query = input;
@@ -526,7 +526,7 @@ Module(
 
         await new Promise((resolve) => setTimeout(resolve, 100));
         if (fs.existsSync(audioPath)) {
-          await fs.promises.unlink(audioPath);
+          fs.unlinkSync(audioPath);
         }
       }
     } catch (error) {
@@ -538,7 +538,7 @@ Module(
       }
 
       if (audioPath && fs.existsSync(audioPath)) {
-        await fs.promises.unlink(audioPath);
+        fs.unlinkSync(audioPath);
       }
     }
   }
@@ -621,7 +621,7 @@ Module(
 
           await new Promise((resolve) => setTimeout(resolve, 100));
           if (fs.existsSync(audioPath)) {
-            await fs.promises.unlink(audioPath);
+            fs.unlinkSync(audioPath);
           }
         } catch (error) {
           console.error("Song download error:", error);
@@ -634,7 +634,7 @@ Module(
           }
 
           if (audioPath && fs.existsSync(audioPath)) {
-            await fs.promises.unlink(audioPath);
+            fs.unlinkSync(audioPath);
           }
         }
       } catch (error) {
@@ -738,7 +738,7 @@ Module(
 
             await new Promise((resolve) => setTimeout(resolve, 100));
             if (fs.existsSync(filePath)) {
-              await fs.promises.unlink(filePath);
+              fs.unlinkSync(filePath);
             }
           } catch (error) {
             console.error("YTS audio download error:", error);
@@ -751,7 +751,7 @@ Module(
             }
 
             if (filePath && fs.existsSync(filePath)) {
-              await fs.promises.unlink(filePath);
+              fs.unlinkSync(filePath);
             }
           }
         } else if (selectedNumber === 2) {
@@ -767,7 +767,7 @@ Module(
               downloadMsg.key
             );
 
-            const stats = await fs.promises.stat(filePath);
+            const stats = fs.statSync(filePath);
 
             if (stats.size > VIDEO_SIZE_LIMIT) {
               const stream5 = fs.createReadStream(filePath);
@@ -795,7 +795,7 @@ Module(
 
             await new Promise((resolve) => setTimeout(resolve, 100));
             if (fs.existsSync(filePath)) {
-              await fs.promises.unlink(filePath);
+              fs.unlinkSync(filePath);
             }
           } catch (error) {
             console.error("YTS video download error:", error);
@@ -808,7 +808,7 @@ Module(
             }
 
             if (filePath && fs.existsSync(filePath)) {
-              await fs.promises.unlink(filePath);
+              fs.unlinkSync(filePath);
             }
           }
         }
@@ -893,7 +893,7 @@ Module(
 
             await new Promise((resolve) => setTimeout(resolve, 100));
             if (fs.existsSync(audioPath)) {
-              await fs.promises.unlink(audioPath);
+              fs.unlinkSync(audioPath);
             }
           } catch (error) {
             console.error("YTV audio download error:", error);
@@ -906,7 +906,7 @@ Module(
             }
 
             if (audioPath && fs.existsSync(audioPath)) {
-              await fs.promises.unlink(audioPath);
+              fs.unlinkSync(audioPath);
             }
           }
         } else {
@@ -932,7 +932,7 @@ Module(
               downloadMsg.key
             );
 
-            const stats = await fs.promises.stat(videoPath);
+            const stats = fs.statSync(videoPath);
 
             if (stats.size > VIDEO_SIZE_LIMIT) {
               const stream7 = fs.createReadStream(videoPath);
@@ -960,7 +960,7 @@ Module(
 
             await new Promise((resolve) => setTimeout(resolve, 100));
             if (fs.existsSync(videoPath)) {
-              await fs.promises.unlink(videoPath);
+              fs.unlinkSync(videoPath);
             }
           } catch (error) {
             console.error("YTV video download error:", error);
@@ -973,7 +973,7 @@ Module(
             }
 
             if (videoPath && fs.existsSync(videoPath)) {
-              await fs.promises.unlink(videoPath);
+              fs.unlinkSync(videoPath);
             }
           }
         }
@@ -1058,7 +1058,7 @@ Module(
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (fs.existsSync(audioPath)) {
-        await fs.promises.unlink(audioPath);
+        fs.unlinkSync(audioPath);
       }
     } catch (error) {
       console.error("Spotify download error:", error);
@@ -1069,7 +1069,7 @@ Module(
       }
 
       if (audioPath && fs.existsSync(audioPath)) {
-        await fs.promises.unlink(audioPath);
+        fs.unlinkSync(audioPath);
       }
     }
   }

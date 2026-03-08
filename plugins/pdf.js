@@ -111,7 +111,7 @@ Module(
         try {
           const file = allImages[i];
           const detectedFileType = await getFileType(
-            await fs.promises.readFile(file)
+            fs.readFileSync(file)
           );
 
           if (detectedFileType && detectedFileType.mime.startsWith("image")) {
@@ -119,7 +119,7 @@ Module(
               imageInputDirectory,
               `topdf_album_${i}.jpg`
             );
-            await fs.promises.copyFile(file, newImagePath);
+            fs.copyFileSync(file, newImagePath);
           }
         } catch (err) {
           console.error("Failed to add album image to PDF:", err);

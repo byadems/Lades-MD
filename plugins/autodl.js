@@ -163,7 +163,7 @@ Module({ on: "text", fromMe }, async (message) => {
 
               await new Promise((resolve) => setTimeout(resolve, 100));
               if (fs.existsSync(audioPath)) {
-                try { await fs.promises.unlink(audioPath); } catch(e) {}
+                fs.unlinkSync(audioPath);
               }
             } catch (error) {
               if (config.DEBUG)
@@ -179,7 +179,7 @@ Module({ on: "text", fromMe }, async (message) => {
               }
 
               if (audioPath && fs.existsSync(audioPath)) {
-                try { await fs.promises.unlink(audioPath); } catch(e) {}
+                fs.unlinkSync(audioPath);
               }
             }
             return;
@@ -445,7 +445,7 @@ Module({ on: "text", fromMe }, async (message) => {
 
           await new Promise((resolve) => setTimeout(resolve, 100));
           if (fs.existsSync(audioPath)) {
-            try { await fs.promises.unlink(audioPath); } catch(e) {}
+            fs.unlinkSync(audioPath);
           }
         } catch (err) {
           if (config.DEBUG)
@@ -457,7 +457,7 @@ Module({ on: "text", fromMe }, async (message) => {
           }
 
           if (audioPath && fs.existsSync(audioPath)) {
-            try { await fs.promises.unlink(audioPath); } catch(e) {}
+            fs.unlinkSync(audioPath);
           }
         }
         return;

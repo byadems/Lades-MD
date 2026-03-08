@@ -615,7 +615,7 @@ Module(
 
           for (const imagePath of albumData.images) {
             try {
-              const buffer = await fs.promises.readFile(imagePath);
+              const buffer = fs.readFileSync(imagePath);
               const imagePart = await imageToGenerativePart(buffer);
               if (imagePart) imageParts.push(imagePart);
             } catch (err) {
