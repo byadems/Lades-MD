@@ -123,7 +123,7 @@ Module(
         ios: "https://github.com/souravkl11/Raganork-md/",
       };
       return await message.sendMessage(
-        fs.readFileSync(await addExif(result, exif)),
+        await fs.promises.readFile(await addExif(result, exif)),
         "sticker"
       );
     }
@@ -149,7 +149,7 @@ Module(
       for (const file of allFiles) {
         try {
           const isVideo = albumData.videos?.includes(file);
-          const stickerFile = fs.readFileSync(
+          const stickerFile = await fs.promises.readFile(
             await addExif(
               await sticker(file, isVideo ? "video" : "image"),
               exif
@@ -168,13 +168,13 @@ Module(
     var savedFile = await message.reply_message.download();
     if (message.reply_message.image === true) {
       return await message.sendMessage(
-        fs.readFileSync(await addExif(await sticker(savedFile), exif)),
+        await fs.promises.readFile(await addExif(await sticker(savedFile), exif)),
         "sticker",
         { quoted: message.quoted }
       );
     } else {
       return await message.sendMessage(
-        fs.readFileSync(await addExif(await sticker(savedFile, "video"), exif)),
+        await fs.promises.readFile(await addExif(await sticker(savedFile, "video"), exif)),
         "sticker",
         { quoted: message.quoted }
       );
@@ -218,7 +218,7 @@ Module(
               .on("error", reject);
           });
           await message.sendMessage(
-            fs.readFileSync(outputPath),
+            await fs.promises.readFile(outputPath),
             "audio",
             { quoted: message.quoted }
           );
@@ -234,7 +234,7 @@ Module(
       .save(getTempPath("tomp3.mp3"))
       .on("end", async () => {
         await message.sendMessage(
-          fs.readFileSync(getTempPath("tomp3.mp3")),
+          await fs.promises.readFile(getTempPath("tomp3.mp3")),
           "audio",
           { quoted: message.quoted }
         );
@@ -274,7 +274,7 @@ Module(
               .on("error", reject);
           });
           await message.sendMessage(
-            fs.readFileSync(outputPath),
+            await fs.promises.readFile(outputPath),
             "audio",
             { quoted: message.quoted }
           );
@@ -298,7 +298,7 @@ Module(
       .save(getTempPath("slow.mp3"))
       .on("end", async () => {
         await message.sendMessage(
-          fs.readFileSync(getTempPath("slow.mp3")),
+          await fs.promises.readFile(getTempPath("slow.mp3")),
           "audio",
           {
             quoted: message.quoted,
@@ -340,7 +340,7 @@ Module(
               .on("error", reject);
           });
           await message.sendMessage(
-            fs.readFileSync(outputPath),
+            await fs.promises.readFile(outputPath),
             "audio",
             { quoted: message.quoted }
           );
@@ -364,7 +364,7 @@ Module(
       .save(getTempPath("sped.mp3"))
       .on("end", async () => {
         await message.sendMessage(
-          fs.readFileSync(getTempPath("sped.mp3")),
+          await fs.promises.readFile(getTempPath("sped.mp3")),
           "audio",
           {
             quoted: message.quoted,
@@ -425,7 +425,7 @@ Module(
       .fromFormat("webp_pipe")
       .save("output.png")
       .on("end", async () => {
-        await message.sendReply(fs.readFileSync("output.png"), "image");
+        await message.sendReply(await fs.promises.readFile("output.png"), "image");
       });
   }
 );
@@ -446,7 +446,7 @@ Module(
       ios: "https://github.com/souravkl11/Raganork-md/",
     };
     await message.sendMessage(
-      fs.readFileSync(await addExif(result, exif)),
+      await fs.promises.readFile(await addExif(result, exif)),
       "sticker"
     );
   }
@@ -775,19 +775,19 @@ Module(
         .on("end", async () => {
           try {
             if (isVideo) {
-              await message.sendMessage(fs.readFileSync(outputPath), "video", {
+              await message.sendMessage(await fs.promises.readFile(outputPath), "video", {
                 quoted: message.quoted,
                 caption: "_Cropped to square format_",
               });
             } else {
-              await message.sendMessage(fs.readFileSync(outputPath), "image", {
+              await message.sendMessage(await fs.promises.readFile(outputPath), "image", {
                 quoted: message.quoted,
                 caption: "_Cropped to square format_",
               });
             }
 
-            fs.unlinkSync(savedFile);
-            fs.unlinkSync(outputPath);
+            try { await fs.promises.unlink(savedFile); } catch(e){}
+            try { await fs.promises.unlink(outputPath); } catch(e){}
 
             await message.edit(
               "_Square cropping completed ✅_",
@@ -799,12 +799,12 @@ Module(
             await message.send("_Processed successfully but failed to send_");
           }
         })
-        .on("error", (err) => {
+        .on("error", async (err) => {
           console.error("FFmpeg error:", err);
           message.send("_Failed to process media. Please try again_");
           try {
-            fs.unlinkSync(savedFile);
-            if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+            await fs.promises.unlink(savedFile);
+            if (fs.existsSync(outputPath)) await fs.promises.unlink(outputPath);
           } catch (e) {}
         });
     } catch (error) {
@@ -905,19 +905,19 @@ Module(
         .on("end", async () => {
           try {
             if (isVideo) {
-              await message.sendMessage(fs.readFileSync(outputPath), "video", {
+              await message.sendMessage(await fs.promises.readFile(outputPath), "video", {
                 quoted: message.quoted,
                 caption: `_Resized to ${input} aspect ratio (${targetWidth}x${targetHeight})_`,
               });
             } else {
-              await message.sendMessage(fs.readFileSync(outputPath), "image", {
+              await message.sendMessage(await fs.promises.readFile(outputPath), "image", {
                 quoted: message.quoted,
                 caption: `_Resized to ${input} aspect ratio (${targetWidth}x${targetHeight})_`,
               });
             }
 
-            fs.unlinkSync(savedFile);
-            fs.unlinkSync(outputPath);
+            try { await fs.promises.unlink(savedFile); } catch(e){}
+            try { await fs.promises.unlink(outputPath); } catch(e){}
 
             await message.edit(
               `_Aspect ratio change to ${input} completed ✅_`,
@@ -929,14 +929,14 @@ Module(
             await message.send("_Processed successfully but failed to send_");
           }
         })
-        .on("error", (err) => {
+        .on("error", async (err) => {
           console.error("FFmpeg resize error:", err);
           message.send(
             "_Failed to resize media. Please check aspect ratio and try again_"
           );
           try {
-            fs.unlinkSync(savedFile);
-            if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+            await fs.promises.unlink(savedFile);
+            if (fs.existsSync(outputPath)) await fs.promises.unlink(outputPath);
           } catch (e) {}
         });
     } catch (error) {
@@ -1037,14 +1037,14 @@ Module(
             };
 
             if (isVideo) {
-              await message.sendMessage(fs.readFileSync(outputPath), "video", {
+              await message.sendMessage(await fs.promises.readFile(outputPath), "video", {
                 quoted: message.quoted,
                 caption: `_Compressed by ${actualReduction}%_\n_${formatSize(
                   originalSize
                 )} → ${formatSize(compressedSize)}_`,
               });
             } else {
-              await message.sendMessage(fs.readFileSync(outputPath), "image", {
+              await message.sendMessage(await fs.promises.readFile(outputPath), "image", {
                 quoted: message.quoted,
                 caption: `_Compressed by ${actualReduction}%_\n_${formatSize(
                   originalSize
@@ -1052,8 +1052,8 @@ Module(
               });
             }
 
-            fs.unlinkSync(savedFile);
-            fs.unlinkSync(outputPath);
+            try { await fs.promises.unlink(savedFile); } catch(e){}
+            try { await fs.promises.unlink(outputPath); } catch(e){}
 
             await message.edit(
               `_Compression completed ✅ (${actualReduction}% reduction)_`,
@@ -1065,12 +1065,12 @@ Module(
             await message.send("_Processed successfully but failed to send_");
           }
         })
-        .on("error", (err) => {
+        .on("error", async (err) => {
           console.error("FFmpeg compress error:", err);
           message.send("_Failed to compress media. Please try again_");
           try {
-            fs.unlinkSync(savedFile);
-            if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+            await fs.promises.unlink(savedFile);
+            if (fs.existsSync(outputPath)) await fs.promises.unlink(outputPath);
           } catch (e) {}
         });
     } catch (error) {
