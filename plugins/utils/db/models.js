@@ -25,6 +25,8 @@ const warnDB = config.sequelize.define("_warn", {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+}, {
+  indexes: [{ fields: ['chat'] }, { fields: ['user'] }]
 });
 
 const FakeDB = config.sequelize.define("fake", {
@@ -32,7 +34,7 @@ const FakeDB = config.sequelize.define("fake", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 // Legacy antilink table - will be removed
 const antilinkDB = config.sequelize.define("antilink", {
@@ -40,7 +42,7 @@ const antilinkDB = config.sequelize.define("antilink", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 // New advanced antilink system
 const AntilinkConfigDB = config.sequelize.define("antilink_config", {
@@ -93,42 +95,42 @@ const antiSpamDB = config.sequelize.define("antispam", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const PDMDB = config.sequelize.define("pdm", {
   jid: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const antiDemote = config.sequelize.define("antidemote", {
   jid: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const antiPromote = config.sequelize.define("antipromote", {
   jid: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const antiBotDB = config.sequelize.define("antibot", {
   jid: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const antiWordDB = config.sequelize.define("antiword", {
   jid: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const WelcomeDB = config.sequelize.define("welcome", {
   jid: {
@@ -143,7 +145,7 @@ const WelcomeDB = config.sequelize.define("welcome", {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const GoodbyeDB = config.sequelize.define("goodbye", {
   jid: {
@@ -158,7 +160,7 @@ const GoodbyeDB = config.sequelize.define("goodbye", {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-});
+}, { indexes: [{ fields: ['jid'] }] });
 
 const FilterDB = config.sequelize.define("filter", {
   trigger: {
@@ -193,7 +195,7 @@ const FilterDB = config.sequelize.define("filter", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['jid'] }, { fields: ['trigger'] }] });
 
 module.exports = {
   warnDB,
