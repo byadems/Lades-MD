@@ -97,7 +97,7 @@ Module(
           .on("error", reject);
       });
 
-      const videoBuffer = fs.readFileSync(outputPath);
+      const videoBuffer = await fs.promises.readFile(outputPath);
       await message.send(videoBuffer, "video");
       await message.edit(
         "_Black video created successfully!_",
@@ -130,17 +130,19 @@ Module(
       return await message.send(Lang.AVMIX_NEED_FILES);
     if (message.reply_message.audio) {
       var savedFile = await message.reply_message.download();
-      await fs.writeFileSync(
+      await fs.promises.mkdir(getTempSubdir("avmix"), { recursive: true });
+      await fs.promises.writeFile(
         getTempPath("avmix/audio.mp3"),
-        fs.readFileSync(savedFile)
+        await fs.promises.readFile(savedFile)
       );
       return await message.sendReply(Lang.AVMIX_AUDIO_ADDED);
     }
     if (message.reply_message.video) {
       var savedFile = await message.reply_message.download();
-      await fs.writeFileSync(
+      await fs.promises.mkdir(getTempSubdir("avmix"), { recursive: true });
+      await fs.promises.writeFile(
         getTempPath("avmix/video.mp4"),
-        fs.readFileSync(savedFile)
+        await fs.promises.readFile(savedFile)
       );
       return await message.sendReply(Lang.AVMIX_VIDEO_ADDED);
     }
@@ -150,9 +152,9 @@ Module(
         getTempPath("avmix/audio.mp3")
       );
       await message.sendReply(video, "video");
-      await fs.unlinkSync(getTempPath("avmix/video.mp4"));
-      await fs.unlinkSync(getTempPath("avmix/audio.mp3"));
-      await fs.unlinkSync("./merged.mp4");
+      await fs.promises.unlink(getTempPath("avmix/video.mp4"));
+      await fs.promises.unlink(getTempPath("avmix/audio.mp3"));
+      if (fs.existsSync("./merged.mp4")) await fs.promises.unlink("./merged.mp4");
       return;
     }
   }
@@ -173,9 +175,10 @@ Module(
       return await message.send("Give me videos");
     if (message.reply_message.video && files.length == 1) {
       var savedFile = await message.reply_message.download();
-      await fs.writeFileSync(
+      await fs.promises.mkdir(getTempSubdir("vmix"), { recursive: true });
+      await fs.promises.writeFile(
         getTempPath("vmix/video1.mp4"),
-        fs.readFileSync(savedFile)
+        await fs.promises.readFile(savedFile)
       );
       return await message.sendReply(
         "*Added video 2. Type .vmix again to process!*"
@@ -183,9 +186,10 @@ Module(
     }
     if (message.reply_message.video && files.length == 0) {
       var savedFile = await message.reply_message.download();
-      await fs.writeFileSync(
+      await fs.promises.mkdir(getTempSubdir("vmix"), { recursive: true });
+      await fs.promises.writeFile(
         getTempPath("vmix/video2.mp4"),
-        fs.readFileSync(savedFile)
+        await fs.promises.readFile(savedFile)
       );
       return await message.sendReply("*Added video 1*");
     }
@@ -196,8 +200,8 @@ Module(
           .on("error", function (err) {
             resolve();
           })
-          .on("end", function () {
-            resolve(fs.readFileSync(folder + "/" + filename));
+          .on("end", async function () {
+            resolve(await fs.promises.readFile(folder + "/" + filename));
           });
 
         for (var i = 0; i < files.length; i++) {
@@ -217,8 +221,8 @@ Module(
         ),
         "video"
       );
-      await fs.unlinkSync(getTempPath("vmix/video1.mp4"));
-      await fs.unlinkSync(getTempPath("vmix/video2.mp4"));
+      await fs.promises.unlink(getTempPath("vmix/video1.mp4"));
+      await fs.promises.unlink(getTempPath("vmix/video2.mp4"));
       return;
     }
   }
@@ -242,7 +246,7 @@ Module(
       .save(getTempPath("slowmo.mp4"))
       .on("end", async () => {
         return await message.send(
-          fs.readFileSync(getTempPath("slowmo.mp4")),
+          await fs.promises.readFile(getTempPath("slowmo.mp4")),
           "video"
         );
       });
@@ -274,7 +278,7 @@ Module(
       .save(getTempPath("agif.mp4"))
       .on("end", async () => {
         return await message.client.sendMessage(message.jid, {
-          video: fs.readFileSync(getTempPath("agif.mp4")),
+          video: await fs.promises.readFile(getTempPath("agif.mp4")),
           gifPlayback: true,
         });
       });
@@ -301,7 +305,7 @@ Module(
       .save(getTempPath("interp.mp4"))
       .on("end", async () => {
         return await message.send(
-          fs.readFileSync(getTempPath("interp.mp4")),
+          await fs.promises.readFile(getTempPath("interp.mp4")),
           "video"
         );
       });
@@ -367,7 +371,7 @@ Module(
     if (match[1] === "flip") angle = "3";
     await message.send("_Processing..._");
     await message.sendReply(
-      fs.readFileSync(await rotate(file, angle)),
+      await fs.promises.readFile(await rotate(file, angle)),
       "video"
     );
   }
@@ -381,7 +385,7 @@ Module(
     var angle = "3";
     await message.send("_Processing..._");
     await message.sendReply(
-      fs.readFileSync(await rotate(file, angle)),
+      await fs.promises.readFile(await rotate(file, angle)),
       "video"
     );
   }
