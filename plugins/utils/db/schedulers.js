@@ -13,7 +13,7 @@ async function updateOrCreate(model, findCriteria, createData) {
 const AutoMuteDB = config.sequelize.define("automute", {
   chat: { type: DataTypes.STRING, allowNull: false },
   time: { type: DataTypes.STRING, allowNull: false },
-});
+}, { indexes: [{ fields: ['chat'] }] });
 
 const automute = {
   async get() {
@@ -31,7 +31,7 @@ const automute = {
 const AutoUnMuteDB = config.sequelize.define("autounmute", {
   chat: { type: DataTypes.STRING, allowNull: false },
   time: { type: DataTypes.STRING, allowNull: false },
-});
+}, { indexes: [{ fields: ['chat'] }] });
 
 const autounmute = {
   async get() {
@@ -53,7 +53,7 @@ const autounmute = {
 const StickyCmdDB = config.sequelize.define("stickcmd", {
   command: { type: DataTypes.STRING(1000), allowNull: false },
   file: { type: DataTypes.STRING(1000), allowNull: false },
-});
+}, { indexes: [{ fields: ['command'] }, { fields: ['file'] }] });
 
 const stickcmd = {
   async get() {
@@ -88,7 +88,7 @@ const ScheduledMessageDB = config.sequelize.define("scheduled_messages", {
   message: { type: DataTypes.STRING(2048), allowNull: false },
   scheduleTime: { type: DataTypes.DATE, allowNull: false },
   isSent: { type: DataTypes.BOOLEAN, defaultValue: false },
-});
+}, { indexes: [{ fields: ['scheduleTime', 'isSent'] }, { fields: ['jid'] }] });
 
 const scheduledMessages = {
   async getDueForSending() {
