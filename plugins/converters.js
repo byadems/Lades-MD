@@ -119,8 +119,8 @@ Module(
         author: STICKER_DATA.split(";")[1] || "",
         packname: message.senderName,
         categories: STICKER_DATA.split(";")[2] || "😂",
-        android: "https://github.com/souravkl11/Raganork-md/",
-        ios: "https://github.com/souravkl11/Raganork-md/",
+        android: "https://github.com/byadems/Lades-MD/",
+        ios: "https://github.com/byadems/Lades-MD/",
       };
       return await message.sendMessage(
         fs.readFileSync(await addExif(result, exif)),
@@ -135,8 +135,8 @@ Module(
       author: STICKER_DATA.split(";")[1] || "",
       packname: message.senderName,
       categories: STICKER_DATA.split(";")[2] || "😂",
-      android: "https://github.com/souravkl11/Raganork-md/",
-      ios: "https://github.com/souravkl11/Raganork-md/",
+      android: "https://github.com/byadems/Lades-MD/",
+      ios: "https://github.com/byadems/Lades-MD/",
     };
 
     // handle album
@@ -442,8 +442,8 @@ Module(
       author: STICKER_DATA.split(";")[1] || "",
       packname: message.senderName,
       categories: STICKER_DATA.split(";")[2] || "😂",
-      android: "https://github.com/souravkl11/Raganork-md/",
-      ios: "https://github.com/souravkl11/Raganork-md/",
+      android: "https://github.com/byadems/Lades-MD/",
+      ios: "https://github.com/byadems/Lades-MD/",
     };
     await message.sendMessage(
       fs.readFileSync(await addExif(result, exif)),

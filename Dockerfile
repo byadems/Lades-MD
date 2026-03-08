@@ -6,8 +6,8 @@ RUN apk add --no-cache \
     python3 \
     make \
     g++
-ADD https://api.github.com/repos/souravkl11/raganork-md/git/refs/heads/main version.json
-RUN git clone -b main https://github.com/byadems/lades-MD /rgnk
+ADD https://api.github.com/repos/byadems/Lades-MD/git/refs/heads/main version.json
+RUN git clone -b main https://github.com/byadems/Lades-MD /rgnk
 WORKDIR /rgnk
 RUN mkdir -p temp
 ENV TZ=Europe/Istanbul

@@ -1,19 +1,19 @@
-# Raganork-MD
+# Lades-MD
 
 <p align="center">
-  <a href="https://raganork.site">
+  <a href="https://lades.site">
     <img src="https://i.ibb.co/QL4BQQ6/Untitled-1.png" alt="Get Session" width="300"/>
   </a>
 </p>
 
-A lightweight WhatsApp bot framework with multi-session support and extensive configuration options. Complete rewrite of the original Raganork project for better stability and performance.
+A lightweight WhatsApp bot framework with multi-session support and extensive configuration options. Complete rewrite of the original Lades project for better stability and performance.
 
 ## Get Started
 
 #### 1. Get Your Session String 
 
 <p align="center">
-  <a href="https://raganork.site">
+  <a href="https://lades.site">
     <img src="https://i.ibb.co/fVWcycPc/get-session.png" alt="Get Session" width="200"/>
   </a>
 </p>
@@ -23,7 +23,7 @@ A lightweight WhatsApp bot framework with multi-session support and extensive co
 #### 2. Deploy and setup your bot 
 
 <p align="center">
-  <a href="https://raganork.site">
+  <a href="https://lades.site">
     <img src="https://i.ibb.co/fVsfPsjk/deploy-bot.png" alt="Get Session" width="200"/>
   </a>
 </p>
@@ -52,8 +52,8 @@ A lightweight WhatsApp bot framework with multi-session support and extensive co
 
 ```bash
 npm install -g yarn pm2
-git clone https://github.com/souravkl11/raganork-md.git
-cd raganork-md
+git clone https://github.com/byadems/Lades-MD.git
+cd Lades-MD
 ````
 
 ### Install Dependencies
@@ -106,10 +106,10 @@ npm start
 
 ```bash
 # Stop bot
-pm2 stop raganork-md
+pm2 stop Lades-MD
 
 # Restart bot
-pm2 restart raganork-md
+pm2 restart Lades-MD
 ```
 
 ## Commands
@@ -124,7 +124,7 @@ Default prefix: `.`
 ## File Structure
 
 ```
-raganork-md/
+Lades-MD/
 ├── plugins/     # Bot plugins
 ├── core/        # Core libraries
 ├── output/      # Operational outputs
@@ -136,8 +136,8 @@ raganork-md/
 
 ## Support
 
-* [Telegram Group](https://t.me/raganork_in)
-* [Official Website](https://raganork.live)
+* [Telegram Group](https://t.me/lades_in)
+* [Official Website](https://lades.live)
 
 ## Legal Notice
 

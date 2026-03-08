@@ -1,17 +1,17 @@
 {
-  "name": "raganork-md",
+  "name": "lades-md",
   "version": "6.2.26",
   "description": "A multi functional wa bot.",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "start": "pm2 start index.js --name raganork-md --attach"
+    "start": "pm2 start index.js --name lades-md --attach"
   },
   "keywords": [
     "whatsapp",
     "bot",
     "baileys",
-    "raganork"
+    "lades"
   ],
   "author": "Sourav K",
   "license": "GPL-3.0-or-later",

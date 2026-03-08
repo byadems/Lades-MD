@@ -256,8 +256,8 @@ const baseConfig = {
   NOT_ALLOWED: process.env.NOT_ALLOWED || "852",
   CHATBOT: process.env.CHATBOT || "off",
   HANDLERS: process.env.HANDLERS || ".,",
-  STICKER_DATA: process.env.STICKER_DATA || "Raganork",
-  BOT_NAME: process.env.BOT_NAME || "Raganork",
+  STICKER_DATA: process.env.STICKER_DATA || "Lades",
+  BOT_NAME: process.env.BOT_NAME || "Lades",
   AUDIO_DATA:
     process.env.AUDIO_DATA === undefined || process.env.AUDIO_DATA === "private"
       ? "default"
@@ -271,7 +271,7 @@ const baseConfig = {
   SUDO: process.env.SUDO || "",
   LANGUAGE: process.env.LANGUAGE || "english",
   AUTO_UPDATE: convertToBool(process.env.AUTO_UPDATE) || true,
-  SUPPORT_GROUP: process.env.SUPPORT_GROUP || "https://t.me/raganork_in",
+  SUPPORT_GROUP: process.env.SUPPORT_GROUP || "https://t.me/lades_in",
   ACR_A: "ff489a0160188cf5f0750eaf486eee74",
   ACR_S: "ytu3AdkCu7fkRVuENhXxs9jsOW4YJtDXimAWMpJp",
   settingsMenu,

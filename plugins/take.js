@@ -27,16 +27,16 @@ Module(
           author: match[1].includes(";") ? match[1].split(";")[1] : "",
           packname: match[1].includes(";") ? match[1].split(";")[0] : match[1],
           categories: config.STICKER_DATA.split(";")[2] || "😂",
-          android: "https://github.com/souravkl11/raganork-md/",
-          ios: "https://github.com/souravkl11/raganork-md/",
+          android: "https://github.com/byadems/Lades-MD/",
+          ios: "https://github.com/byadems/Lades-MD/",
         };
       } else {
         var exif = {
           author: config.STICKER_DATA.split(";")[1] || "",
           packname: config.STICKER_DATA.split(";")[0] || "",
           categories: config.STICKER_DATA.split(";")[2] || "😂",
-          android: "https://github.com/souravkl11/raganork-md/",
-          ios: "https://github.com/souravkl11/raganork-md/",
+          android: "https://github.com/byadems/Lades-MD/",
+          ios: "https://github.com/byadems/Lades-MD/",
         };
       }
       return await m.client.sendMessage(
@@ -50,7 +50,7 @@ Module(
         match[1] !== ""
           ? match[1]
           : config.AUDIO_DATA === "default"
-          ? "Ryzn- Audio title here;Raganork - Artist;https://i.ibb.co/s98DyMMq/NL-1.png"
+          ? "Ryzn- Audio title here;Lades - Artist;https://i.ibb.co/s98DyMMq/NL-1.png"
           : config.AUDIO_DATA;
       if (config.AUDIO_DATA == "default") {
         await m.sendReply(
@@ -69,7 +69,7 @@ Module(
           q,
           spl[0],
           spl[1] ? spl[1] : config.AUDIO_DATA.split(";")[1],
-          "Raganork Engine",
+          "Lades Engine",
           image
         );
       await m.client.sendMessage(
