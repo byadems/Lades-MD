@@ -181,7 +181,7 @@ Module(
         );
       }
 
-      let envContent = fs.readFileSync("./config.env", "utf8");
+      let envContent = await fs.promises.readFile("./config.env", "utf8");
       const lines = envContent.split("\n");
 
       let found = false;
@@ -197,7 +197,7 @@ Module(
         updatedLines.push(`${trimmedKey}=${value}`);
       }
 
-      fs.writeFileSync("./config.env", updatedLines.join("\n"));
+      await fs.promises.writeFile("./config.env", updatedLines.join("\n"));
 
       await message.sendReply(
         `_Environment variable '${trimmedKey}' set to '${value}' in config.env_\n\n_Note: Restart required for changes to take effect._`
