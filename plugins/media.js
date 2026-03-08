@@ -104,8 +104,8 @@ Module(
         message.jid,
         processingMsg.key
       );
-      if (fs.existsSync(audioFile)) fs.unlinkSync(audioFile);
-      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      try { if (fs.existsSync(audioFile)) await fs.promises.unlink(audioFile); } catch(e) {}
+      try { if (fs.existsSync(outputPath)) await fs.promises.unlink(outputPath); } catch(e) {}
     } catch (error) {
       console.error("Black video creation error:", error);
       await message.send("_Failed to create black video. Please try again._");
@@ -120,7 +120,7 @@ Module(
   },
   async (message, match) => {
     const avmixDir = getTempSubdir("avmix");
-    let files = fs.readdirSync(avmixDir);
+    let files = await fs.promises.readdir(avmixDir);
     if (
       (!message.reply_message && files.length < 2) ||
       (message.reply_message &&
@@ -167,7 +167,7 @@ Module(
   },
   async (message, match) => {
     const vmixDir = getTempSubdir("vmix");
-    let files = fs.readdirSync(vmixDir);
+    let files = await fs.promises.readdir(vmixDir);
     if (
       (!message.reply_message && files.length < 2) ||
       (message.reply_message && !message.reply_message.video)
