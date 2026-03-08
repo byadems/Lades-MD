@@ -41,7 +41,7 @@ Module(
       }
       return await m.client.sendMessage(
         m.jid,
-        { sticker: fs.readFileSync(await addExif(q, exif)) },
+        { sticker: await fs.promises.readFile(await addExif(q, exif)) },
         { quoted: m.quoted }
       );
     }
