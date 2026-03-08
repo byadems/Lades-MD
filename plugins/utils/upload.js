@@ -9,7 +9,7 @@ const CATBOX_LIMIT = 209715200;
 
 const uploadToCatbox = async (filePath) => {
   try {
-    const fileStats = fs.statSync(filePath);
+    const fileStats = await fs.promises.stat(filePath);
     if (fileStats.size > CATBOX_LIMIT) {
       return { url: "_File size exceeds 200MB limit._" };
     }
@@ -45,7 +45,7 @@ const fetchAuthToken = async () => {
 
 const uploadToImgbb = async (imagePath) => {
   try {
-    const fileStats = fs.statSync(imagePath);
+    const fileStats = await fs.promises.stat(imagePath);
 
     if (fileStats.size > IMGBB_LIMIT) {
       return { url: "_File size exceeds 32MB limit._" };
