@@ -10,7 +10,7 @@ const PluginDB = config.sequelize.define("Plugin", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-});
+}, { indexes: [{ fields: ['url'] }] });
 
 async function installPlugin(address, file) {
   var Plugin = await PluginDB.findAll({
