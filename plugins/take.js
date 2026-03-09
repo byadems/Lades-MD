@@ -53,8 +53,7 @@ Module(
           ? "Ryzn- Audio title here;Lades - Artist;https://i.ibb.co/s98DyMMq/NL-1.png"
           : config.AUDIO_DATA;
       if (config.AUDIO_DATA == "default") {
-        await m.sendReply(
-          `_Varsayılan ses verisi kullanılıyor, değiştirmek için .setvar kullanın_`
+        await m.sendReply(`_🎵 Varsayılan ses verisi kullanılıyor, değiştirmek için .setvar kullanın_`
         );
       }
       let spl = inf.split(";"),
@@ -88,7 +87,7 @@ Module(
       return await m.client.sendMessage(
         m.jid,
         {
-          text: "_Bir sesi veya çıkartmayı yanıtlayın_",
+          text: "_🎵 Bir sesi veya çıkartmayı yanıtlayın_",
         },
         {
           quoted: m.data,
@@ -109,7 +108,7 @@ Module(
         var result = await webp2mp4(q, __dirname + "/temp/output.mp4");
       } catch (e) {
         console.log(e);
-        return await m.sendReply("*Başarısız*");
+        return await m.sendReply("*❌ Başarısız*");
       }
       await m.client.sendMessage(
         m.jid,
@@ -120,7 +119,7 @@ Module(
         },
         { quoted: m.quoted }
       );
-    } else return await m.sendReply("_Hareketli bir çıkartmayı yanıtlayın!_");
+    } else return await m.sendReply("_💬 Hareketli bir çıkartmayı yanıtlayın!_");
   }
 );
 

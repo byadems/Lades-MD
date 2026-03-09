@@ -67,8 +67,7 @@ Module(
     const input = args?.slice(1).join(" ");
 
     if (!subcommand) {
-      return await message.sendReply(
-        `Lütfen bir alt komut belirtin!\n\n*Mevcut komutlar:*\n• \`${handler}mention set\` - Set mention reply (reply to message or add text)\n• \`${handler}mention get\` - View current mention reply\n• \`${handler}mention del\` - Delete mention reply\n• \`${handler}mention help\` - Show detailed help`
+      return await message.sendReply(`Lütfen bir alt komut belirtin!\n\n*Mevcut komutlar:*\n• \`${handler}mention set\` - Set mention reply (reply to message or add text)\n• \`${handler}mention get\` - View current mention reply\n• \`${handler}mention del\` - Delete mention reply\n• \`${handler}mention help\` - Show detailed help`
       );
     }
 
@@ -77,17 +76,16 @@ Module(
       case "delete":
         const success = await deleteMentionReply();
         if (success) {
-          return await message.sendReply("Bahsetme yanıtı başarıyla silindi!");
+          return await message.sendReply("✅ Bahsetme yanıtı başarıyla silindi!");
         } else {
-          return await message.sendReply("Bahsetme yanıtı silinemedi!");
+          return await message.sendReply("🗑️ Bahsetme yanıtı silinemedi!");
         }
 
       case "get":
       case "show":
         const mentionData = getMentionReply();
         if (!mentionData) {
-          return await message.sendReply(
-            "Bahsetme yanıtı ayarlanmadı!\n\n*Kullanım:*\n• Bir mesajı yanıtlayıp `.mention set` yazın\n• Veya metin mesajı için `.mention set <metin>` kullanın"
+          return await message.sendReply("Bahsetme yanıtı ayarlanmadı!\n\n*Kullanım:*\n• Bir mesajı yanıtlayıp `.mention set` yazın\n• Veya metin mesajı için `.mention set <metin>` kullanın"
           );
         }
 
@@ -141,33 +139,29 @@ Module(
                 mentionData.url = uploadResult.url;
                 mentionData.caption = replyMsg.text || "";
               } else {
-                return await message.sendReply(
-                  "Medya yüklenemedi! Lütfen tekrar deneyin."
+                return await message.sendReply("⚠️ Medya yüklenemedi! Lütfen tekrar deneyin."
                 );
               }
             } else if (replyMsg.text) {
               mentionData.type = "text";
               mentionData.content = replyMsg.text;
             } else {
-              return await message.sendReply(
-                "Bahsetme yanıtı için desteklenmeyen mesaj türü!"
+              return await message.sendReply("💬 Bahsetme yanıtı için desteklenmeyen mesaj türü!"
               );
             }
 
             const success = await setMentionReply(mentionData);
             if (success) {
-              return await message.sendReply(
-                `Bahsetme yanıtı başarıyla ayarlandı!\n\n*Tür:* \`${mentionData.type.toUpperCase()}\`\n*Content:* _${
+              return await message.sendReply(`✅ Bahsetme yanıtı başarıyla ayarlandı!\n\n*Tür:* \`${mentionData.type.toUpperCase()}\`\n*Content:* _${
                   mentionData.content || mentionData.caption || "Media file"
                 }_`
               );
             } else {
-              return await message.sendReply("Bahsetme yanıtı ayarlanamadı!");
+              return await message.sendReply("⚙️ Bahsetme yanıtı ayarlanamadı!");
             }
           } catch (error) {
             console.error("Error setting mention reply:", error);
-            return await message.sendReply(
-              "Bahsetme yanıtı ayarlanırken hata oluştu! Lütfen tekrar deneyin."
+            return await message.sendReply("❌ Bahsetme yanıtı ayarlanırken hata oluştu! Lütfen tekrar deneyin."
             );
           }
         }
@@ -187,12 +181,11 @@ Module(
               `Mention reply set successfully!\n\n*Content:* _${mentionData.content}_`
             );
           } else {
-            return await message.sendReply("Bahsetme yanıtı ayarlanamadı!");
+            return await message.sendReply("⚙️ Bahsetme yanıtı ayarlanamadı!");
           }
         }
 
-        return await message.sendReply(
-          `Lütfen 'set' komutu için içerik sağlayın!\n\n*Kullanım:*\n• Herhangi bir mesajı yanıtlayın ve \ yazın`${handler}mention set\`\n• Or use \`${handler}mention set <text>\` for text message`
+        return await message.sendReply(`Lütfen 'set' komutu için içerik sağlayın!\n\n*Kullanım:*\n• Herhangi bir mesajı yanıtlayın ve \ yazın`${handler}mention set\`\n• Or use \`${handler}mention set <text>\` for text message`
         );
 
       case "help":
@@ -231,8 +224,7 @@ _Note: Media files are uploaded to cloud storage for reliability._`;
         return await message.sendReply(helpText);
 
       default:
-        return await message.sendReply(
-          `Bilinmeyen alt komut: \`${subcommand}\`\n\n*Available commands:*\n• \`${handler}mention set\` - Set mention reply\n• \`${handler}mention get\` - View current mention reply\n• \`${handler}mention del\` - Delete mention reply\n• \`${handler}mention help\` - Show help`
+        return await message.sendReply(`✨ Bilinmeyen alt komut: \`${subcommand}\`\n\n*Available commands:*\n• \`${handler}mention set\` - Set mention reply\n• \`${handler}mention get\` - View current mention reply\n• \`${handler}mention del\` - Delete mention reply\n• \`${handler}mention help\` - Show help`
         );
     }
   }

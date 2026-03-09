@@ -288,8 +288,7 @@ Module(
     var { seconds } =
       message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 120)
-      await message.sendReply(
-        `_Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
+      await message.sendReply(`_❌ Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
       );
     var savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
@@ -354,8 +353,7 @@ Module(
     var { seconds } =
       message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 120)
-      await message.sendReply(
-        `_Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
+      await message.sendReply(`_❌ Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
       );
     var savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
@@ -737,8 +735,7 @@ Module(
       !message.reply_message ||
       (!message.reply_message.video && !message.reply_message.image)
     ) {
-      return await message.sendReply(
-        "_Kare formatında kırpmak için bir videoyu veya resmi yanıtlayın_"
+      return await message.sendReply("_🎬 Kare formatında kırpmak için bir videoyu veya resmi yanıtlayın_"
       );
     }
 
@@ -825,8 +822,7 @@ Module(
       !message.reply_message ||
       (!message.reply_message.video && !message.reply_message.image)
     ) {
-      return await message.sendReply(
-        "_Boyutunu değiştirmek için bir videoyu veya resmi yanıtlayın_"
+      return await message.sendReply("_🎬 Boyutunu değiştirmek için bir videoyu veya resmi yanıtlayın_"
       );
     }
 
@@ -956,8 +952,7 @@ Module(
       !message.reply_message ||
       (!message.reply_message.video && !message.reply_message.image)
     ) {
-      return await message.sendReply(
-        "_Sıkıştırmak için bir videoyu veya resmi yanıtlayın_"
+      return await message.sendReply("_🎬 Sıkıştırmak için bir videoyu veya resmi yanıtlayın_"
       );
     }
 

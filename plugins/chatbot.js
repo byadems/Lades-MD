@@ -318,8 +318,7 @@ Module(
     switch (command) {
       case "on":
         if (!config.GEMINI_API_KEY) {
-          return await message.sendReply(
-            `*_❌ GEMINI_API_KEY Yapılandırılmadı_*\n\n` +
+          return await message.sendReply(`*_❌ GEMINI_API_KEY Yapılandırılmadı_*\n\n` +
               `_Cannot enable chatbot without Gemini API key._\n\n` +
               `*_How to get your API key:_*\n` +
               `- _Visit: https://aistudio.google.com/app/apikey_\n` +
@@ -334,8 +333,7 @@ Module(
 
         if (target === "groups") {
           await setVar("CHATBOT_ALL_GROUPS", "true");
-          return await message.sendReply(
-            `*_🤖 Sohbet Botu Tüm Gruplar için Açıldı_*\n\n` +
+          return await message.sendReply(`*_🤖 Sohbet Botu Tüm Gruplar için Açıldı_*\n\n` +
               `✅ _Chatbot will now respond in all groups_\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
               `📍 _Trigger:_ _Mentions and replies only_\n\n` +
@@ -343,8 +341,7 @@ Module(
           );
         } else if (target === "dms") {
           await setVar("CHATBOT_ALL_DMS", "true");
-          return await message.sendReply(
-            `*_🤖 Sohbet Botu Tüm DM'ler için Açıldı_*\n\n` +
+          return await message.sendReply(`*_🤖 Sohbet Botu Tüm DM'ler için Açıldı_*\n\n` +
               `✅ _Chatbot will now respond in all direct messages_\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
               `📍 _Trigger:_ _All messages_\n\n` +
@@ -352,8 +349,7 @@ Module(
           );
         } else {
           await enableChatbot(chatJid);
-          return await message.sendReply(
-            `*_🤖 Sohbet Botu Açıldı_*\n\n` +
+          return await message.sendReply(`*_🤖 Sohbet Botu Açıldı_*\n\n` +
               `📍 _Chat:_ \`${chatJid.includes("@g.us") ? "Group" : "DM"}\`\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
               `💭 _Context:_ _Fresh start_\n\n` +
@@ -364,24 +360,21 @@ Module(
       case "off":
         if (target === "groups") {
           await setVar("CHATBOT_ALL_GROUPS", "false");
-          return await message.sendReply(
-            `*_🤖 Sohbet Botu Tüm Gruplar için Kapatıldı_*\n\n` +
+          return await message.sendReply(`*_🤖 Sohbet Botu Tüm Gruplar için Kapatıldı_*\n\n` +
               `❌ _Chatbot will no longer respond in groups globally_\n` +
               `📝 _Individual group settings are preserved_\n\n` +
               `_Use \`.chatbot on groups\` to re-enable._`
           );
         } else if (target === "dms") {
           await setVar("CHATBOT_ALL_DMS", "false");
-          return await message.sendReply(
-            `*_🤖 Sohbet Botu Tüm DM'ler için Kapatıldı_*\n\n` +
+          return await message.sendReply(`*_🤖 Sohbet Botu Tüm DM'ler için Kapatıldı_*\n\n` +
               `❌ _Chatbot will no longer respond in DMs globally_\n` +
               `📝 _Individual DM settings are preserved_\n\n` +
               `_Use \`.chatbot on dms\` to re-enable._`
           );
         } else {
           await disableChatbot(chatJid);
-          return await message.sendReply(
-            `*_🤖 Sohbet Botu Kapatıldı_*\n\n` +
+          return await message.sendReply(`*_🤖 Sohbet Botu Kapatıldı_*\n\n` +
               `_Chatbot is now disabled in this chat._\n` +
               `_Conversation context has been cleared._`
           );
@@ -390,16 +383,14 @@ Module(
       case "set":
         const promptMatch = input.match(/set\s+"([^"]+)"/);
         if (!promptMatch) {
-          return await message.sendReply(
-            `_Lütfen sistem komutunu tırnak içinde belirtin._\n\n` +
+          return await message.sendReply(`_⚠️ Lütfen sistem komutunu tırnak içinde belirtin._\n\n` +
               `*_Example:_*\n` +
               `\`.chatbot set "You are a helpful assistant specialized in programming."\``
           );
         }
         const newPrompt = promptMatch[1];
         await saveSystemPrompt(newPrompt);
-        return await message.sendReply(
-          `*_🎯 Sistem Komutu Güncellendi_*\n\n` +
+        return await message.sendReply(`*_🎯 Sistem Komutu Güncellendi_*\n\n` +
             `📝 _New Prompt:_ \`${newPrompt}\`\n\n` +
             `_This will apply to all new conversations._`
         );
@@ -418,8 +409,7 @@ Module(
           );
         } else {
           clearContext(chatJid);
-          return await message.sendReply(
-            `*_💭 Bağlam Temizlendi_*\n\n` +
+          return await message.sendReply(`*_💭 Bağlam Temizlendi_*\n\n` +
               `_Conversation history has been reset._\n` +
               `_Next message will start a fresh conversation._`
           );
@@ -476,8 +466,7 @@ Module(
         return await message.sendReply(statusText);
 
       default:
-        return await message.sendReply(
-          `_Bilinmeyen komut: \`${command}\`_\n\n_Use \`.chatbot\` to see available commands._`
+        return await message.sendReply(`_✨ Bilinmeyen komut: \`${command}\`_\n\n_Use \`.chatbot\` to see available commands._`
         );
     }
   }
@@ -546,8 +535,7 @@ Module(
           }
         } catch (error) {
           console.error("Error downloading image:", error);
-          return await message.sendReply(
-            "_❌ Görsel indirilemedi. Lütfen tekrar deneyin._"
+          return await message.sendReply("_❌ Görsel indirilemedi. Lütfen tekrar deneyin._"
           );
         }
       } else if (messageText.length < 2) {
@@ -638,7 +626,7 @@ Module(
     }
 
     if (!prompt && !imageParts.length) {
-      return await message.sendReply("Lütfen bir komut girin veya bir mesaja/resme yanıt verin.");
+      return await message.sendReply("⚠️ Lütfen bir komut girin veya bir mesaja/resme yanıt verin.");
     }
 
     let sent_msg;

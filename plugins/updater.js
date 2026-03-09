@@ -38,13 +38,12 @@ Module(
   },
   async (message, match) => {
     if (!(await isGitRepo())) {
-      return await message.sendReply(
-        "_Bu bot bir Git deposundan çalıştırılmıyor. Otomatik güncellemeler mevcut değil._"
+      return await message.sendReply("_❌ Bu bot bir Git deposundan çalıştırılmıyor. Otomatik güncellemeler mevcut değil._"
       );
     }
 
     const command = match[1] ? match[1].toLowerCase() : "";
-    const processingMsg = await message.sendReply("_Güncellemeler kontrol ediliyor..._");
+    const processingMsg = await message.sendReply("_✨ Güncellemeler kontrol ediliyor..._");
 
     try {
       // fetch remote version & commits

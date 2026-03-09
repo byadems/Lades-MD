@@ -183,7 +183,7 @@ Module(
 
     if (input?.toLowerCase() === "list") {
       if (afkCache.size === 0) {
-        return await message.sendReply("_Şu anda AFK olan kullanıcı yok._");
+        return await message.sendReply("_👤 Şu anda AFK olan kullanıcı yok._");
       }
 
       let afkList = `*_🌙 AFK Users List (${afkCache.size})_*\n\n`;
@@ -215,8 +215,7 @@ Module(
         );
         const lastSeen = timeSince(afkData.lastSeen);
 
-        return await message.sendReply(
-          `*_🌙 Şu anda AFK modundasınız_*\n\n` +
+        return await message.sendReply(`*_🌙 Şu anda AFK modundasınız_*\n\n` +
             `📝 _Reason:_ \`${afkData.reason}\`\n` +
             `⏰ _AFK for:_ \`${timeAFK}\`\n` +
             `👁️ _Last seen:_ \`${lastSeen}\`\n` +
@@ -225,8 +224,7 @@ Module(
         );
       } else {
         await setAFK(userJid, input);
-        return await message.sendReply(
-          `*_🌙 AFK nedeni güncellendi_*\n\n` +
+        return await message.sendReply(`*_🌙 AFK nedeni güncellendi_*\n\n` +
             `📝 _New reason:_ \`${input}\`\n\n` +
             `_I'll auto-reply when someone messages or mentions you._`
         );
@@ -235,8 +233,7 @@ Module(
       const reason = input || "I am currently away from keyboard";
       await setAFK(userJid, reason);
 
-      return await message.sendReply(
-        `*_🌙 Artık AFK modundasınız_*\n\n` +
+      return await message.sendReply(`*_🌙 Artık AFK modundasınız_*\n\n` +
           `📝 _Reason:_ \`${reason}\`\n` +
           `⏰ _Since:_ \`${new Date().toLocaleTimeString()}\`\n\n` +
           `_I'll auto-reply when someone messages or mentions you._\n` +

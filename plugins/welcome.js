@@ -51,22 +51,20 @@ Module(
     if (input === "on") {
       const current = await welcome.get(message.jid);
       if (!current) {
-        return await message.sendReply(
-          "_Karşılama mesajı ayarlanmamış! Önce şunu kullanarak bir tane ayarlayın:_\n*.welcome <mesajınız>*"
+        return await message.sendReply("_⚙️ Karşılama mesajı ayarlanmamış! Önce şunu kullanarak bir tane ayarlayın:_\n*.welcome <mesajınız>*"
         );
       }
       await welcome.toggle(message.jid, true);
-      return await message.sendReply("_Karşılama mesajları etkinleştirildi!_ ✅");
+      return await message.sendReply("_✅ Karşılama mesajları etkinleştirildi!_ ✅");
     }
     if (input === "off") {
       await welcome.toggle(message.jid, false);
-      return await message.sendReply("_Karşılama mesajları devre dışı!_ ❌");
+      return await message.sendReply("_💬 Karşılama mesajları devre dışı!_ ❌");
     }
     if (input === "get") {
       const current = await welcome.get(message.jid);
       if (!current) {
-        return await message.sendReply(
-          "_Bu grup için karşılama mesajı ayarlanmamış!_"
+        return await message.sendReply("_⚙️ Bu grup için karşılama mesajı ayarlanmamış!_"
         );
       }
       return await message.sendReply(
@@ -78,11 +76,10 @@ Module(
     if (input === "del" || input === "delete") {
       const deleted = await welcome.delete(message.jid);
       if (deleted) {
-        return await message.sendReply(
-          "_Karşılama mesajı başarıyla silindi!_ 🗑️"
+        return await message.sendReply("_Karşılama mesajı başarıyla silindi!_ 🗑️"
         );
       }
-      return await message.sendReply("_Silinecek karşılama mesajı bulunamadı!_");
+      return await message.sendReply("_❌ Silinecek karşılama mesajı bulunamadı!_");
     }
 
     if (input === "status") {
@@ -93,8 +90,7 @@ Module(
         const goodbyeData = await goodbye.get();
 
         if (!welcomeData.length && !goodbyeData.length) {
-          return await message.sendReply(
-            "_Hiçbir grupta karşılama veya veda mesajı ayarlanmamış!_"
+          return await message.sendReply("_⚙️ Hiçbir grupta karşılama veya veda mesajı ayarlanmamış!_"
           );
         }
 
@@ -147,7 +143,7 @@ Module(
         await message.sendReply(statusText);
       } catch (error) {
         console.error("Error getting welcome status:", error);
-        await message.sendReply("_Karşılama/veda durumunu alırken hata oluştu!_");
+        await message.sendReply("_❌ Karşılama/veda durumunu alırken hata oluştu!_");
       }
       return;
     }
@@ -217,8 +213,7 @@ We now have $count members remaining.\`
     }
     const welcomeMessage = match[1];
     if (welcomeMessage.length > 2000) {
-      return await message.sendReply(
-        "_Karşılama mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
+      return await message.sendReply("_⚠️ Karşılama mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );
     }
     await welcome.set(message.jid, welcomeMessage);
@@ -266,22 +261,20 @@ Module(
     if (input === "on") {
       const current = await goodbye.get(message.jid);
       if (!current) {
-        return await message.sendReply(
-          "_Veda mesajı ayarlanmamış! Önce şunu kullanarak bir tane ayarlayın:_\n*.goodbye <mesajınız>*"
+        return await message.sendReply("_⚙️ Veda mesajı ayarlanmamış! Önce şunu kullanarak bir tane ayarlayın:_\n*.goodbye <mesajınız>*"
         );
       }
       await goodbye.toggle(message.jid, true);
-      return await message.sendReply("_Veda mesajları açıldı!_ ✅");
+      return await message.sendReply("_✅ Veda mesajları açıldı!_ ✅");
     }
     if (input === "off") {
       await goodbye.toggle(message.jid, false);
-      return await message.sendReply("_Veda mesajları kapatıldı!_ ❌");
+      return await message.sendReply("_❌ Veda mesajları kapatıldı!_ ❌");
     }
     if (input === "get") {
       const current = await goodbye.get(message.jid);
       if (!current) {
-        return await message.sendReply(
-          "_Bu grup için veda mesajı ayarlanmamış!_"
+        return await message.sendReply("_⚙️ Bu grup için veda mesajı ayarlanmamış!_"
         );
       }
       return await message.sendReply(
@@ -293,16 +286,14 @@ Module(
     if (input === "del" || input === "delete") {
       const deleted = await goodbye.delete(message.jid);
       if (deleted) {
-        return await message.sendReply(
-          "_Veda mesajı başarıyla silindi!_ 🗑️"
+        return await message.sendReply("_Veda mesajı başarıyla silindi!_ 🗑️"
         );
       }
-      return await message.sendReply("_Silinecek veda mesajı bulunamadı!_");
+      return await message.sendReply("_❌ Silinecek veda mesajı bulunamadı!_");
     }
     const goodbyeMessage = match[1];
     if (goodbyeMessage.length > 2000) {
-      return await message.sendReply(
-        "_Veda mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
+      return await message.sendReply("_⚠️ Veda mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );
     }
     await goodbye.set(message.jid, goodbyeMessage);
@@ -326,8 +317,7 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const welcomeData = await welcome.get(message.jid);
     if (!welcomeData || !welcomeData.enabled) {
-      return await message.sendReply(
-        "_Bu grupta karşılama mesajı ayarlanmamış veya kapatılmış!_"
+      return await message.sendReply("_❌ Bu grupta karşılama mesajı ayarlanmamış veya kapatılmış!_"
       );
     }
     const parsedMessage = await parseWelcomeMessage(
@@ -336,10 +326,10 @@ Module(
       [message.sender]
     );
     if (parsedMessage) {
-      await message.sendReply("*Karşılama Mesajı Test Ediliyor:*");
+      await message.sendReply("*💬 Karşılama Mesajı Test Ediliyor:*");
       await sendWelcomeMessage(message, parsedMessage);
     } else {
-      await message.sendReply("_Karşılama mesajı işlenirken hata oluştu!_");
+      await message.sendReply("_❌ Karşılama mesajı işlenirken hata oluştu!_");
     }
   }
 );
@@ -358,8 +348,7 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const goodbyeData = await goodbye.get(message.jid);
     if (!goodbyeData || !goodbyeData.enabled) {
-      return await message.sendReply(
-        "_Bu grupta veda mesajı ayarlanmamış veya kapatılmış!_"
+      return await message.sendReply("_❌ Bu grupta veda mesajı ayarlanmamış veya kapatılmış!_"
       );
     }
     const parsedMessage = await parseWelcomeMessage(
@@ -368,10 +357,10 @@ Module(
       [message.sender]
     );
     if (parsedMessage) {
-      await message.sendReply("*Veda Mesajı Test Ediliyor:*");
+      await message.sendReply("*💬 Veda Mesajı Test Ediliyor:*");
       await sendWelcomeMessage(message, parsedMessage);
     } else {
-      await message.sendReply("_Veda mesajı işlenirken hata oluştu!_");
+      await message.sendReply("_❌ Veda mesajı işlenirken hata oluştu!_");
     }
   }
 );

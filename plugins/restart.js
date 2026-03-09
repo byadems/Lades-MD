@@ -7,7 +7,7 @@ Module(
     excludeFromCommands: true,
   },
   async (m) => {
-    await m.sendReply("_Bot yeniden başlatılıyor..._");
+    await m.sendReply("_✨ Bot yeniden başlatılıyor..._");
     process.exit(0);
   }
 );
@@ -19,7 +19,7 @@ Module(
     excludeFromCommands: true,
   },
   async (m) => {
-    await m.sendReply("_Bot yeniden başlatılıyor..._");
+    await m.sendReply("_✨ Bot yeniden başlatılıyor..._");
     process.exit(0);
   }
 );
@@ -32,7 +32,7 @@ Module(
     use: "system",
   },
   async (m) => {
-    await m.sendReply("_Bot yeniden başlatılıyor..._");
+    await m.sendReply("_✨ Bot yeniden başlatılıyor..._");
     process.exit(0);
   }
 );

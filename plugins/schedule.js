@@ -107,18 +107,16 @@ Module(
   async (m, match) => {
     if (match[1] === "d") return;
     if (!m.reply_message) {
-      return await m.sendReply(
-        "_Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*Kullanım:*\n• schedule <jid> <zaman>\n• schedule <zaman> <jid>"
+      return await m.sendReply("_Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*Kullanım:*\n• schedule <jid> <zaman>\n• schedule <zaman> <jid>"
       );
     }
     if (!match[1]) {
-      return await m.sendReply(
-        "_Lütfen JID ve zaman sağlayın_\n\n*Örnek:*\n• schedule 905554443322@s.whatsapp.net 2h"
+      return await m.sendReply("_Lütfen JID ve zaman sağlayın_\n\n*Örnek:*\n• schedule 905554443322@s.whatsapp.net 2h"
       );
     }
     const args = match[1].trim().split(/\s+/);
     if (args.length < 2) {
-      return await m.sendReply("_Lütfen hem JID hem de zamanı belirtin_");
+      return await m.sendReply("_⚠️ Lütfen hem JID hem de zamanı belirtin_");
     }
     let jid, timeStr;
     if (isValidJID(args[0])) {
@@ -133,25 +131,22 @@ Module(
         jid = jidArg;
         timeStr = args.filter((arg) => arg !== jidArg).join(" ");
       } else {
-        return await m.sendReply(
-          "_Geçersiz JID formatı. JID, @g.us, @s.whatsapp.net veya @lid ile bitmelidir_"
+        return await m.sendReply("_❌ Geçersiz JID formatı. JID, @g.us, @s.whatsapp.net veya @lid ile bitmelidir_"
         );
       }
     }
     const scheduleTime = parseTime(timeStr);
     if (!scheduleTime) {
-      return await m.sendReply(
-        "_Geçersiz zaman formatı_\n\n*Desteklenen formatlar:*\n• 2h30m, 1g, 30m, 5s\n• 14:30, 14:45\n• YYYY-AA-GG SS:dd"
+      return await m.sendReply("_Geçersiz zaman formatı_\n\n*Desteklenen formatlar:*\n• 2h30m, 1g, 30m, 5s\n• 14:30, 14:45\n• YYYY-AA-GG SS:dd"
       );
     }
     const originalTime = moment(scheduleTime).add(1, "minute").toDate();
     if (originalTime <= new Date()) {
-      return await m.sendReply("_Zamanlama zamanı gelecekte olmalıdır_");
+      return await m.sendReply("_⏰ Zamanlama zamanı gelecekte olmalıdır_");
     }
     const minTime = moment().add(2, "minutes").toDate();
     if (originalTime < minTime) {
-      return await m.sendReply(
-        "_Minimum zamanlama süresi 2 dakikadır. Lütfen şu andan itibaren en az 2 dakika sonraya ayarlayın._"
+      return await m.sendReply("_⚠️ Minimum zamanlama süresi 2 dakikadır. Lütfen şu andan itibaren en az 2 dakika sonraya ayarlayın._"
       );
     }
     try {
@@ -166,7 +161,7 @@ Module(
       );
     } catch (error) {
       console.error("Schedule error:", error);
-      await m.sendReply("_Mesaj zamanlanamadı. Lütfen tekrar deneyin._");
+      await m.sendReply("_⚠️ Mesaj zamanlanamadı. Lütfen tekrar deneyin._");
     }
   }
 );
@@ -204,7 +199,7 @@ Module(
       await m.sendReply(response);
     } catch (error) {
       console.error("List scheduled error:", error);
-      await m.sendReply("_Zamanlanmış mesajlar alınamadı_");
+      await m.sendReply("_⏰ Zamanlanmış mesajlar alınamadı_");
     }
   }
 );
@@ -216,13 +211,12 @@ Module(
   },
   async (m, match) => {
     if (!match[1]) {
-      return await m.sendReply(
-        "_İptal edilecek mesajın ID'sini belirtin_\n\n*Kullanım:* cancel <id>"
+      return await m.sendReply("_💬 İptal edilecek mesajın ID'sini belirtin_\n\n*Kullanım:* cancel <id>"
       );
     }
     const messageId = parseInt(match[1].trim());
     if (isNaN(messageId)) {
-      return await m.sendReply("_Lütfen geçerli bir mesaj ID'si girin_");
+      return await m.sendReply("_⚠️ Lütfen geçerli bir mesaj ID'si girin_");
     }
     try {
       const success = await scheduledMessages.delete(messageId);
@@ -235,7 +229,7 @@ Module(
       }
     } catch (error) {
       console.error("Cancel scheduled error:", error);
-      await m.sendReply("_Zamanlanmış mesaj iptal edilemedi_");
+      await m.sendReply("_⏰ Zamanlanmış mesaj iptal edilemedi_");
     }
   }
 );

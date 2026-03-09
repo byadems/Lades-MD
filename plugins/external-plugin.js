@@ -49,8 +49,7 @@ Module(
       try {
         plugin_name = plugin_name[1].split(" ")[0];
       } catch {
-        return await message.sendReply(
-          "_Geçersiz eklenti. Eklenti adı bulunamadı!_"
+        return await message.sendReply("_❌ Geçersiz eklenti. Eklenti adı bulunamadı!_"
         );
       }
       fs.writeFileSync("./plugins/" + plugin_name + ".js", response.data);

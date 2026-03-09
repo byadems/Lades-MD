@@ -67,8 +67,7 @@ Module(
       return await message.send("_Need audio!_");
 
     try {
-      const processingMsg = await message.sendReply(
-        "_Ses siyah ekrana sahip videoya dönüştürülüyor..._"
+      const processingMsg = await message.sendReply("_🎬 Ses siyah ekrana sahip videoya dönüştürülüyor..._"
       );
       const audioFile = await message.reply_message.download();
       const outputPath = getTempPath(`black_${Date.now()}.mp4`);
@@ -177,8 +176,7 @@ Module(
         getTempPath("vmix/video1.mp4"),
         fs.readFileSync(savedFile)
       );
-      return await message.sendReply(
-        "*2. Video Eklendi. İşlemek için tekrar .vmix yazın!*"
+      return await message.sendReply("*🎬 2. Video Eklendi. İşlemek için tekrar .vmix yazın!*"
       );
     }
     if (message.reply_message.video && files.length == 0) {
@@ -187,7 +185,7 @@ Module(
         getTempPath("vmix/video2.mp4"),
         fs.readFileSync(savedFile)
       );
-      return await message.sendReply("*1. Video Eklendi*");
+      return await message.sendReply("*🎬 1. Video Eklendi*");
     }
     async function merge(files, folder, filename) {
       return new Promise((resolve, reject) => {
@@ -208,7 +206,7 @@ Module(
       });
     }
     if (files.length === 2) {
-      await message.sendReply("*Videolar birleştiriliyor..*");
+      await message.sendReply("*🎬 Videolar birleştiriliyor..*");
       await message.send(
         await merge(
           [getTempPath("vmix/video1.mp4"), getTempPath("vmix/video2.mp4")],
@@ -231,9 +229,9 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
-      return await message.sendReply("*Bir videoyu yanıtla*");
+      return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     var savedFile = await message.reply_message.download();
-    await message.sendReply("*Hareket enterpolasyonu ve işleniyor..*");
+    await message.sendReply("*✨ Hareket enterpolasyonu ve işleniyor..*");
     ffmpeg(savedFile)
       .videoFilters("minterpolate=fps=120")
       .videoFilters("setpts=4*PTS")
@@ -265,7 +263,7 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
-      return await message.sendReply("*Bir videoyu yanıtla*");
+      return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     var savedFile = await message.reply_message.download();
     await message.sendReply("*İşleniyor..*");
     ffmpeg(savedFile)
@@ -288,13 +286,13 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
-      return await message.sendReply("*Bir videoyu yanıtla*");
+      return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     if (match[1] <= 10)
       return await message.send("*Low FPS Value ⚠️*\n*Minimun = 10*");
     if (match[1] >= 500)
       return await message.send("*High FPS Value ⚠️*\n*Maximum = 500*");
     var savedFile = await message.reply_message.download();
-    await message.sendReply("*Hareket enterpolasyonu ve işleniyor..*");
+    await message.sendReply("*✨ Hareket enterpolasyonu ve işleniyor..*");
     ffmpeg(savedFile)
       .videoFilters(`minterpolate=fps=${match[1]}:mi_mode=mci:me_mode=bidir`)
       .format("mp4")
@@ -316,14 +314,14 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message?.audio)
-      return await message.sendReply("_Bir müziği yanıtlayın_");
+      return await message.sendReply("_💬 Bir müziği yanıtlayın_");
     if (message.reply_message.duration > 60)
       return await message.send(
         "_Audio too large! Use .trim command and cut the audio to < 60 secs_"
       );
     var audio = await message.reply_message.download("buffer");
     var data = await findMusic(audio);
-    if (!data) return await message.sendReply("_Eşleşen sonuç bulunamadı!_");
+    if (!data) return await message.sendReply("_❌ Eşleşen sonuç bulunamadı!_");
     var buttons = [];
     function getDuration(millis) {
       var minutes = Math.floor(millis / 60000);
@@ -358,8 +356,7 @@ Module(
   },
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.video)
-      return await message.sendReply(
-        "*Bir videoyu yanıtla*\n*.rotate left|right|flip*"
+      return await message.sendReply("*🎬 Bir videoyu yanıtla*\n*.rotate left|right|flip*"
       );
     var file = await message.reply_message.download();
     var angle = "1";
@@ -376,7 +373,7 @@ Module(
   { pattern: "flip ?(.*)", desc: "Flips video" },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
-      return await message.sendReply("*Bir videoyu yanıtla*");
+      return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     var file = await message.reply_message.download();
     var angle = "3";
     await message.send("_Processing..._");

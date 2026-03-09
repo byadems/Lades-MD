@@ -51,13 +51,12 @@ Module(
   },
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.sticker)
-      return await message.sendReply(
-        "_Bir çıkartmayı yanıtlayın_\n_Ör: *.stickcmd kick*_"
+      return await message.sendReply("_💬 Bir çıkartmayı yanıtlayın_\n_Ör: *.stickcmd kick*_"
       );
     try {
       await stickcmd.set(match[1], await extractData(message));
     } catch {
-      return await message.sendReply("_Başarısız!_");
+      return await message.sendReply("_❌ Başarısız!_");
     }
     await message.client.sendMessage(
       message.jid,
@@ -86,7 +85,7 @@ Module(
         return await message.client.sendMessage(
           message.jid,
           {
-            text: `_Çıkartma komutlardan kaldırıldı!_`,
+            text: `_🗑️ Çıkartma komutlardan kaldırıldı!_`,
           },
           {
             quoted: message.quoted,
@@ -99,7 +98,7 @@ Module(
             `_Removed ${match[1]} from sticked commands!_`
           );
         if (!delete_again)
-          return await message.sendReply("_Böyle bir çıkartma/komut bulunamadı!_");
+          return await message.sendReply("_❌ Böyle bir çıkartma/komut bulunamadı!_");
       }
       if (!deleted && !match[1])
         return await message.send("_No such sticker found!_");
@@ -110,10 +109,9 @@ Module(
           `_Successfully removed ${match[1]} from sticked commands!_`
         );
       if (!deleted)
-        return await message.sendReply("_Böyle bir komut bulunamadı!_");
+        return await message.sendReply("_❌ Böyle bir komut bulunamadı!_");
     } else
-      return await message.sendReply(
-        "_Sticker yanıtlanmalı veya komut girilmeli!_\n_Ör: *.unstick kick*_"
+      return await message.sendReply("_💬 Sticker yanıtlanmalı veya komut girilmeli!_\n_Ör: *.unstick kick*_"
       );
   }
 );
@@ -129,7 +127,7 @@ Module(
     var all = await stickcmd.get();
     var commands = all.map((element) => element.dataValues.command);
     var msg = commands.join("_\n_");
-    message.sendReply("_*Çıkartma yapılmış komutlar:*_\n\n_" + msg + "_");
+    message.sendReply("_*✨ Çıkartma yapılmış komutlar:*_\n\n_" + msg + "_");
   }
 );
 
@@ -147,26 +145,22 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       match = match[1]?.toLowerCase();
       if (!match)
-        return await message.sendReply(
-          "*Yanlış format!*\n*.automute 22 00 (Saat 22:00 için)*\n*.automute 06 00 (Saat 06:00 için)*\n*.automute off*"
+        return await message.sendReply("*✨ Yanlış format!*\n*.automute 22 00 (Saat 22:00 için)*\n*.automute 06 00 (Saat 06:00 için)*\n*.automute off*"
         );
       if (match.includes("am") || match.includes("pm"))
-        return await message.sendReply(
-          "_Zaman SS DD (24 saat) formatında olmalıdır_"
+        return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır_"
         );
       if (match == "off") {
         await automute.delete(message.jid);
-        return await message.sendReply(
-          "*Bu grupta otomatik susturma devre dışı bırakıldı ❗*"
+        return await message.sendReply("*✨ Bu grupta otomatik susturma devre dışı bırakıldı ❗*"
         );
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
-        return await message.sendReply(
-          "*_Yanlış format!_\n_.automute 22 00 (Saat 22:00 için)_\n_.automute 06 00 (Saat 06:00 için)_*"
+        return await message.sendReply("*_✨ Yanlış format!_\n_.automute 22 00 (Saat 22:00 için)_\n_.automute 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("_Ben yönetici değilim_");
+      if (!admin) return await message.sendReply("_❌ Ben yönetici değilim_");
       await automute.set(message.jid, match.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
         `*_Group will auto mute at ${tConvert(
@@ -192,26 +186,22 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       match = match[1]?.toLowerCase();
       if (!match)
-        return await message.sendReply(
-          "*_Yanlış format!_*\n*_.autounmute 22 00 (Saat 22:00 için)_*\n*_.autounmute 06 00 (Saat 06:00 için)_*\n*_.autounmute off_*"
+        return await message.sendReply("*_✨ Yanlış format!_*\n*_.autounmute 22 00 (Saat 22:00 için)_*\n*_.autounmute 06 00 (Saat 06:00 için)_*\n*_.autounmute off_*"
         );
       if (match.includes("am") || match.includes("pm"))
-        return await message.sendReply(
-          "_Zaman SS DD (24 saat) formatında olmalıdır_"
+        return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır_"
         );
       if (match === "off") {
         await autounmute.delete(message.jid);
-        return await message.sendReply(
-          "*_Bu grupta otomatik sesi açma devre dışı bırakıldı ❗_*"
+        return await message.sendReply("*_🎵 Bu grupta otomatik sesi açma devre dışı bırakıldı ❗_*"
         );
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
-        return await message.sendReply(
-          "*_Yanlış format_!\n_.autounmute 22 00 (Saat 22:00 için)_\n_.autounmute 06 00 (Saat 06:00 için)_*"
+        return await message.sendReply("*_✨ Yanlış format_!\n_.autounmute 22 00 (Saat 22:00 için)_\n_.autounmute 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("*Yönetici değilim*");
+      if (!admin) return await message.sendReply("*❌ Yönetici değilim*");
       await autounmute.set(message.jid, match?.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
         `*_Group will auto open at ${tConvert(match)}, rebooting.._*`
@@ -247,8 +237,8 @@ Module(
 *➥ Mute:* ${tConvert(mute[e].time)}
 *➥ Unmute:* ${tConvert(mute[e].unmute || "Not set")}` + "\n\n";
       }
-      if (!msg) return await message.sendReply("_Susturma/Açma kaydı bulunamadı!_");
-      message.sendReply("*Zamanlanmış Susturmalar/Açmalar*\n\n" + msg);
+      if (!msg) return await message.sendReply("_❌ Susturma/Açma kaydı bulunamadı!_");
+      message.sendReply("*⏰ Zamanlanmış Susturmalar/Açmalar*\n\n" + msg);
     }
   }
 );
@@ -265,10 +255,10 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("_Ben yönetici değilim!_");
+      if (!admin) return await message.sendReply("_❌ Ben yönetici değilim!_");
       if (match[1] === "on") {
         await antifake.set(message.jid);
-        return await message.sendReply("_Antifake açıldı!_");
+        return await message.sendReply("_✅ Antifake açıldı!_");
       }
       if (match[1] === "allow") {
         return await message.sendReply(
@@ -277,7 +267,7 @@ Module(
       }
       if (match[1] === "off") {
         await antifake.delete(message.jid);
-        return await message.sendReply("_Antifake kapatıldı!_");
+        return await message.sendReply("_❌ Antifake kapatıldı!_");
       }
       const buttons = [
         {
@@ -304,7 +294,7 @@ Module(
       ];
 
       const buttonMessage = {
-        text: "Antifake kontrol menüsü",
+        text: "✨ Antifake kontrol menüsü",
         footer: "",
         buttons: buttons,
         headerType: 1,

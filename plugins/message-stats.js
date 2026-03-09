@@ -67,7 +67,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_Bu bir grup komutudur!_");
+      return await message.sendReply("_✨ Bu bir grup komutudur!_");
 
     let adminAccesValidated = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -98,8 +98,7 @@ Module(
       );
 
       if (usersWithMessages.length === 0) {
-        return await message.sendReply(
-          "_Veritabanında mesajı olan hiçbir üye bulunamadı._"
+        return await message.sendReply("_❌ Veritabanında mesajı olan hiçbir üye bulunamadı._"
         );
       }
 
@@ -145,15 +144,14 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_Bu bir grup komutudur!_");
+      return await message.sendReply("_✨ Bu bir grup komutudur!_");
 
     let adminAccesValidated = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1]) {
-        return await message.sendReply(
-          "_Kullanım:_\n" +
+        return await message.sendReply("_Kullanım:_\n" +
             "• `.inactive 30d` - Show members inactive for 30+ days\n" +
             "• `.inactive 10d kick` - Kick members inactive for 10+ days\n" +
             "• `.inactive 2w` - Show members inactive for 2+ weeks\n" +
@@ -168,16 +166,14 @@ Module(
 
       const cutoffDate = parseDuration(durationStr);
       if (!cutoffDate) {
-        return await message.sendReply(
-          "_Geçersiz süre formatı!_\n" + "_Examples:_ 30d, 2w, 3m, 1y"
+        return await message.sendReply("_❌ Geçersiz süre formatı!_\n" + "_Examples:_ 30d, 2w, 3m, 1y"
         );
       }
 
       if (shouldKick) {
         var admin = await isAdmin(message);
         if (!admin)
-          return await message.sendReply(
-            "_Üyeleri çıkarmak için botun yönetici yetkilerine ihtiyacı var!_"
+          return await message.sendReply("_✨ Üyeleri çıkarmak için botun yönetici yetkilerine ihtiyacı var!_"
           );
       }
 
@@ -350,7 +346,7 @@ Module(
             if (parsedLimit > 0 && parsedLimit <= 50) {
               limit = parsedLimit;
             } else if (parsedLimit > 50) {
-              return await message.sendReply("_Maksimum sınır 50 kullanıcıdır._");
+              return await message.sendReply("_👤 Maksimum sınır 50 kullanıcıdır._");
             }
           }
         } else {
@@ -358,10 +354,9 @@ Module(
           if (parsedLimit && parsedLimit > 0 && parsedLimit <= 50) {
             limit = parsedLimit;
           } else if (parsedLimit > 50) {
-            return await message.sendReply("_Maksimum sınır 50 kullanıcıdır._");
+            return await message.sendReply("_👤 Maksimum sınır 50 kullanıcıdır._");
           } else if (parsedLimit <= 0) {
-            return await message.sendReply(
-              "_Sınır pozitif bir sayı olmalıdır._"
+            return await message.sendReply("_✨ Sınır pozitif bir sayı olmalıdır._"
             );
           }
         }
@@ -419,8 +414,7 @@ Module(
         });
       } catch (error) {
         console.error("Error in users command:", error);
-        return await message.sendReply(
-          "_Kullanıcı verisi alınamadı. Lütfen tekrar deneyin._"
+        return await message.sendReply("_⚠️ Kullanıcı verisi alınamadı. Lütfen tekrar deneyin._"
         );
       }
     }

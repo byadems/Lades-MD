@@ -21,8 +21,7 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const input = match[1]?.trim();
     if (!input) {
-      return await message.sendReply(
-        `*📝 Filtre Komutları:*\n\n` +
+      return await message.sendReply(`*📝 Filtre Komutları:*\n\n` +
           `• \`${handler}filter trigger | response\` - Create chat filter\n` +
           `• \`${handler}filter trigger | response | global\` - Create global filter\n` +
           `• \`${handler}filter trigger | response | group\` - Create group-only filter\n` +
@@ -45,8 +44,7 @@ Module(
 
     const parts = input.split("|").map((p) => p.trim());
     if (parts.length < 2) {
-      return await message.sendReply(
-        "_Format: tetikleyici | yanıt | kapsam(isteğe bağlı) | seçenekler(isteğe bağlı)_"
+      return await message.sendReply("_✨ Format: tetikleyici | yanıt | kapsam(isteğe bağlı) | seçenekler(isteğe bağlı)_"
       );
     }
 
@@ -56,14 +54,12 @@ Module(
     const options = parts[3] || "";
 
     if (!trigger || !response) {
-      return await message.sendReply(
-        "_Hem tetikleyici hem de yanıt gereklidir!_"
+      return await message.sendReply("_⚠️ Hem tetikleyici hem de yanıt gereklidir!_"
       );
     }
 
     if (!["chat", "global", "group", "dm"].includes(scope)) {
-      return await message.sendReply(
-        "_Geçersiz kapsam! Şunları kullanın: chat, global, group veya dm_"
+      return await message.sendReply("_❌ Geçersiz kapsam! Şunları kullanın: chat, global, group veya dm_"
       );
     }
 
@@ -95,15 +91,14 @@ Module(
         ? ` (${optionsText.join(", ")})`
         : "";
 
-      await message.sendReply(
-        `✅ *Filtre Oluşturuldu!*\n\n` +
+      await message.sendReply(`✅ *Filtre Oluşturuldu!*\n\n` +
           `*Trigger:* ${trigger}\n` +
           `*Response:* ${response}\n` +
           `*Scope:* ${scopeText}${optionsStr}`
       );
     } catch (error) {
       console.error("Filter creation error:", error);
-      await message.sendReply("_Filtre oluşturulamadı!_");
+      await message.sendReply("_✨ Filtre oluşturulamadı!_");
     }
   }
 );
@@ -133,7 +128,7 @@ Module(
       }
 
       if (!filters || filters.length === 0) {
-        return await message.sendReply("_Filtre bulunamadı!_");
+        return await message.sendReply("_❌ Filtre bulunamadı!_");
       }
 
       let msg = `*📝 Active Filters:*\n\n`;
@@ -162,7 +157,7 @@ Module(
       await message.sendReply(msg);
     } catch (error) {
       console.error("Filter listing error:", error);
-      await message.sendReply("_Filtreler alınamadı!_");
+      await message.sendReply("_✨ Filtreler alınamadı!_");
     }
   }
 );
@@ -183,8 +178,7 @@ Module(
 
     const input = match[1]?.trim();
     if (!input) {
-      return await message.sendReply(
-        "_Silinecek filtre tetikleyicisini belirtin!_\n_Kullanım: .delfilter tetikleyici_"
+      return await message.sendReply("_🗑️ Silinecek filtre tetikleyicisini belirtin!_\n_Kullanım: .delfilter tetikleyici_"
       );
     }
 
@@ -193,8 +187,7 @@ Module(
     const scope = parts[1] || "chat";
 
     if (!["chat", "global", "group", "dm"].includes(scope)) {
-      return await message.sendReply(
-        "_Geçersiz kapsam! Şunları kullanın: chat, global, group veya dm_"
+      return await message.sendReply("_❌ Geçersiz kapsam! Şunları kullanın: chat, global, group veya dm_"
       );
     }
 
@@ -210,7 +203,7 @@ Module(
       }
     } catch (error) {
       console.error("Filter deletion error:", error);
-      await message.sendReply("_Filtre silinemedi!_");
+      await message.sendReply("_🗑️ Filtre silinemedi!_");
     }
   }
 );
@@ -231,8 +224,7 @@ Module(
 
     const input = match[1]?.trim();
     if (!input) {
-      return await message.sendReply(
-        "_Değiştirilecek filtre tetikleyicisini belirtin!_\n_Kullanım: .togglefilter tetikleyici_"
+      return await message.sendReply("_✨ Değiştirilecek filtre tetikleyicisini belirtin!_\n_Kullanım: .togglefilter tetikleyici_"
       );
     }
 
@@ -241,8 +233,7 @@ Module(
     const scope = parts[1] || "chat";
 
     if (!["chat", "global", "group", "dm"].includes(scope)) {
-      return await message.sendReply(
-        "_Geçersiz kapsam! Şunları kullanın: chat, global, group veya dm_"
+      return await message.sendReply("_❌ Geçersiz kapsam! Şunları kullanın: chat, global, group veya dm_"
       );
     }
 
@@ -271,7 +262,7 @@ Module(
       }
     } catch (error) {
       console.error("Filter toggle error:", error);
-      await message.sendReply("_Filtre değiştirilemedi!_");
+      await message.sendReply("_✨ Filtre değiştirilemedi!_");
     }
   }
 );
@@ -292,8 +283,7 @@ Module(
 
     const testText = match[1]?.trim();
     if (!testText) {
-      return await message.sendReply(
-        "_Filtrelere karşı test edilecek metni girin!_\n_Kullanım: .testfilter merhaba dünya_"
+      return await message.sendReply("_✨ Filtrelere karşı test edilecek metni girin!_\n_Kullanım: .testfilter merhaba dünya_"
       );
     }
 
@@ -301,8 +291,7 @@ Module(
       const matchedFilter = await filter.checkMatch(testText, message.jid);
 
       if (matchedFilter) {
-        await message.sendReply(
-          `✅ *Filtre Eşleşmesi Bulundu!*\n\n` +
+        await message.sendReply(`✅ *Filtre Eşleşmesi Bulundu!*\n\n` +
             `*Trigger:* ${matchedFilter.trigger}\n` +
             `*Response:* ${matchedFilter.response}\n` +
             `*Scope:* ${matchedFilter.scope}\n` +
@@ -319,7 +308,7 @@ Module(
       }
     } catch (error) {
       console.error("Filter test error:", error);
-      await message.sendReply("_Filtre test edilemedi!_");
+      await message.sendReply("_✨ Filtre test edilemedi!_");
     }
   }
 );

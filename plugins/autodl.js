@@ -134,7 +134,7 @@ Module({ on: "text", fromMe }, async (message) => {
             let audioPath;
 
             try {
-              downloadMsg = await message.sendReply("_Ses indiriliyor..._");
+              downloadMsg = await message.sendReply("_⬇️ Ses indiriliyor..._");
               const result = await downloadAudio(url);
               audioPath = result.path;
 
@@ -175,7 +175,7 @@ Module({ on: "text", fromMe }, async (message) => {
                   downloadMsg.key
                 );
               } else {
-                await message.sendReply("_İndirme başarısız oldu. Lütfen tekrar deneyin._");
+                await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
               }
 
               if (audioPath && fs.existsSync(audioPath)) {
@@ -396,7 +396,7 @@ Module({ on: "text", fromMe }, async (message) => {
         let audioPath;
 
         try {
-          downloadMsg = await message.sendReply("_Spotify bilgileri alınıyor..._");
+          downloadMsg = await message.sendReply("_✨ Spotify bilgileri alınıyor..._");
           const spotifyInfo = await spotifyTrack(platformGroups["spotify"][0]);
           const { title, artist } = spotifyInfo;
 
@@ -453,7 +453,7 @@ Module({ on: "text", fromMe }, async (message) => {
           if (downloadMsg) {
             await message.edit("_Download failed!_", message.jid, downloadMsg.key);
           } else {
-            await message.sendReply("_İndirme başarısız oldu. Lütfen tekrar deneyin._");
+            await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
           }
 
           if (audioPath && fs.existsSync(audioPath)) {
@@ -507,8 +507,7 @@ Module(
       const globalGroups = config.AUTODL_ALL_GROUPS === "true";
       const globalDMs = config.AUTODL_ALL_DMS === "true";
 
-      return await message.sendReply(
-        `*_⬇️ Otomatik İndirme Yöneticisi_*\n\n` +
+      return await message.sendReply(`*_✨ ⬇️ Otomatik İndirme Yöneticisi_*\n\n` +
           `- _Current chat:_ ${chatJid.includes("@g.us") ? "Group" : "DM"}\n` +
           `- _Status:_ ${enabled ? "Enabled ✅" : "Disabled ❌"}\n` +
           `- _Global Groups:_ ${
@@ -531,20 +530,17 @@ Module(
     if (cmd === "on") {
       if (target === "groups") {
         await setVar("AUTODL_ALL_GROUPS", "true");
-        return await message.sendReply(
-          "_Tüm gruplarda AutoDL aktif ✅_\n_Kapatmak için .autodl off groups kullanın_"
+        return await message.sendReply("_❌ Tüm gruplarda AutoDL aktif ✅_\n_Kapatmak için .autodl off groups kullanın_"
         );
       } else if (target === "dms") {
         await setVar("AUTODL_ALL_DMS", "true");
-        return await message.sendReply(
-          "_Tüm DM'lerde AutoDL aktif ✅_\n_Kapatmak için .autodl off dms kullanın_"
+        return await message.sendReply("_❌ Tüm DM'lerde AutoDL aktif ✅_\n_Kapatmak için .autodl off dms kullanın_"
         );
       } else {
         const enabledList = readList();
         if (!enabledList.includes(chatJid)) enabledList.push(chatJid);
         await setVar("AUTODL", enabledList.join(","));
-        return await message.sendReply(
-          "_Bu sohbette AutoDL aktif ✅_\n_Otomatik indirme için desteklenen bir URL gönderin_"
+        return await message.sendReply("_✅ Bu sohbette AutoDL aktif ✅_\n_Otomatik indirme için desteklenen bir URL gönderin_"
         );
       }
     }
@@ -552,19 +548,16 @@ Module(
     if (cmd === "off") {
       if (target === "groups") {
         await setVar("AUTODL_ALL_GROUPS", "false");
-        return await message.sendReply(
-          "_Tüm gruplarda AutoDL devre dışı ❌_\n_Açmak için .autodl on groups kullanın_"
+        return await message.sendReply("_✨ Tüm gruplarda AutoDL devre dışı ❌_\n_Açmak için .autodl on groups kullanın_"
         );
       } else if (target === "dms") {
         await setVar("AUTODL_ALL_DMS", "false");
-        return await message.sendReply(
-          "_Tüm DM'lerde AutoDL devre dışı ❌_\n_Açmak için .autodl on dms kullanın_"
+        return await message.sendReply("_✨ Tüm DM'lerde AutoDL devre dışı ❌_\n_Açmak için .autodl on dms kullanın_"
         );
       } else {
         const enabledList = readList().filter((x) => x !== chatJid);
         await setVar("AUTODL", enabledList.join(","));
-        return await message.sendReply(
-          "_Bu sohbette AutoDL devre dışı ❌_\n_Tekrar açmak için .autodl on kullanın_"
+        return await message.sendReply("_✨ Bu sohbette AutoDL devre dışı ❌_\n_Tekrar açmak için .autodl on kullanın_"
         );
       }
     }
@@ -573,8 +566,7 @@ Module(
       const enabledList = readList();
       const globalGroups = config.AUTODL_ALL_GROUPS === "true";
       const globalDMs = config.AUTODL_ALL_DMS === "true";
-      return await message.sendReply(
-        `*_Otomatik İndirme Durumu_*\n\n` +
+      return await message.sendReply(`*_✨ Otomatik İndirme Durumu_*\n\n` +
           `• _Enabled chats:_ ${
             enabledList.length > 0 ? enabledList.join(", ") : "None"
           }\n` +

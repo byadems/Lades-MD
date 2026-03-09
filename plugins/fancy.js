@@ -7,7 +7,7 @@ Module({
      use: 'utility',
      desc: 'Creates fancy text fonts'
  }, (async (message, match) => {
-     if (!match[1] && !message.reply_message.message) return await message.sendReply('_*Bir metni yanıtlayıp sayısal kodu belirtin veya direkt yazın.* Örnek:_\n\n- `.fancy 10 Merhaba`\n- `.fancy Merhaba dünya`\n'+String.fromCharCode(8206).repeat(4001)+fancy.list('Text here',fancy));
+     if (!match[1] && !message.reply_message.message) return await message.sendReply('_*💬 Bir metni yanıtlayıp sayısal kodu belirtin veya direkt yazın.* Örnek:_\n\n- `.fancy 10 Merhaba`\n- `.fancy Merhaba dünya`\n'+String.fromCharCode(8206).repeat(4001)+fancy.list('Text here',fancy));
     const id = match[1].match(/\d/g)?.join('')
      try {
         if (id === undefined && !message.reply_message){
@@ -15,6 +15,6 @@ Module({
         }
         return await message.sendReply(fancy.apply(fancy[parseInt(id)-1],message.reply_message.text || match[1].replace(id,'')))    
     } catch {
-        return await message.sendReply('_Böyle bir stil yok!_')
+        return await message.sendReply('_✨ Böyle bir stil yok!_')
      }
  }));

@@ -36,8 +36,7 @@ Module(
   async (message, args) => {
     const commandName = args[1]?.trim();
     if (!commandName) {
-      return await message.sendReply(
-        "_Lütfen bir komut adı girin. Örnek: .info insta_"
+      return await message.sendReply("_⚠️ Lütfen bir komut adı girin. Örnek: .info insta_"
       );
     }
 
@@ -256,8 +255,7 @@ _Hi $user!_
     if (input === "get") {
       const current = ALIVE;
       if (!current) {
-        return await message.sendReply(
-          "_Özel çevrimiçi mesajı ayarlanmadı! Varsayılan mesaj kullanılıyor._"
+        return await message.sendReply("_⚙️ Özel çevrimiçi mesajı ayarlanmadı! Varsayılan mesaj kullanılıyor._"
         );
       }
       return await message.sendReply(
@@ -267,15 +265,13 @@ _Hi $user!_
 
     if (input === "del" || input === "delete") {
       await setVar("ALIVE", "");
-      return await message.sendReply(
-        "_Özel çevrimiçi mesaj silindi! Bot varsayılan mesajı kullanacak._"
+      return await message.sendReply("_🗑️ Özel çevrimiçi mesaj silindi! Bot varsayılan mesajı kullanacak._"
       );
     }
 
     const aliveMessage = match[1];
     if (aliveMessage.length > 2000) {
-      return await message.sendReply(
-        "_Çevrimiçi mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
+      return await message.sendReply("_⚠️ Çevrimiçi mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );
     }
 
@@ -398,7 +394,7 @@ Module(
       (cmd) => cmd.use === "game" && cmd.pattern
     );
     if (!gameCommands.length) {
-      return await message.sendReply("_Yüklü oyun yok._");
+      return await message.sendReply("_✨ Yüklü oyun yok._");
     }
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
     let response = `*───「 Available Games 」───*\n\n`;
@@ -466,7 +462,7 @@ Module(
   async (message, match) => {
     const name = match[1]?.trim();
     if (!name)
-      return await message.sendReply("_İsim verin: .setname Lades_");
+      return await message.sendReply("_✨ İsim verin: .setname Lades_");
     const parts = config.BOT_INFO.split(";");
     parts[0] = name;
     await setVar("BOT_INFO", parts.join(";"));
@@ -486,7 +482,7 @@ Module(
   async (message, match) => {
     const owner = match[1]?.trim();
     if (!owner)
-      return await message.sendReply("_Sahip verin: .setowner SahipAdi_");
+      return await message.sendReply("_✨ Sahip verin: .setowner SahipAdi_");
     const parts = config.BOT_INFO.split(";");
     parts[1] = owner;
     await setVar("BOT_INFO", parts.join(";"));
@@ -505,7 +501,7 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.image) {
-      return await message.sendReply("_Bir resmi .setimage ile yanıtlayın_");
+      return await message.sendReply("_💬 Bir resmi .setimage ile yanıtlayın_");
     }
 
     try {
@@ -521,7 +517,7 @@ Module(
 
       const url = uploadRes.url || uploadRes.display_url;
       if (!url) {
-        return await message.sendReply("_Görsel yüklemesi başarısız oldu._");
+        return await message.sendReply("_❌ Görsel yüklemesi başarısız oldu._");
       }
 
       const parts = config.BOT_INFO.split(";");
@@ -532,8 +528,7 @@ Module(
       );
     } catch (error) {
       console.error("Error setting image:", error);
-      return await message.sendReply(
-        "_Görsel ayarlanamadı. Lütfen tekrar deneyin._"
+      return await message.sendReply("_⚠️ Görsel ayarlanamadı. Lütfen tekrar deneyin._"
       );
     }
   }
@@ -550,12 +545,11 @@ Module(
     const aliveMessage = ALIVE;
 
     if (!aliveMessage) {
-      return await message.sendReply(
-        "*Varsayılan Çevrimiçi Mesaj Test Ediliyor:*\nÇevrimiçiyim!"
+      return await message.sendReply("*💬 Varsayılan Çevrimiçi Mesaj Test Ediliyor:*\nÇevrimiçiyim!"
       );
     }
 
-    await message.sendReply("*Çevrimiçi Mesajı Test Ediliyor:*");
+    await message.sendReply("*💬 Çevrimiçi Mesajı Test Ediliyor:*");
     await parseAlive(message, aliveMessage);
   }
 );
