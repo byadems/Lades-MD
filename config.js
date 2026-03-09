@@ -2,6 +2,18 @@ const P = require("pino");
 const fs = require("fs");
 const { Sequelize } = require("sequelize");
 
+// Suppress node-cron "missed execution" warnings — these are triggered when the
+// event loop is delayed by >1 second (common under DB load on Koyeb/Heroku).
+// They are purely cosmetic log noise and do not affect scheduling correctness.
+const _originalWarn = console.warn.bind(console);
+console.warn = (...args) => {
+  const msg = args[0];
+  if (typeof msg === "string" && msg.includes("[NODE-CRON]") && msg.includes("missed execution")) {
+    return; // silently drop
+  }
+  _originalWarn(...args);
+};
+
 function convertToBool(text, fault = "true", fault2 = "on") {
   return text === fault || text === fault2;
 }
