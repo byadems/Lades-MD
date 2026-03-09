@@ -16,32 +16,32 @@ const {
 async function getWarn(jid = null, user = null, cnt) {
   if (!jid || !user) return null;
 
-  const warnings = await warnDB.findAll({
+  const uyarı = await warnDB.findAll({
     where: { chat: jid, user: user },
     order: [["timestamp", "DESC"]],
   });
 
   if (!cnt) {
-    return warnings;
+    return uyarı;
   }
 
   const count = parseInt(cnt);
-  const currentWarns = warnings.length;
-  const remaining = count - currentWarns;
+  const currentWarns = uyarı.length;
+  const kalan = count - currentWarns;
 
   return {
     current: currentWarns,
     limit: count,
-    remaining: remaining > 0 ? remaining : 0,
-    exceeded: remaining <= 0,
-    warnings: warnings,
+    kalan: kalan > 0 ? kalan : 0,
+    exceeded: kalan <= 0,
+    uyarı: uyarı,
   };
 }
 
 async function setWarn(
   jid = null,
   user = null,
-  reason = "No reason provided",
+  reason = "Sebep belirtilmedi",
   warnedBy = null
 ) {
   if (!jid || !user || !warnedBy) return false;
@@ -80,16 +80,16 @@ async function getWarnCount(jid = null, user = null) {
 async function decrementWarn(jid = null, user = null) {
   if (!jid || !user) return false;
 
-  const warnings = await warnDB.findAll({
+  const uyarı = await warnDB.findAll({
     where: { chat: jid, user: user },
     order: [["timestamp", "DESC"]],
     limit: 1,
   });
 
-  if (warnings.length === 0) return false;
+  if (uyarı.length === 0) return false;
 
   const deleted = await warnDB.destroy({
-    where: { id: warnings[0].id },
+    where: { id: uyarı[0].id },
   });
 
   return deleted > 0;
@@ -99,13 +99,13 @@ async function getAllWarns(jid = null) {
   if (!jid) return [];
 
   const { Op } = require("sequelize");
-  const warnings = await warnDB.findAll({
+  const uyarı = await warnDB.findAll({
     where: { chat: jid },
     order: [["timestamp", "DESC"]],
   });
 
   const groupedWarnings = {};
-  warnings.forEach((warn) => {
+  uyarı.forEach((warn) => {
     if (!groupedWarnings[warn.user]) {
       groupedWarnings[warn.user] = [];
     }

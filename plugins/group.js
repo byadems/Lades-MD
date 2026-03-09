@@ -25,7 +25,7 @@ Module(
     fromMe: true,
     desc: "Sohbeti temizle",
     use: "misc",
-    usage: ".clear (clears the current chat)",
+    usage: ".clear (mevcut sohbeti temizler)",
   },
   async (message, match) => {
     await message.client.chatModify(
@@ -40,7 +40,7 @@ Module(
       },
       message.jid
     );
-    return await message.send("_Chat cleared!_");
+    return await message.send("_Sohbet temizlendi!_");
   }
 );
 
@@ -51,7 +51,7 @@ Module(
     desc: Lang.KICK_DESC,
     use: "group",
     usage:
-      ".kick @mention or reply\n.kick all (removes everyone)\n.kick 91 (removes numbers starting with 91)",
+      ".kick @etiket veya yanıtla\n.kick all (herkesi at)\n.kick 90 (90 ile başlayan numaraları atar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -68,7 +68,7 @@ Module(
           if (!admin) return await message.sendReply(Lang.NOT_ADMIN);
           let users = participants.filter((member) => !member.admin);
           await message.send(
-            `_❗❗ Kicking *every* members of ${subject}. Restart bot immediately to kill this process ❗❗_\n_*You have 5 seconds left*_`
+            `_❗❗ ${subject} grubunun *tüm* üyeleri atılıyor. Bu işlemi durdurmak için botu hemen yeniden başlatın ❗❗_\n_*5 saniyeniz var*_`
           );
           await new Promise((r) => setTimeout(r, 5000));
           for (let member of users) {
@@ -88,7 +88,7 @@ Module(
             (member) => member.id.startsWith(match[1]) && !member.admin
           );
           await message.send(
-            `_❗❗ Kicking *${users.length}* members starting with number *${match[1]}*. Restart bot immediately to kill this process ❗❗_\n_*You have 5 seconds left*_`
+            `_❗❗ *${match[1]}* numarasıyla başlayan *${users.length}* üye atılıyor. Bu işlemi durdurmak için botu hemen yeniden başlatın ❗❗_\n_*5 saniyeniz var*_`
           );
           await new Promise((r) => setTimeout(r, 5000));
           for (let member of users) {
@@ -123,9 +123,9 @@ Module(
     pattern: "add ?(.*)",
     fromMe: true,
     desc: Lang.ADD_DESC,
-    warn: "You number might get banned, use with caution",
+    warn: "Numaranız banlanabilir, dikkatli kullanın",
     use: "group",
-    usage: ".add 919876543210",
+    usage: ".add 905554443322",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -152,7 +152,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.PROMOTE_DESC,
-    usage: ".promote @mention or reply",
+    usage: ".promote @etiket veya yanıtla",
   },
   async (message, match) => {
     let adminAccesValidated = ADMIN_ACCESS
@@ -181,7 +181,7 @@ Module(
     pattern: "requests ?(.*)",
     fromMe: false,
     use: "group",
-    usage: ".requests approve all or reject all",
+    usage: ".requests approve all veya reject all",
     desc: "Bekleyen katılma isteklerinin listesini al",
   },
   async (message, match) => {
@@ -203,7 +203,7 @@ Module(
         switch (match) {
           case "approve all": {
             await message.sendReply(
-              `_Approving ${approvalJids.length} participants._`
+              `_${approvalJids.length} katılımcı onaylandı._`
             );
             for (let x of approvalJids) {
               await message.client.groupRequestParticipantsUpdate(
@@ -217,7 +217,7 @@ Module(
           }
           case "reject all": {
             await message.sendReply(
-              `_Rejecting ${approvalJids.length} participants._`
+              `_${approvalJids.length} katılımcı reddedildi._`
             );
             for (let x of approvalJids) {
               await message.client.groupRequestParticipantsUpdate(
@@ -237,7 +237,7 @@ Module(
         return;
       }
       let msg =
-        "*_Group join requests_*\n\n_(Use .requests approve|reject all)_\n\n";
+        "*_Grup katılma istekleri_*\n\n_(.requests approve|reject all kullanın)_\n\n";
       const requestType = (type_, requestor) => {
         switch (type_) {
           case "linked_group_join":
@@ -271,7 +271,7 @@ Module(
     pattern: "leave",
     fromMe: true,
     desc: Lang.LEAVE_DESC,
-    usage: ".leave (exits current group)",
+    usage: ".leave (mevcut gruptan çıkar)",
     use: "group",
   },
   async (message, match) => {
@@ -285,8 +285,8 @@ Module(
   {
     pattern: "quoted",
     fromMe: true,
-    desc: "Sends replied message's replied message. Useful for recovering deleted messages.",
-    usage: ".quoted (reply to a quoted message)",
+    desc: "Yanıtlanan mesajın alıntıladığı mesajı gönderir. Silinen mesajları kurtarmak için kullanışlıdır.",
+    usage: ".quoted (alıntılanmış bir mesaja yanıtla)",
     use: "group",
   },
   async (message, match) => {
@@ -352,7 +352,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.DEMOTE_DESC,
-    usage: ".demote @mention or reply",
+    usage: ".demote @etiket veya yanıtla",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -383,7 +383,7 @@ Module(
     fromMe: false,
     desc: Lang.MUTE_DESC,
     usage:
-      ".mute (mutes group indefinitely)\n.mute 1h (mutes for 1 hour)\n.mute 5m (mutes for 5 minutes)",
+      ".mute (grubu süresiz olarak sessize alır)\n.mute 1h (1 saat sessize alır)\n.mute 5m (5 dakika sessize alır)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -405,7 +405,7 @@ Module(
           : m2m(match[1].match(/\d+/)[0]);
         match = match[1].endsWith("h") ? match[1] + "ours" : match[1] + "mins";
         await message.client.groupSettingUpdate(message.jid, "announcement");
-        await message.send(`_Muted for ${match}_`);
+        await message.send(`_${match} boyunca sessize alındı_`);
         await require("timers/promises").setTimeout(duration);
         return await message.client.groupSettingUpdate(
           message.jid,
@@ -424,7 +424,7 @@ Module(
     use: "group",
     fromMe: false,
     desc: Lang.UNMUTE_DESC,
-    usage: ".unmute (unmutes the group)",
+    usage: ".unmute (grubun sessizini açar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -445,7 +445,7 @@ Module(
     use: "group",
     fromMe: false,
     desc: Lang.JID_DESC,
-    usage: ".jid (gets current chat jid)\n.jid (reply to get user jid)",
+    usage: ".jid (mevcut sohbet kimliğini alır)\n.jid (kullanıcı kimliğini almak için yanıtla)",
   },
   async (message) => {
     if (message.isGroup) {
@@ -469,7 +469,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.INVITE_DESC,
-    usage: ".invite (generates group invite link)",
+    usage: ".invite (grup davet bağlantısı oluşturur)",
   },
   async (message) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -497,7 +497,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.REVOKE_DESC,
-    usage: ".revoke (revokes/resets group invite link)",
+    usage: ".revoke (grup davet bağlantısını sıfırlar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -517,8 +517,8 @@ Module(
     pattern: "glock ?(.*)",
     fromMe: false,
     use: "group",
-    desc: "Change group settings to allow only admins to edit group's info!",
-    usage: ".glock (locks group settings)",
+    desc: "Grup ayarlarını sadece yöneticilerin düzenleyebileceği şekilde değiştirir!",
+    usage: ".glock (grup ayarlarını kilitler)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -537,8 +537,8 @@ Module(
     pattern: "gunlock ?(.*)",
     fromMe: false,
     use: "group",
-    desc: "Change group settings to allow everyone to edit group's info!",
-    usage: ".gunlock (unlocks group settings)",
+    desc: "Grup ayarlarını herkesin düzenleyebileceği şekilde değiştirir!",
+    usage: ".gunlock (grup ayarlarının kilidini açar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -558,7 +558,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: "Grup adını (başlığını) değiştir",
-    usage: ".gname New Group Name",
+    usage: ".gname Yeni Grup Adı",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -584,7 +584,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: "Grup açıklamasını değiştir",
-    usage: ".gdesc New group description here",
+    usage: ".gdesc Yeni grup açıklaması burada",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -632,7 +632,7 @@ Module(
           g2.participants.some(({ id: id2 }) => id2 === id1)
         );
         var jids = [];
-        var msg = `_Kicking common participants of:_ *${g1.subject}* & *${g2.subject}*\n_count: ${common.length}_\n`;
+        var msg = `_${g1.subject}_ & _${g2.subject}_ grubundaki ortak katılımcılar atılıyor_\n_sayı: ${common.length}_\n`;
         common
           .map((e) => e.id)
           .filter((e) => !e.includes(message.client.user?.id?.split(":")[0]))
@@ -660,7 +660,7 @@ Module(
       var common = g1.participants.filter(({ id: id1 }) =>
         g2.participants.some(({ id: id2 }) => id2 === id1)
       );
-      var msg = `_*Common participants of:*_ *${g1.subject}* & *${g2.subject}*\n_count: ${common.length}_\n`;
+      var msg = `_*${g1.subject}* & *${g2.subject}* ortak katılımcıları:_\n_sayı: ${common.length}_\n`;
       var jids = [];
       common.map(async (s) => {
         msg += "```@" + s.id.split("@")[0] + "```\n";
@@ -695,7 +695,7 @@ Module(
         ({ id: jid1 }) => !g2.some(({ id: jid2 }) => jid2 === jid1)
       );
       var msg =
-        "_*Difference of participants*_\n_count: " + common.length + "_\n";
+        "_*Farklı katılımcılar*_\n_sayı: " + common.length + "_\n";
       common.map(async (s) => {
         msg += "```" + s.id.split("@")[0] + "``` \n";
       });
@@ -710,7 +710,7 @@ Module(
     desc: Lang.TAGALL_DESC,
     use: "group",
     usage:
-      ".tag text\n.tag (reply to message)\n.tagall (tag everyone)\n.tagadmin (tag admins only)\n.tag 120363355307899193@g.us (tag in specific group)",
+      ".tag metin\n.tag (mesaja yanıtla)\n.tagall (herkesi etiketle)\n.tagadmin (sadece yöneticileri etiketle)\n.tag 120363355307899193@g.us (belirli grupta etiketle)",
   },
   async (message, match) => {
     const groupJidMatch = match[2]?.match(/(\d+@g\.us)/);
@@ -739,7 +739,7 @@ Module(
     
     if (!isReply && !isTagAdmin && !isTagAll && !hasCustomText) {
       return await message.sendReply(
-        `_Tag what?_\n\n${handler}tag \`<text here>\`\n${handler}tag \`admin\`\n${handler}tag \`all\`\n${handler}tag \`(reply)\`\n${handler}tag \`120363355307899193@g.us\``
+        `_Ne etiketleyeyim?_\n\n${handler}tag \`<metin>\`\n${handler}tag \`admin\`\n${handler}tag \`all\`\n${handler}tag \`(yanıtla)\`\n${handler}tag \`120363355307899193@g.us\``
       );
     }
     const targets = [];
@@ -771,7 +771,7 @@ Module(
     fromMe: true,
     use: "owner",
     desc: "Kullanıcıyı engelle",
-    usage: ".block (reply to a message)\n.block @mention",
+    usage: ".block (bir mesaja yanıtla)\n.block @etiket",
   },
   async (message, match) => {
     var isGroup = message.jid.endsWith("@g.us");
@@ -786,7 +786,7 @@ Module(
     fromMe: true,
     use: "owner",
     desc: "Davet bağlantısını kullanarak bir WhatsApp grubuna katılın",
-    usage: ".join https://chat.whatsapp.com/abcdef123456",
+    usage: ".join https://chat.whatsapp.com/lades",
   },
   async (message, match) => {
     let rgx =
@@ -833,10 +833,10 @@ Module(
     }
     if (command === "all") {
       var allGroups = await message.client.groupFetchAllParticipating();
-      var groups = Object.keys(allGroups);
+      var gruplar = Object.keys(allGroups);
       const recentChats = await fetchRecentChats(100);
       const dmChats = recentChats.filter((chat) => chat.type === "private");
-      const totalChats = groups.length + dmChats.length;
+      const totalChats = gruplar.length + dmChats.length;
       if (!totalChats) return await message.sendReply("_❌ Sohbet bulunamadı!_");
       const chunkSize = 100;
       let totalMessages = Math.ceil(totalChats / chunkSize);
@@ -851,10 +851,10 @@ Module(
           }-${endIdx} of ${totalChats}\n\n`;
         }
         while (
-          chatIndex < groups.length &&
+          chatIndex < gruplar.length &&
           chatIndex - msgIndex * chunkSize < chunkSize
         ) {
-          const jid = groups[chatIndex - msgIndex * chunkSize];
+          const jid = gruplar[chatIndex - msgIndex * chunkSize];
           if (!jid) break;
           const count = chatIndex + 1;
           const groupData = allGroups[jid];
@@ -863,12 +863,12 @@ Module(
           chatIndex++;
           if (chatIndex >= startIdx + chunkSize) break;
         }
-        const dmStartIndex = Math.max(0, startIdx - groups.length);
-        const dmEndIndex = Math.min(dmChats.length, endIdx - groups.length);
+        const dmStartIndex = Math.max(0, startIdx - gruplar.length);
+        const dmEndIndex = Math.min(dmChats.length, endIdx - gruplar.length);
         for (let i = dmStartIndex; i < dmEndIndex && chatIndex < endIdx; i++) {
           const dm = dmChats[i];
           const count = chatIndex + 1;
-          const dmName = dm.name || "Unknown";
+          const dmName = dm.name || "Bilinmiyor";
           _msg += `_*${count}. 💬 Private*_: \`${dmName}\`\n_JID:_ \`${dm.jid}\`\n\n`;
           chatIndex++;
         }
@@ -897,7 +897,7 @@ Module(
         const chat = recentChats[i];
         const count = i + 1;
         const chatType = chat.type === "group" ? "👥 Group" : "💬 Private";
-        let chatName = chat.name || "Unknown";
+        let chatName = chat.name || "Bilinmiyor";
         if (chat.type === "group" && allGroups[chat.jid]) {
           chatName =
             allGroups[chat.jid].subject || chat.name || "Unknown Group";
@@ -915,7 +915,7 @@ Module(
           const chat = recentChats[i];
           const count = i + 1;
           const chatType = chat.type === "group" ? "👥 Group" : "💬 Private";
-          let chatName = chat.name || "Unknown";
+          let chatName = chat.name || "Bilinmiyor";
           if (chat.type === "group" && allGroups[chat.jid]) {
             chatName =
               allGroups[chat.jid].subject || chat.name || "Unknown Group";

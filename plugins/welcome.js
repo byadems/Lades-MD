@@ -13,7 +13,7 @@ Module(
     fromMe: false,
     desc: "Grup karşılama mesajını ayarlar. $user, $group vb. etiketler kullanılabilir.",
     usage:
-      ".welcome Hey $mention, welcome to $group! $pp\n.welcome on/off (to enable/disable)\n.welcome get (to view current message)\n.welcome del (to delete)",
+      ".welcome Merhaba $mention, $group grubuna hoş geldin! $pp\n.welcome on/off (açmak/kapatmak için)\n.welcome get (mevcut mesajı görüntüle)\n.welcome del (silmek için)",
     use: "group",
   },
   async (message, match) => {
@@ -23,30 +23,30 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const input = match[1]?.toLowerCase();
     if (!input) {
-      return await message.sendReply(`*Welcome Message Setup*
+      return await message.sendReply(`*Karşılama Mesajı Ayarları*
 
-*Usage:*
-• \`.welcome <message>\` - Set welcome message
-• \`.welcome on/off\` - Enable/disable welcome
-• \`.welcome get\` - View current message
-• \`.welcome del\` - Delete welcome message
-• \`.welcome status\` - Show all groups status (owner only)
-• \`.welcome help\` - Show detailed help with examples
+*Kullanım:*
+• \`.welcome <mesaj>\` - Karşılama mesajını ayarla
+• \`.welcome on/off\` - Karşılamayı aç/kapat
+• \`.welcome get\` - Mevcut mesajı görüntüle
+• \`.welcome del\` - Karşılama mesajını sil
+• \`.welcome status\` - Tüm grupların durumunu göster (sadece sahip)
+• \`.welcome help\` - Örneklerle ayrıntılı yardımı göster
 
-*Placeholders:*
-• \`$mention\` - Mention the user
-• \`$user\` - User's name
-• \`$group\` - Group name
-• \`$desc\` - Group description
-• \`$count\` - Member count
-• \`$pp\` - User's profile picture
-• \`$gpp\` - Group profile picture
-• \`$date\` - Current date
-• \`$time\` - Current time
+*Yer Tutucular:*
+• \`$mention\` - Kullanıcıyı etiketle
+• \`$user\` - Kullanıcı adı
+• \`$group\` - Grup adı
+• \`$desc\` - Grup açıklaması
+• \`$count\` - Üye sayısı
+• \`$pp\` - Kullanıcı profil resmi
+• \`$gpp\` - Grup profil resmi
+• \`$date\` - Bugünün tarihi
+• \`$time\` - Şu anki saat
 
-*Example:*
-\`.welcome Hey $mention! Welcome to $group 🎉 $pp\`
-\`.welcome Welcome $user to our amazing group! We now have $count members! $gpp\``);
+*Örnek:*
+\`.welcome Merhaba $mention! $group grubuna hoş geldin 🎉 $pp\`
+\`.welcome Hoş geldin $user! Harika grubumuzda artık $count üyeyiz! $gpp\``);
     }
     if (input === "on") {
       const current = await welcome.get(message.jid);
@@ -68,8 +68,8 @@ Module(
         );
       }
       return await message.sendReply(
-        `*Current Welcome Message:*\n\n${current.message}\n\n*Status:* ${
-          current.enabled ? "Enabled ✅" : "Disabled ❌"
+        `*Mevcut Karşılama Mesajı:*\n\n${current.message}\n\n*Durum:* ${
+          current.enabled ? "Açık ✅" : "Kapalı ❌"
         }`
       );
     }
@@ -94,47 +94,47 @@ Module(
           );
         }
 
-        let statusText = "*🎉 WELCOME & GOODBYE STATUS 🎉*\n\n";
+        let statusText = "*🎉 KARŞILAMA & VEDA DURUMU 🎉*\n\n";
 
         if (welcomeData.length > 0) {
-          statusText += "*📥 WELCOME MESSAGES:*\n";
+          statusText += "*📥 KARŞILAMA MESAJLARI:*\n";
           for (let i = 0; i < welcomeData.length; i++) {
             const data = welcomeData[i];
             try {
               const groupMeta = await message.client.groupMetadata(data.jid);
-              const groupName = groupMeta.subject || "Unknown Group";
-              const status = data.enabled ? "✅ Enabled" : "❌ Disabled";
+              const groupName = groupMeta.subject || "Bilinmeyen Grup";
+              const status = data.enabled ? "✅ Açık" : "❌ Kapalı";
               statusText += `${
                 i + 1
-              }. *${groupName}*\n   Status: ${status}\n   Preview: ${data.message.substring(
+              }. *${groupName}*\n   Durum: ${status}\n   Önizleme: ${data.message.substring(
                 0,
                 50
               )}${data.message.length > 50 ? "..." : ""}\n\n`;
             } catch {
-              statusText += `${i + 1}. *Unknown Group*\n   Status: ${
-                data.enabled ? "✅ Enabled" : "❌ Disabled"
+              statusText += `${i + 1}. *Bilinmeyen Grup*\n   Durum: ${
+                data.enabled ? "✅ Açık" : "❌ Kapalı"
               }\n\n`;
             }
           }
         }
 
         if (goodbyeData.length > 0) {
-          statusText += "*📤 GOODBYE MESSAGES:*\n";
+          statusText += "*📤 VEDA MESAJLARI:*\n";
           for (let i = 0; i < goodbyeData.length; i++) {
             const data = goodbyeData[i];
             try {
               const groupMeta = await message.client.groupMetadata(data.jid);
-              const groupName = groupMeta.subject || "Unknown Group";
-              const status = data.enabled ? "✅ Enabled" : "❌ Disabled";
+              const groupName = groupMeta.subject || "Bilinmeyen Grup";
+              const status = data.enabled ? "✅ Açık" : "❌ Kapalı";
               statusText += `${
                 i + 1
-              }. *${groupName}*\n   Status: ${status}\n   Preview: ${data.message.substring(
+              }. *${groupName}*\n   Durum: ${status}\n   Önizleme: ${data.message.substring(
                 0,
                 50
               )}${data.message.length > 50 ? "..." : ""}\n\n`;
             } catch {
-              statusText += `${i + 1}. *Unknown Group*\n   Status: ${
-                data.enabled ? "✅ Enabled" : "❌ Disabled"
+              statusText += `${i + 1}. *Bilinmeyen Grup*\n   Durum: ${
+                data.enabled ? "✅ Açık" : "❌ Kapalı"
               }\n\n`;
             }
           }
@@ -149,65 +149,65 @@ Module(
     }
 
     if (input === "help") {
-      const helpText = `*🎉 WELCOME & GOODBYE SYSTEM HELP 🎉*
+      const helpText = `*🎉 KARŞILAMA & VEDA SİSTEMİ YARDIMI 🎉*
 
-*📝 BASIC COMMANDS:*
-• \`.welcome <message>\` - Set welcome message
-• \`.goodbye <message>\` - Set goodbye message
-• \`.welcome on/off\` - Enable/disable welcome
-• \`.goodbye on/off\` - Enable/disable goodbye
-• \`.welcome get\` - View current welcome
-• \`.goodbye get\` - View current goodbye
-• \`.welcome del\` - Delete welcome message
-• \`.goodbye del\` - Delete goodbye message
-• \`.welcome status\` - Show all groups status (owner only)
-• \`.welcome help\` - Show this detailed help
+*📝 TEMEL KOMUTLAR:*
+• \`.welcome <mesaj>\` - Karşılama mesajını ayarla
+• \`.goodbye <mesaj>\` - Veda mesajını ayarla
+• \`.welcome on/off\` - Karşılamayı aç/kapat
+• \`.goodbye on/off\` - Vedayı aç/kapat
+• \`.welcome get\` - Mevcut karşılamayı görüntüle
+• \`.goodbye get\` - Mevcut vedayı görüntüle
+• \`.welcome del\` - Karşılama mesajını sil
+• \`.goodbye del\` - Veda mesajını sil
+• \`.welcome status\` - Tüm grupların durumunu göster (sadece sahip)
+• \`.welcome help\` - Bu ayrıntılı yardımı göster
 
-*🧪 TEST COMMANDS:*
-• \`.testwelcome\` - Test current welcome message
-• \`.testgoodbye\` - Test current goodbye message
+*🧪 TEST KOMUTLARI:*
+• \`.testwelcome\` - Mevcut karşılama mesajını test et
+• \`.testgoodbye\` - Mevcut veda mesajını test et
 
-*📋 AVAILABLE PLACEHOLDERS:*
-• \`$mention\` - @mentions the user
-• \`$user\` - User's display name
-• \`$group\` - Group name
-• \`$desc\` - Group description
-• \`$count\` - Current member count
-• \`$pp\` - User's profile picture (fallback to group pic if privacy)
-• \`$gpp\` - Group profile picture
-• \`$date\` - Current date
-• \`$time\` - Current time
+*📋 KULLANILABİLİR YER TUTUCULAR:*
+• \`$mention\` - Kullanıcıyı @etiketler
+• \`$user\` - Kullanıcı adı
+• \`$group\` - Grup adı
+• \`$desc\` - Grup açıklaması
+• \`$count\` - Mevcut üye sayısı
+• \`$pp\` - Kullanıcı profil resmi (gizlilik durumunda grup resmi kullanılır)
+• \`$gpp\` - Grup profil resmi
+• \`$date\` - Bugünün tarihi
+• \`$time\` - Şu anki saat
 
-*💡 EXAMPLE MESSAGES:*
+*💡 ÖRNEK MESAJLAR:*
 
-*Welcome Examples:*
-\`Hey $mention! 👋 Welcome to $group! 🎉\`
+*Karşılama Örnekleri:*
+\`Merhaba $mention! 👋 $group grubuna hoş geldin! 🎉\`
 
-\`Welcome $user to our amazing community! $pp
-We now have $count members! 🚀\`
+\`Hoş geldin $user! $pp
+Harika topluluğumuzda artık $count üyeyiz! 🚀\`
 
-\`🎊 $mention joined $group!
-📖 Description: $desc
-👥 Members: $count
-📅 Joined on: $date at $time $gpp\`
+\`🎊 $mention $group grubuna katıldı!
+📖 Açıklama: $desc
+👥 Üyeler: $count
+📅 Katılma tarihi: $date saat $time $gpp\`
 
-*Goodbye Examples:*
-\`Goodbye $mention! 👋 Thanks for being part of $group! 💔\`
+*Veda Örnekleri:*
+\`Hoşça kal $mention! 👋 $group grubunun parçası olduğun için teşekkürler! 💔\`
 
-\`$user left the group 😢 $pp
-We now have $count members remaining.\`
+\`$user gruptan ayrıldı 😢 $pp
+Artık $count üyeyiz.\`
 
-\`📤 $mention has left $group
-📅 Left on: $date at $time
-💭 We'll miss you! $gpp\`
+\`📤 $mention $group grubundan ayrıldı
+📅 Ayrılış tarihi: $date saat $time
+💭 Seni özleyeceğiz! $gpp\`
 
-*⚠️ NOTES:*
-• Messages are limited to 2000 characters
-• \`$pp\` and \`$gpp\` will send images with caption
-• If user's profile pic fails, group pic is used as fallback
-• Use quotes for multi-word messages
-• Admin access required to set messages
-• Messages work for both joins and leaves`;
+*⚠️ NOTLAR:*
+• Mesajlar 2000 karakter ile sınırlıdır
+• \`$pp\` ve \`$gpp\` alt yazılı resim gönderir
+• Kullanıcı profil resmi alınamazsa grup resmi kullanılır
+• Çok kelimeli mesajlar için tırnak kullanın
+• Mesaj ayarlamak için yönetici yetkisi gereklidir
+• Mesajlar hem katılmalar hem de ayrılmalar için çalışır`;
 
       return await message.sendReply(helpText);
     }
@@ -218,7 +218,7 @@ We now have $count members remaining.\`
     }
     await welcome.set(message.jid, welcomeMessage);
     await message.sendReply(
-      `_Welcome message set successfully!_ ✅\n\n*Preview:*\n${welcomeMessage}\n\n💡 _Tip: Use_ \`.testwelcome\` _to test your message!_`
+      `_Karşılama mesajı başarıyla ayarlandı!_ ✅\n\n*Önizleme:*\n${welcomeMessage}\n\n💡 _İpucu:_ \`.testwelcome\` _kullanarak mesajınızı test edin!_`
     );
   }
 );
@@ -228,7 +228,7 @@ Module(
     fromMe: false,
     desc: "Grup çıkış mesajını ayarlar. $user, $group vb. etiketler kullanılabilir.",
     usage:
-      ".goodbye Bye $mention, thanks for being part of $group! $pp\n.goodbye on/off (to enable/disable)\n.goodbye get (to view current message)\n.goodbye del (to delete)",
+      ".goodbye Hoşça kal $mention, $group grubunun parçası olduğun için teşekkürler! $pp\n.goodbye on/off (açmak/kapatmak için)\n.goodbye get (mevcut mesajı görüntüle)\n.goodbye del (silmek için)",
     use: "group",
   },
   async (message, match) => {
@@ -238,25 +238,25 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const input = match[1]?.toLowerCase();
     if (!input) {
-      return await message.sendReply(`*Goodbye Message Setup*
-*Usage:*
-• \`.goodbye <message>\` - Set goodbye message
-• \`.goodbye on/off\` - Enable/disable goodbye
-• \`.goodbye get\` - View current message
-• \`.goodbye del\` - Delete goodbye message
-*Placeholders:*
-• \`$mention\` - Mention the user
-• \`$user\` - User's name  
-• \`$group\` - Group name
-• \`$desc\` - Group description
-• \`$count\` - Member count
-• \`$pp\` - User's profile picture
-• \`$gpp\` - Group profile picture
-• \`$date\` - Current date
-• \`$time\` - Current time
-*Example:*
-\`.goodbye Bye $mention! Thanks for being part of $group 👋 $pp\`
-\`.goodbye $user left the group. We now have $count members. $gpp\``);
+      return await message.sendReply(`*Veda Mesajı Ayarları*
+*Kullanım:*
+• \`.goodbye <mesaj>\` - Veda mesajını ayarla
+• \`.goodbye on/off\` - Vedayı aç/kapat
+• \`.goodbye get\` - Mevcut mesajı görüntüle
+• \`.goodbye del\` - Veda mesajını sil
+*Yer Tutucular:*
+• \`$mention\` - Kullanıcıyı etiketle
+• \`$user\` - Kullanıcı adı  
+• \`$group\` - Grup adı
+• \`$desc\` - Grup açıklaması
+• \`$count\` - Üye sayısı
+• \`$pp\` - Kullanıcı profil resmi
+• \`$gpp\` - Grup profil resmi
+• \`$date\` - Bugünün tarihi
+• \`$time\` - Şu anki saat
+*Örnek:*
+\`.goodbye Hoşça kal $mention! $group grubunun parçası olduğun için teşekkürler 👋 $pp\`
+\`.goodbye $user gruptan ayrıldı. Artık $count üyeyiz. $gpp\``);
     }
     if (input === "on") {
       const current = await goodbye.get(message.jid);
@@ -278,8 +278,8 @@ Module(
         );
       }
       return await message.sendReply(
-        `*Current Goodbye Message:*\n\n${current.message}\n\n*Status:* ${
-          current.enabled ? "Enabled ✅" : "Disabled ❌"
+        `*Mevcut Veda Mesajı:*\n\n${current.message}\n\n*Durum:* ${
+          current.enabled ? "Açık ✅" : "Kapalı ❌"
         }`
       );
     }
@@ -298,7 +298,7 @@ Module(
     }
     await goodbye.set(message.jid, goodbyeMessage);
     await message.sendReply(
-      `_Goodbye message set successfully!_ ✅\n\n*Preview:*\n${goodbyeMessage}\n\n💡 _Tip: Use_ \`.testgoodbye\` _to test your message!_`
+      `_Veda mesajı başarıyla ayarlandı!_ ✅\n\n*Önizleme:*\n${goodbyeMessage}\n\n💡 _İpucu:_ \`.testgoodbye\` _kullanarak mesajınızı test edin!_`
     );
   }
 );

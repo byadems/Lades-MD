@@ -53,9 +53,9 @@ Module(
     infoMessage += `• *Owner Command:* ${
       commandDetails.fromMe ? "Yes" : "No"
     }\n`;
-    if (commandDetails.use) infoMessage += `• *Type:* ${commandDetails.use}\n`;
+    if (commandDetails.use) infoMessage += `• *Tür:* ${commandDetails.use}\n`;
     if (commandDetails.usage)
-      infoMessage += `• *Usage:* ${commandDetails.name} ${commandDetails.usage}\n`;
+      infoMessage += `• *Kullanım:* ${commandDetails.name} ${commandDetails.usage}\n`;
     if (commandDetails.warn)
       infoMessage += `• *Warning:* ${commandDetails.warn}\n`;
 
@@ -100,7 +100,7 @@ Module(
       categorizedCommands[category].forEach((cmd) => {
         responseMessage += `• \`${handlerPrefix}${cmd.name}\`\n`;
         if (cmd.desc) responseMessage += `  _Description:_ ${cmd.desc}\n`;
-        if (cmd.usage) responseMessage += `  _Usage:_ ${cmd.usage}\n`;
+        if (cmd.usage) responseMessage += `  _Kullanım:_ ${cmd.usage}\n`;
         if (cmd.warn) responseMessage += `  _Warning:_ ${cmd.warn}\n`;
         responseMessage += "\n";
       });
@@ -174,7 +174,7 @@ Module(
     if (!match[1]) {
       return await message.sendReply(`*Alive Message Setup*
 
-*Usage:*
+*Kullanım:*
 • \`.setalive <message>\` - Set alive message
 • \`.setalive help\` - Show detailed formatting help
 • \`.setalive get\` - View current alive message
@@ -185,7 +185,7 @@ Module(
 \`.setalive Hey $user! $botname is online!
 _Version: $version_
 _Uptime: $uptime_
-_Users: $users_ $pp\`
+_Kullanmak içinrs: $users_ $pp\`
 
 *Use \`.setalive help\` for all available placeholders.*`);
     }
@@ -232,7 +232,7 @@ _Hi $user!_
 • _Version: $version_
 • _Mode: $mode_
 • _Uptime: $uptime_
-• _Users: $users_
+• _Kullanmak içinrs: $users_
 • _RAM: $ram/$totalram_
 *Date:* _$date at $time_ $pp\`
 
@@ -337,20 +337,20 @@ Module(
     const botOwner = infoParts[1] || "N/A";
     const botVersion = VERSION;
     let botImageLink = infoParts[2] || "";
-    if (botImageLink === "default") {
+    if (botImageLink === "default" || (botImageLink && !botImageLink.startsWith("http"))) {
       botImageLink = path.join(__dirname, "utils", "images", "default.png");
     }
 
     const menu = `╭═══〘 \`${botName}\` 〙═══⊷❍
 ┃${star}╭──────────────
 ┃${star}│
-┃${star}│ _*\`Owner\`*_ : ${botOwner}
-┃${star}│ _*\`User\`*_ : ${message.senderName.replace(/[\r\n]+/gm, "")}
-┃${star}│ _*\`Mode\`*_ : ${MODE}
-┃${star}│ _*\`Server\`*_ : ${os.platform() === "linux" ? "Linux" : "Unknown OS"}
-┃${star}│ _*\`Available RAM\`*_ : ${used} of ${total}
-┃${star}│ _*\`Total Users\`*_ : ${totalUsers}
-┃${star}│ _*\`Version\`*_ : ${botVersion}
+┃${star}│ _*\`Geliştiricim\`*_ : ${botOwner}
+┃${star}│ _*\`Üye\`*_ : ${message.senderName.replace(/[\r\n]+/gm, "")}
+┃${star}│ _*\`Mod\`*_ : ${MODE}
+┃${star}│ _*\`Sunucu\`*_ : ${os.platform() === "linux" ? "Linux" : "Unknown OS"}
+┃${star}│ _*\`Kullanılabilir RAM\`*_ : ${used} of ${total}
+┃${star}│ _*\`Toplam Kullanıcı\`*_ : ${totalUsers}
+┃${star}│ _*\`Versiyon\`*_ : ${botVersion}
 ┃${star}│
 ┃${star}│
 ┃${star}│  ▎▍▌▌▉▏▎▌▉▐▏▌▎
@@ -403,8 +403,8 @@ Module(
       if (name) {
         response += `• *Command:* \`${handlerPrefix}${name}\`\n`;
         response += `• *Description:* ${cmd.desc || "N/A"}\n`;
-        if (cmd.use) response += `• *Type:* ${cmd.use}\n`;
-        if (cmd.usage) response += `• *Usage:* ${cmd.usage}\n`;
+        if (cmd.use) response += `• *Tür:* ${cmd.use}\n`;
+        if (cmd.usage) response += `• *Kullanım:* ${cmd.usage}\n`;
         if (cmd.warn) response += `• *Warning:* ${cmd.warn}\n`;
         response += "\n";
       }
@@ -444,9 +444,9 @@ _Instead of using \`.setinfo\`, use these individual commands:_
 _Bot info is stored as: \`name;owner;imagelink\`_
 
 *Tips:*
-- _Use \`default\` as image to use local default image_
+- _Kullanmak için \`default\` as image to use local default image_
 - _Changes are saved automatically_
-- _Use \`.menu\` to see the updated info_`;
+- _Kullanmak için \`.menu\` to see the updated info_`;
 
     return await message.sendReply(infoText);
   }

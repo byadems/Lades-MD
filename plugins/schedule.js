@@ -193,9 +193,9 @@ Module(
         response += `   *To:* ${msg.jid}\n`;
         response += `   *Time:* ${formattedTime}\n`;
         response += `   *In:* ${timeFromNow}\n`;
-        response += `   *Content:* ${content}\n\n`;
+        response += `   *İçerik:* ${content}\n\n`;
       });
-      response += '_Use "cancel <id>" to cancel a scheduled message_';
+      response += '_Kullanmak için "cancel <id>" to cancel a scheduled message_';
       await m.sendReply(response);
     } catch (error) {
       console.error("List scheduled error:", error);

@@ -151,29 +151,29 @@ const sequelize = (() => {
     return sqliteInstance;
   }
 
-return new Sequelize(DATABASE_URL, {
-  dialectOptions: {
-    ssl: { require: true, rejectUnauthorized: false },
-    connectTimeout: 30000,
-  },
-  logging: DEBUG,
-  pool: {
-    max: 3,
-    min: 0,
-    acquire: 60000,
-    idle: 5000,
-    evict: 1000,
-  },
-  retry: {
-    max: 5,
-    match: [
-      /ECONNRESET/,
-      /ETIMEDOUT/,
-      /ConnectionError/,
-      /Operation timeout/,
-    ],
-  },
-});
+  return new Sequelize(DATABASE_URL, {
+    dialectOptions: {
+      ssl: { require: true, rejectUnauthorized: false },
+      connectTimeout: 30000,
+    },
+    logging: DEBUG,
+    pool: {
+      max: 3,
+      min: 0,
+      acquire: 60000,
+      idle: 5000,
+      evict: 1000,
+    },
+    retry: {
+      max: 5,
+      match: [
+        /ECONNRESET/,
+        /ETIMEDOUT/,
+        /ConnectionError/,
+        /Operation timeout/,
+      ],
+    },
+  });
 })();
 
 const SESSION_STRING = process.env.SESSION || process.env.SESSION_ID;
@@ -210,10 +210,10 @@ const baseConfig = {
   PLATFORM: isHeroku
     ? "Heroku"
     : isRailway
-    ? "Railway"
-    : isKoyeb
-    ? "Koyeb"
-    : "Other server",
+      ? "Railway"
+      : isKoyeb
+        ? "Koyeb"
+        : "Other server",
   isHeroku,
   isKoyeb,
   isVPS,
@@ -238,7 +238,7 @@ const baseConfig = {
   AUTO_READ_STATUS: convertToBool(process.env.AUTO_READ_STATUS) || true,
   READ_MESSAGES: convertToBool(process.env.READ_MESSAGES) || false,
   PMB_VAR: convertToBool(process.env.PMB_VAR) || false,
-  DIS_PM: convertToBool(process.env.DIS_PM) || false,
+  DIS_PM: convertToBool(process.env.DIS_PM) || true,
   REJECT_CALLS: convertToBool(process.env.REJECT_CALLS) || false,
   ALLOWED_CALLS: process.env.ALLOWED_CALLS || "",
   CALL_REJECT_MESSAGE: process.env.CALL_REJECT_MESSAGE || "",

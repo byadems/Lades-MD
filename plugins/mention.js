@@ -59,7 +59,7 @@ Module(
     fromMe: true,
     desc: "Otomatik etiket (mention) yanıt yönetimi",
     usage:
-      ".mention set (reply to message) | .mention set <text> | .mention get | .mention del | .mention help",
+      ".mention set (mesajı yanıtlayın) | .mention set <metin> | .mention get | .mention del | .mention help",
   },
   async (message, match) => {
     const args = match[1]?.trim().split(" ");
@@ -67,7 +67,7 @@ Module(
     const input = args?.slice(1).join(" ");
 
     if (!subcommand) {
-      return await message.sendReply(`Lütfen bir alt komut belirtin!\n\n*Mevcut komutlar:*\n• \`${handler}mention set\` - Set mention reply (reply to message or add text)\n• \`${handler}mention get\` - View current mention reply\n• \`${handler}mention del\` - Delete mention reply\n• \`${handler}mention help\` - Show detailed help`
+      return await message.sendReply(`Lütfen bir alt komut belirtin!\n\n*Mevcut komutlar:*\n• \`${handler}mention set\` - Etiket yanıtını ayarla (mesajı yanıtla veya metin ekle)\n• \`${handler}mention get\` - Mevcut etiket yanıtını görüntüle\n• \`${handler}mention del\` - Etiket yanıtını sil\n• \`${handler}mention help\` - Ayrıntılı yardımı göster`
       );
     }
 
@@ -89,15 +89,15 @@ Module(
           );
         }
 
-        let responseText = "*Current Mention Reply:*\n\n";
-        responseText += `*Type:* \`${mentionData.type.toUpperCase()}\`\n`;
+        let responseText = "*Mevcut Etiket Yanıtı:*\n\n";
+        responseText += `*Tür:* \`${mentionData.type.toUpperCase()}\`\n`;
         if (mentionData.caption) {
-          responseText += `*Caption:* _${mentionData.caption}_\n`;
+          responseText += `*Başlık:* _${mentionData.caption}_\n`;
         }
         if (mentionData.url) {
-          responseText += `*Media URL:* \`${mentionData.url}\`\n`;
+          responseText += `*Medya URL:* \`${mentionData.url}\`\n`;
         }
-        responseText += `*Set on:* _${new Date(
+        responseText += `*Ayarlandı:* _${new Date(
           mentionData.timestamp
         ).toLocaleString()}_`;
 
@@ -152,8 +152,8 @@ Module(
 
             const success = await setMentionReply(mentionData);
             if (success) {
-              return await message.sendReply(`✅ Bahsetme yanıtı başarıyla ayarlandı!\n\n*Tür:* \`${mentionData.type.toUpperCase()}\`\n*Content:* _${
-                  mentionData.content || mentionData.caption || "Media file"
+              return await message.sendReply(`✅ Bahsetme yanıtı başarıyla ayarlandı!\n\n*Tür:* \`${mentionData.type.toUpperCase()}\`\n*İçerik:* _${
+                  mentionData.content || mentionData.caption || "Medya dosyası"
                 }_`
               );
             } else {
@@ -178,7 +178,7 @@ Module(
           const success = await setMentionReply(mentionData);
           if (success) {
             return await message.sendReply(
-              `Mention reply set successfully!\n\n*Content:* _${mentionData.content}_`
+              `Etiket yanıtı başarıyla ayarlandı!\n\n*İçerik:* _${mentionData.content}_`
             );
           } else {
             return await message.sendReply("⚙️ Bahsetme yanıtı ayarlanamadı!");
@@ -188,42 +188,42 @@ Module(
         return await message.sendReply(`💬 Lütfen 'set' komutu için içerik sağlayın!\n\n*Kullanım:*\n• Herhangi bir mesajı yanıtlayın ve \`${handler}mention set\` yazın\n• Veya metin mesajı için \`${handler}mention set <metin>\` kullanın`);
 
       case "help":
-        const helpText = `*Auto Mention Reply Help*
+        const helpText = `*Otomatik Etiket Yanıtı Yardım*
 
-*What is it?*
-When someone mentions the bot or sudo users, the bot automatically sends a saved reply message.
+*Nedir?*
+Birisi botu veya yöneticileri etiketlediğinde, bot otomatik olarak kaydedilmiş yanıtı gönderir.
 
-*Commands:* _(Owner only)_
-• \`${handler}mention set\` - Reply to any message to set it as mention reply
-• \`${handler}mention set <text>\` - Set text as mention reply
-• \`${handler}mention get\` - View current mention reply
-• \`${handler}mention del\` - Delete mention reply
+*Komutlar:* _(Sadece sahip)_
+• \`${handler}mention set\` - Etiket yanıtı olarak ayarlamak için herhangi bir mesajı yanıtlayın
+• \`${handler}mention set <text>\` - Metni etiket yanıtı olarak ayarla
+• \`${handler}mention get\` - Mevcut etiket yanıtını görüntüle
+• \`${handler}mention del\` - Etiket yanıtını sil
 
-*Supported Types:*
-• Text messages
-• Images _(with captions)_
-• Videos _(with captions)_
-• Audio files
-• Stickers
-• Documents
+*Desteklenen Türler:*
+• Metin mesajları
+• Görseller _(başlıklı)_
+• Videolar _(başlıklı)_
+• Ses dosyaları
+• Çıkartmalar
+• Belgeler
 
-*How it works:*
-1. Set a mention reply using the commands above
-2. When someone mentions @bot or @sudo in a message
-3. Bot automatically sends the saved reply
+*Nasıl çalışır:*
+1. Yukarıdaki komutları kullanarak etiket yanıtı ayarlayın
+2. Birisi mesajda botu veya yöneticileri etiketlediğinde
+3. Bot otomatik olarak kaydedilmiş yanıtı gönderir
 
-*Examples:*
-• Reply to an image and type \`${handler}mention set\`
+*Örnekler:*
+• Bir resmi yanıtlayıp şunu yazın \`${handler}mention set\`
 • \`${handler}mention set Hello! I'm a bot\`
-• \`${handler}mention get\` - to see current reply
-• \`${handler}mention del\` - to remove reply
+• \`${handler}mention get\` - mevcut yanıtı görmek için
+• \`${handler}mention del\` - yanıtı kaldırmak için
 
-_Note: Media files are uploaded to cloud storage for reliability._`;
+_Note: Medya dosyasıs are uploaded to cloud storage for reliability._`;
 
         return await message.sendReply(helpText);
 
       default:
-        return await message.sendReply(`✨ Bilinmeyen alt komut: \`${subcommand}\`\n\n*Available commands:*\n• \`${handler}mention set\` - Set mention reply\n• \`${handler}mention get\` - View current mention reply\n• \`${handler}mention del\` - Delete mention reply\n• \`${handler}mention help\` - Show help`
+        return await message.sendReply(`✨ Bilinmeyen alt komut: \`${subcommand}\`\n\n*Mevcut komutlar:*\n• \`${handler}mention set\` - Etiket yanıtını ayarla\n• \`${handler}mention get\` - Mevcut etiket yanıtını görüntüle\n• \`${handler}mention del\` - Etiket yanıtını sil\n• \`${handler}mention help\` - Yardımı göster`
         );
     }
   }

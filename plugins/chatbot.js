@@ -20,7 +20,7 @@ const chatContexts = new Map();
 const modelStates = new Map();
 
 let globalSystemPrompt =
-  "You are a helpful AI assistant named Lades. Be concise, friendly, and informative.";
+  "Sen Lades adında yardımsever bir yapay zeka asistandısın. Kısa, nazik ve bilgilendirici ol.";
 
 async function initChatbotData() {
   try {
@@ -84,7 +84,7 @@ async function imageToGenerativePart(imageBuffer) {
 async function getAIResponse(message, chatJid, imageBuffer = null) {
   const apiKey = config.GEMINI_API_KEY;
   if (!apiKey) {
-    return "_❌ GEMINI_API_KEY not configured. Please set it using `.setvar GEMINI_API_KEY your_api_key`_";
+    return "_❌ GEMINI_API_KEY yapılandırılmadı. Ayarlamak için şunu kullanın: `.setvar GEMINI_API_KEY your_api_key`_";
   }
 
   const currentModelIndex = modelStates.get(chatJid) || 0;
@@ -165,7 +165,7 @@ async function getAIResponse(message, chatJid, imageBuffer = null) {
 
       return aiResponse;
     } else {
-      return "_❌ Received unexpected response from AI. Please try again._";
+      return "_❌ YZ'den beklenmeyen bir yanıt alındı. Lütfen tekrar deneyin._";
     }
   } catch (error) {
     console.error("Error getting AI response:", error.message);
@@ -177,19 +177,19 @@ async function getAIResponse(message, chatJid, imageBuffer = null) {
         console.log(
           `Switching to model: ${models[nextModelIndex]} for chat: ${chatJid}`
         );
-        return "_⚠️ Rate limit reached. Switched to backup model. Please try again._";
+        return "_⚠️ Oran sınırına ulaşıldı. Yedek modele geçildi. Lütfen tekrar deneyin._";
       } else {
-        return "_❌ All models have reached their rate limits. Please try again later._";
+        return "_❌ Tüm modeller hız sınırına ulaştı. Lütfen daha sonra tekrar deneyin._";
       }
     }
 
     if (error.response) {
       return `_❌ API Error: ${
-        error.response.data?.error?.message || "Unknown error"
+        error.response.data?.error?.message || "Bilinmeyen hata"
       }_`;
     }
 
-    return "_❌ Network error. Please check your connection and try again._";
+    return "_❌ Ağ hatası. Bağlantınızı kontrol edip tekrar deneyin._";
   }
 }
 
@@ -230,7 +230,7 @@ function clearContext(jid) {
 }
 
 async function clearAllContexts(target) {
-  if (target === "groups") {
+  if (target === "gruplar") {
     for (const [jid] of chatbotStates.entries()) {
       if (jid.includes("@g.us")) {
         clearContext(jid);
@@ -253,7 +253,7 @@ Module(
     fromMe: true,
     desc: "Gemini API ile YZ Sohbet Botu yönetimi - metin ve resim analizi destekler",
     usage:
-      '.chatbot - _Show help menu_\n.chatbot on/off - _Enable/disable in current chat_\n.chatbot on/off groups - _Enable/disable in all groups_\n.chatbot on/off dms - _Enable/disable in all DMs_\n.chatbot set "prompt" - _Set system prompt_\n.chatbot clear - _Clear conversation context_\n_Reply to images for AI image analysis_',
+      ".chatbot - _Yardım menüsünü göster_\n.chatbot on/off - _Bu sohbette aç/kapat_\n.chatbot on/off groups - _Tüm gruplarda aç/kapat_\n.chatbot on/off dms - _Tüm DM'lerde aç/kapat_\n.chatbot set \"prompt\" - _Sistem komutunu ayarla_\n.chatbot clear - _AI geçmişini temizle_\n_Görsellere yanıt vererek YZ görsel analizi yapın_",
   },
   async (message, match) => {
     const input = match[1]?.trim();
@@ -268,45 +268,45 @@ Module(
       const hasApiKey = !!config.GEMINI_API_KEY;
 
       const helpText =
-        `*_🤖 AI Chatbot Management_*\n\n` +
-        `📊 _Current Status:_ \`${isEnabled ? "Enabled" : "Disabled"}\`\n` +
-        `🔑 _API Key:_ \`${hasApiKey ? "Configured ✅" : "Missing ❌"}\`\n` +
-        `🌐 _Global Groups:_ \`${
-          globalGroups ? "Enabled ✅" : "Disabled ❌"
+        `*_🤖 YZ Sohbet Botu Yönetimi_*\n\n` +
+        `📊 _Mevcut Durum:_ \`${isEnabled ? "Açık" : "Kapalı"}\`\n` +
+        `🔑 _API Anahtarı:_ \`${hasApiKey ? "Yapılandırıldı ✅" : "Eksik ❌"}\`\n` +
+        `🌐 _Genel Gruplar:_ \`${
+          globalGroups ? "Açık ✅" : "Kapalı ❌"
         }\`\n` +
-        `💬 _Global DMs:_ \`${globalDMs ? "Enabled ✅" : "Disabled ❌"}\`\n` +
-        `🤖 _Current Model:_ \`${currentModel}\`\n` +
-        `💭 _Context Messages:_ \`${contextSize}\`\n` +
-        `🎯 _System Prompt:_ \`${globalSystemPrompt.substring(0, 100)}${
+        `💬 _Genel DM'ler:_ \`${globalDMs ? "Açık ✅" : "Kapalı ❌"}\`\n` +
+        `🤖 _Mevcut Model:_ \`${currentModel}\`\n` +
+        `💭 _Bağlam Mesajları:_ \`${contextSize}\`\n` +
+        `🎯 _Sistem Komutu:_ \`${globalSystemPrompt.substring(0, 100)}${
           globalSystemPrompt.length > 100 ? "..." : ""
         }\`\n\n` +
         (hasApiKey
-          ? `*_Commands:_*\n` +
-            `- \`.chatbot on\` - _Enable chatbot in this chat_\n` +
-            `- \`.chatbot off\` - _Disable chatbot in this chat_\n` +
-            `- \`.chatbot on groups\` - _Enable in all groups_\n` +
-            `- \`.chatbot on dms\` - _Enable in all DMs_\n` +
-            `- \`.chatbot off groups\` - _Disable in all groups_\n` +
-            `- \`.chatbot off dms\` - _Disable in all DMs_\n` +
-            `- \`.chatbot set "prompt"\` - _Set system prompt_\n` +
-            `- \`.chatbot clear\` - _Clear conversation context_\n` +
-            `- \`.chatbot status\` - _Show detailed status_\n\n` +
-            `*_How it works:_*\n` +
-            `- _Direct messages to bot trigger AI response_\n` +
-            `- _Mentions (@bot) trigger AI response_\n` +
-            `- _Replies to bot messages trigger AI response_\n` +
-            `- _Reply to images for AI image analysis_\n` +
-            `- _Maintains conversation context automatically_\n` +
-            `- _Auto-switches models on rate limits_`
-          : `*_⚠️ Setup Required:_*\n` +
-            `_API key is required to use chatbot._\n\n` +
-            `*_Get your API key:_*\n` +
-            `- _Visit: https://aistudio.google.com/app/apikey_\n` +
-            `- _Sign in with Google account_\n` +
-            `- _Create API Key_\n\n` +
-            `*_Set your API key:_*\n` +
+          ? `*_Komutlar:_*\n` +
+            `- \`.chatbot on\` - _Bu sohbette sohbet botunu aç_\n` +
+            `- \`.chatbot off\` - _Bu sohbette sohbet botunu kapat_\n` +
+            `- \`.chatbot on gruplar\` - _Tüm gruplarda aç_\n` +
+            `- \`.chatbot on dms\` - _Tüm DM'lerde aç_\n` +
+            `- \`.chatbot off gruplar\` - _Tüm gruplarda kapat_\n` +
+            `- \`.chatbot off dms\` - _Tüm DM'lerde kapat_\n` +
+            `- \`.chatbot set "prompt"\` - _Sistem komutunu ayarla_\n` +
+            `- \`.chatbot clear\` - _AI geçmişini temizle_\n` +
+            `- \`.chatbot status\` - _Detaylı durumu göster_\n\n` +
+            `*_Nasıl çalışır:_*\n` +
+            `- _Bota gelen direkt mesajlar YZ yanıtını tetikler_\n` +
+            `- _Etiketler (@bot) YZ yanıtını tetikler_\n` +
+            `- _Bot mesajlarına yanıtlar YZ yanıtını tetikler_\n` +
+            `- _Görsellere yanıt vererek YZ görsel analizi yapın_\n` +
+            `- _Konuşma bağlamını otomatik olarak sürdürür_\n` +
+            `- _Hız sınırlarında otomatik model değiştirir_`
+          : `*_⚠️ Kurulum Gerekli:_*\n` +
+            `_Sohbet botunu kullanmak için API anahtarı gereklidir._\n\n` +
+            `*_API anahtarınızı alın:_*\n` +
+            `- _Ziyaret edin: https://aistudio.google.com/app/apikey_\n` +
+            `- _Google hesabıyla giriş yapın_\n` +
+            `- _API Anahtarı Oluşturun_\n\n` +
+            `*_API anahtarınızı ayarlayın:_*\n` +
             `\`.setvar GEMINI_API_KEY=your_api_key_here\`\n\n` +
-            `_After setting the key, use \`.chatbot on\` to enable._`);
+            `_Anahtarı ayarladıktan sonra, etkinleştirmek için \`.chatbot on\` kullanın._`);
 
       return await message.sendReply(helpText);
     }
@@ -319,64 +319,64 @@ Module(
       case "on":
         if (!config.GEMINI_API_KEY) {
           return await message.sendReply(`*_❌ GEMINI_API_KEY Yapılandırılmadı_*\n\n` +
-              `_Cannot enable chatbot without Gemini API key._\n\n` +
-              `*_How to get your API key:_*\n` +
-              `- _Visit: https://aistudio.google.com/app/apikey_\n` +
-              `- _Sign in with your Google account_\n` +
-              `- _Click "Create API Key"_\n` +
-              `- _Copy the generated API key_\n\n` +
-              `*_How to set it:_*\n` +
+              `_Gemini API anahtarı olmadan sohbet botu etkinleştirilemez._\n\n` +
+              `*_API anahtarınızı nasıl alırsınız:_*\n` +
+              `- _Ziyaret edin: https://aistudio.google.com/app/apikey_\n` +
+              `- _Google hesabınızla giriş yapın_\n` +
+              `- _Click "API Anahtarı Oluştur"_\n` +
+              `- _Oluşturulan API anahtarını kopyalayın_\n\n` +
+              `*_Nasıl ayarlanır:_*\n` +
               `\`.setvar GEMINI_API_KEY=your_api_key_here\`\n\n` +
-              `_Replace \`your_api_key_here\` with your actual API key._`
+              `_Yerine \`your_api_key_here\` gerçek API anahtarınızı yazın._`
           );
         }
 
-        if (target === "groups") {
+        if (target === "gruplar") {
           await setVar("CHATBOT_ALL_GROUPS", "true");
           return await message.sendReply(`*_🤖 Sohbet Botu Tüm Gruplar için Açıldı_*\n\n` +
-              `✅ _Chatbot will now respond in all groups_\n` +
+              `✅ _Sohbet botu artık tüm gruplarda yanıt verecek_\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
-              `📍 _Trigger:_ _Mentions and replies only_\n\n` +
-              `_Use \`.chatbot off groups\` to disable._`
+              `📍 _Tetikleyici:_ _Sadece etiketler ve yanıtlar_\n\n` +
+              `_Kullanmak için \`.chatbot off gruplar\` kullanarak kapatın._`
           );
         } else if (target === "dms") {
           await setVar("CHATBOT_ALL_DMS", "true");
           return await message.sendReply(`*_🤖 Sohbet Botu Tüm DM'ler için Açıldı_*\n\n` +
-              `✅ _Chatbot will now respond in all direct messages_\n` +
+              `✅ _Sohbet botu artık tüm DM'lerde yanıt verecek_\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
-              `📍 _Trigger:_ _All messages_\n\n` +
-              `_Use \`.chatbot off dms\` to disable._`
+              `📍 _Tetikleyici:_ _Tüm mesajlar_\n\n` +
+              `_Kullanmak için \`.chatbot off dms\` kullanarak kapatın._`
           );
         } else {
           await enableChatbot(chatJid);
           return await message.sendReply(`*_🤖 Sohbet Botu Açıldı_*\n\n` +
-              `📍 _Chat:_ \`${chatJid.includes("@g.us") ? "Group" : "DM"}\`\n` +
+              `📍 _Sohbet:_ \`${chatJid.includes("@g.us") ? "Grup" : "DM"}\`\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
-              `💭 _Context:_ _Fresh start_\n\n` +
-              `_Now I'll respond to direct messages, mentions, and replies!_`
+              `💭 _Bağlam:_ _Yeni başlangıç_\n\n` +
+              `_Artık direkt mesajlara, etiketlere ve yanıtlara cevap vereceğim!_`
           );
         }
 
       case "off":
-        if (target === "groups") {
+        if (target === "gruplar") {
           await setVar("CHATBOT_ALL_GROUPS", "false");
           return await message.sendReply(`*_🤖 Sohbet Botu Tüm Gruplar için Kapatıldı_*\n\n` +
-              `❌ _Chatbot will no longer respond in groups globally_\n` +
-              `📝 _Individual group settings are preserved_\n\n` +
-              `_Use \`.chatbot on groups\` to re-enable._`
+              `❌ _Sohbet botu artık küresel olarak gruplarda yanıt vermeyecek_\n` +
+              `📝 _Bireysel grup ayarları korunur_\n\n` +
+              `_Kullanmak için \`.chatbot on gruplar\` tekrar etkinleştirin._`
           );
         } else if (target === "dms") {
           await setVar("CHATBOT_ALL_DMS", "false");
           return await message.sendReply(`*_🤖 Sohbet Botu Tüm DM'ler için Kapatıldı_*\n\n` +
-              `❌ _Chatbot will no longer respond in DMs globally_\n` +
-              `📝 _Individual DM settings are preserved_\n\n` +
-              `_Use \`.chatbot on dms\` to re-enable._`
+              `❌ _Sohbet botu artık küresel olarak DM'lerde yanıt vermeyecek_\n` +
+              `📝 _Bireysel DM ayarları korunur_\n\n` +
+              `_Kullanmak için \`.chatbot on dms\` tekrar etkinleştirin._`
           );
         } else {
           await disableChatbot(chatJid);
           return await message.sendReply(`*_🤖 Sohbet Botu Kapatıldı_*\n\n` +
-              `_Chatbot is now disabled in this chat._\n` +
-              `_Conversation context has been cleared._`
+              `_Sohbet botu bu sohbette kapatıldı._\n` +
+              `_Konuşma bağlamı temizlendi._`
           );
         }
 
@@ -384,34 +384,34 @@ Module(
         const promptMatch = input.match(/set\s+"([^"]+)"/);
         if (!promptMatch) {
           return await message.sendReply(`_⚠️ Lütfen sistem komutunu tırnak içinde belirtin._\n\n` +
-              `*_Example:_*\n` +
+              `*_Örnek:_*\n` +
               `\`.chatbot set "You are a helpful assistant specialized in programming."\``
           );
         }
         const newPrompt = promptMatch[1];
         await saveSystemPrompt(newPrompt);
         return await message.sendReply(`*_🎯 Sistem Komutu Güncellendi_*\n\n` +
-            `📝 _New Prompt:_ \`${newPrompt}\`\n\n` +
-            `_This will apply to all new conversations._`
+            `📝 _Yeni Komut:_ \`${newPrompt}\`\n\n` +
+            `_Bu tüm yeni konuşmalara uygulanacak._`
         );
 
       case "clear":
-        if (target === "groups" || target === "dms") {
+        if (target === "gruplar" || target === "dms") {
           await clearAllContexts(target);
           return await message.sendReply(
             `*_💭 Contexts Cleared for All ${
-              target === "groups" ? "Groups" : "DMs"
+              target === "gruplar" ? "Groups" : "DMs"
             }_*\n\n` +
-              `_Conversation histories have been reset for all ${
-                target === "groups" ? "groups" : "DMs"
+              `_Konuşma geçmişleri tüm  ${
+                target === "gruplar" ? "gruplar" : "DMs"
               }._\n` +
-              `_Next messages will start fresh conversations._`
+              `_Sonraki mesajlar yeni konuşmalar başlatacak._`
           );
         } else {
           clearContext(chatJid);
           return await message.sendReply(`*_💭 Bağlam Temizlendi_*\n\n` +
-              `_Conversation history has been reset._\n` +
-              `_Next message will start a fresh conversation._`
+              `_Konuşma geçmişi sıfırlandı._\n` +
+              `_Sonraki mesaj yeni bir konuşma başlatacak._`
           );
         }
 
@@ -427,38 +427,38 @@ Module(
 
         let enabledReason = "";
         if (isEnabledIndividually) {
-          enabledReason = "Individual setting";
+          enabledReason = "Bireysel ayar";
         } else if (isGroup && globalGroups) {
-          enabledReason = "Global groups setting";
+          enabledReason = "Global gruplar setting";
         } else if (!isGroup && globalDMs) {
-          enabledReason = "Global DMs setting";
+          enabledReason = "Küresel DM ayarı";
         }
 
         const statusText =
-          `*_🤖 Chatbot Status_*\n\n` +
-          `📊 _Status:_ \`${isEnabled ? "Enabled ✅" : "Disabled ❌"}\`\n` +
+          `*_🤖 Sohbet Botu Durumu_*\n\n` +
+          `📊 _Durum:_ \`${isEnabled ? "Açık ✅" : "Kapalı ❌"}\`\n` +
           (isEnabled && enabledReason
-            ? `📋 _Enabled via:_ \`${enabledReason}\`\n`
+            ? `📋 _Şununla etkin:_ \`${enabledReason}\`\n`
             : "") +
-          `🌐 _Global Groups:_ \`${
-            globalGroups ? "Enabled ✅" : "Disabled ❌"
+          `🌐 _Genel Gruplar:_ \`${
+            globalGroups ? "Açık ✅" : "Kapalı ❌"
           }\`\n` +
-          `💬 _Global DMs:_ \`${globalDMs ? "Enabled ✅" : "Disabled ❌"}\`\n` +
-          `🤖 _Current Model:_ \`${currentModel}\`\n` +
-          `📈 _Model Fallback Level:_ \`${modelIndex + 1}/${
+          `💬 _Genel DM'ler:_ \`${globalDMs ? "Açık ✅" : "Kapalı ❌"}\`\n` +
+          `🤖 _Mevcut Model:_ \`${currentModel}\`\n` +
+          `📈 _Model Yedek Seviyesi:_ \`${modelIndex + 1}/${
             models.length
           }\`\n` +
-          `💭 _Context Messages:_ \`${contextSize}\`\n` +
-          `🎯 _System Prompt:_ \`${globalSystemPrompt}\`\n` +
-          `🔑 _API Key:_ \`${
-            config.GEMINI_API_KEY ? "Configured ✅" : "Missing ❌"
+          `💭 _Bağlam Mesajları:_ \`${contextSize}\`\n` +
+          `🎯 _Sistem Komutu:_ \`${globalSystemPrompt}\`\n` +
+          `🔑 _API Anahtarı:_ \`${
+            config.GEMINI_API_KEY ? "Yapılandırıldı ✅" : "Eksik ❌"
           }\`\n\n` +
-          `*_Available Models:_*\n` +
+          `*_Kullanılabilir Modeller:_*\n` +
           models
             .map(
               (model, index) =>
                 `${index + 1}. \`${model}\` ${
-                  index === modelIndex ? "← Current" : ""
+                  index === modelIndex ? "← Mevcut" : ""
                 }`
             )
             .join("\n");
@@ -466,7 +466,7 @@ Module(
         return await message.sendReply(statusText);
 
       default:
-        return await message.sendReply(`_✨ Bilinmeyen komut: \`${command}\`_\n\n_Use \`.chatbot\` to see available commands._`
+        return await message.sendReply(`_✨ Bilinmeyen komut: \`${command}\`_\n\n_Kullanmak için \`.chatbot\` mevcut komutları görmek için._`
         );
     }
   }
@@ -531,7 +531,7 @@ Module(
           imageBuffer = await message.reply_message.download("buffer");
 
           if (!messageText || messageText.length < 2) {
-            responseText = "What do you see in this image?";
+            responseText = "Bu görselde ne görüyorsun?";
           }
         } catch (error) {
           console.error("Error downloading image:", error);
@@ -595,7 +595,7 @@ Module(
           console.error("Error downloading image:", error);
           return await message.sendReply("❌ Görsel indirilemedi.");
         }
-        if (!prompt) prompt = "What do you see in this image?";
+        if (!prompt) prompt = "Bu görselde ne görüyorsun?";
       }
       else if (message.reply_message.album) {
         try {
@@ -614,7 +614,7 @@ Module(
           if (!imageParts.length) {
             return await message.sendReply("❌ Albümde resim bulunamadı.");
           }
-          if (!prompt) prompt = "Analyze these images for me.";
+          if (!prompt) prompt = "Bu görselleri benim için analiz et.";
         } catch (error) {
           console.error("Error downloading album:", error);
           return await message.sendReply("❌ Albüm indirilemedi.");
@@ -635,7 +635,7 @@ Module(
       const fullText = await callGenerativeAI(prompt, imageParts, message, sent_msg);
 
       if (!fullText) {
-        await message.edit("❌ Received empty response from AI.", message.jid, sent_msg.key);
+        await message.edit("❌ YZ'den boş bir yanıt alındı.", message.jid, sent_msg.key);
         return;
       }
 

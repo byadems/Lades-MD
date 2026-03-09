@@ -87,7 +87,7 @@ Module(
           for (let i in commits.all) {
             updateInfo += `${parseInt(i) + 1}• *${commits.all[i].message}*\n`;
           }
-          updateInfo += `\n_Use "${handler}update start" to apply the update_`;
+          updateInfo += `\n_Kullanmak için "${handler}update start" to apply the update_`;
         } else if (isBetaUpdate) {
           updateInfo = `*_BETA UPDATE AVAILABLE_*\n\n`;
           updateInfo += `📦 Current version: *${localVersion}*\n`;
@@ -96,7 +96,7 @@ Module(
           for (let i in commits.all) {
             updateInfo += `${parseInt(i) + 1}• *${commits.all[i].message}*\n`;
           }
-          updateInfo += `\n_Use "${handler}update beta" to apply beta updates_`;
+          updateInfo += `\n_Kullanmak için "${handler}update beta" to apply beta updates_`;
         }
 
         return await message.edit(updateInfo, message.jid, processingMsg.key);

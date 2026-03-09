@@ -169,7 +169,7 @@ Module(
       (!message.reply_message && files.length < 2) ||
       (message.reply_message && !message.reply_message.video)
     )
-      return await message.send("Give me videos");
+      return await message.send("Bana videolar verin");
     if (message.reply_message.video && files.length == 1) {
       var savedFile = await message.reply_message.download();
       await fs.writeFileSync(
@@ -309,7 +309,7 @@ Module(
   {
     pattern: "find ?(.*)",
     desc: "Yapay zeka (AI) kullanarak müzik adını bulur",
-    usage: ".find reply to a music",
+    usage: ".find bir müziğe yanıt verin",
     use: "search",
   },
   async (message, match) => {

@@ -108,7 +108,7 @@ Module(
         let user = userObj.jid;
         let userStat = userObj.stat;
         let count = userStat.totalMessages;
-        let name = userStat.User?.name?.replace(/[\r\n]+/gm, "") || "Unknown";
+        let name = userStat.User?.name?.replace(/[\r\n]+/gm, "") || "Bilinmiyor";
         let lastMsg = timeSince(userStat.lastMessageAt);
         let types_msg = "\n";
         if (userStat.textMessages > 0)
@@ -258,7 +258,7 @@ Module(
         }
 
         if (inactiveMembers.length > 10) {
-          responseMsg += `... and ${inactiveMembers.length - 10} more\n`;
+          responseMsg += `... ve ${inactiveMembers.length - 10} more\n`;
         }
 
         responseMsg += `\n_Starting kick process in 5 seconds..._`;
@@ -303,7 +303,7 @@ Module(
           responseMsg += `   _Total msgs:_ ${member.totalMessages}\n\n`;
         }
 
-        responseMsg += `_Use \`.inactive ${durationStr} kick\` to remove these members._`;
+        responseMsg += `_Kullanmak için \`.inactive ${durationStr} kick\` to remove these members._`;
 
         return await message.client.sendMessage(message.jid, {
           text: responseMsg,
@@ -320,7 +320,7 @@ Module(
     fromMe: true,
     desc: "Mesaj sayısına göre en iyi kullanıcıları gösterir.",
     usage:
-      ".users (shows top 10 users - global in DM, chat-specific in groups)\n.users global (shows global top users)\n.users 20 (shows top 20 users)\n.users global 15 (shows top 15 global users)",
+      ".users (shows top 10 users - global in DM, chat-specific in gruplar)\n.users global (shows global top users)\n.users 20 (shows top 20 users)\n.users global 15 (shows top 15 global users)",
     use: "utility",
   },
   async (message, match) => {
@@ -389,7 +389,7 @@ Module(
         for (let i = 0; i < topUsers.length; i++) {
           const user = topUsers[i];
           const rank = i + 1;
-          const name = user.name?.replace(/[\r\n]+/gm, "") || "Unknown";
+          const name = user.name?.replace(/[\r\n]+/gm, "") || "Bilinmiyor";
           const lastMessage = timeSince(user.lastMessageAt);
 
           responseMsg += `*${rank}.* @${user.jid.split("@")[0]}\n`;
@@ -397,7 +397,7 @@ Module(
           responseMsg += `   _Messages:_ ${user.totalMessages}${
             isGlobal ? " (across all chats)" : ""
           }\n`;
-          responseMsg += `   _Last seen:_ ${lastMessage}\n\n`;
+          responseMsg += `   _Son görülme:_ ${lastMessage}\n\n`;
         }
 
         if (isGlobal) {

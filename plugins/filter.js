@@ -34,7 +34,7 @@ Module(
           `*Scopes:*\n` +
           `• \`chat\` - Current chat only (default)\n` +
           `• \`global\` - All chats\n` +
-          `• \`group\` - All groups\n` +
+          `• \`group\` - All gruplar\n` +
           `• \`dm\` - All DMs\n\n` +
           `*Options:*\n` +
           `• \`exact\` - Exact word match only\n` +
@@ -332,7 +332,7 @@ Module(
       `*🌍 Filter Scopes:*\n` +
       `• \`chat\` - Only works in current chat\n` +
       `• \`global\` - Works in all chats\n` +
-      `• \`group\` - Works in all groups only\n` +
+      `• \`group\` - Works in all gruplar only\n` +
       `• \`dm\` - Works in all DMs only\n\n` +
       `*⚙️ Filter Options:*\n` +
       `• \`exact\` - Only exact word matches\n` +

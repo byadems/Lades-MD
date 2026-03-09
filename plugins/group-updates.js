@@ -262,7 +262,7 @@ Module(
       }
       if (match[1] === "allow") {
         return await message.sendReply(
-          `_Allowed prefixes are: ${ALLOWED} (applies to all groups)_`
+          `_Allowed prefixes are: ${ALLOWED} (applies to all gruplar)_`
         );
       }
       if (match[1] === "off") {

@@ -44,10 +44,10 @@ Module(
           `*Kullanım:*\n` +
           `• \`${handler}warn @user reason\`\n` +
           `• \`${handler}warn reply reason\`\n` +
-          `• \`${handler}warnings @user\` - Check warnings\n` +
-          `• \`${handler}rmwarn @user\` - Remove one warning\n` +
-          `• \`${handler}resetwarn @user\` - Remove all warnings\n` +
-          `• \`${handler}warnlist\` - List all warned users`
+          `• \`${handler}uyarı @user\` - Check uyarı\n` +
+          `• \`${handler}rmwarn @user\` - Bir uyarıyı kaldır\n` +
+          `• \`${handler}resetwarn @user\` - Remove all uyarı\n` +
+          `• \`${handler}warnlist\` - Tüm uyarılanları listele`
       );
     }
 
@@ -61,17 +61,17 @@ Module(
       return await message.sendReply("_🔍 Bot sahiplerini/yöneticileri uyaramazsınız!_");
     }
 
-    let rawReason = match[1] || "No reason provided";
+    let rawReason = match[1] || "Sebep belirtilmedi";
     const mentionRegex = new RegExp(`@${targetNumericId}\\s*`, "g");
     const reason =
-      rawReason.replace(mentionRegex, "").trim() || "No reason provided";
+      rawReason.replace(mentionRegex, "").trim() || "Sebep belirtilmedi";
 
     try {
       await setWarn(message.jid, targetUser, reason, message.sender);
 
       const warnData = await getWarn(message.jid, targetUser, warnLimit);
       const currentWarns = warnData.current;
-      const remaining = warnData.remaining;
+      const kalan = warnData.kalan;
 
       if (warnData.exceeded) {
         try {
@@ -83,34 +83,34 @@ Module(
 
           await message.client.sendMessage(message.jid, {
             text: `⚠ *Kullanıcı Gruptan Çıkarıldı!*\n\n` +
-              `- User: \`@${targetNumericId}\`\n` +
-              `- Reason: \`${reason}\`\n` +
-              `- Warnings: \`${currentWarns}/${warnLimit} (LIMIT EXCEEDED)\`\n` +
-              `- Action: \`Removed from group\`\n\n` +
-              `_User has been kicked for exceeding the warning limit._`,
+              `- Kullanıcı: \`@${targetNumericId}\`\n` +
+              `- Sebep: \`${reason}\`\n` +
+              `- Uyarılar: \`${currentWarns}/${warnLimit} (SINIR AŞILDI)\`\n` +
+              `- İşlem: \`Gruptan çıkarıldı\`\n\n` +
+              `_Kullanmak içinr has been kicked for exceeding the warning limit._`,
             mentions: [targetUser],
           });
         } catch (kickError) {
           await message.client.sendMessage(message.jid, {
             text: `⚠ *Uyarı Sınırı Aşıldı!*\n\n` +
-              `- User: \`@${targetNumericId}\`\n` +
-              `- Warnings: \`${currentWarns}/${warnLimit}\`\n` +
-              `- Error: \`Failed to kick user\`\n\n` +
-              `_Please manually remove the user or check my admin permissions._`,
+              `- Kullanıcı: \`@${targetNumericId}\`\n` +
+              `- Uyarılar: \`${currentWarns}/${warnLimit}\`\n` +
+              `- Hata: \`Kullanıcı atılamadı\`\n\n` +
+              `_Lütfen kullanıcıyı elle çıkarın veya yönetici izinlerimi kontrol edin._`,
             mentions: [targetUser],
           });
         }
       } else {
         await message.client.sendMessage(message.jid, {
           text: `⚠ *Kullanıcı Uyarıldı!*\n\n` +
-            `- User: \`@${targetNumericId}\`\n` +
-            `- Reason: \`${reason}\`\n` +
-            `- Warnings: \`${currentWarns}/${warnLimit}\`\n` +
-            `- Remaining: \`${remaining}\`\n\n` +
+            `- Kullanıcı: \`@${targetNumericId}\`\n` +
+            `- Sebep: \`${reason}\`\n` +
+            `- Uyarılar: \`${currentWarns}/${warnLimit}\`\n` +
+            `- Kalan: \`${kalan}\`\n\n` +
             `${
-              remaining === 1
-                ? "_Next warning will result in a kick!_"
-                : `_${remaining} more warnings before kick._`
+              kalan === 1
+                ? "_Sonraki uyarı atılmayla sonuçlanacak!_"
+                : `_${kalan} uyarı daha kaldı._`
             }`,
           mentions: [targetUser],
         });
@@ -124,10 +124,10 @@ Module(
 
 Module(
   {
-    pattern: "warnings ?(.*)",
+    pattern: "uyarı ?(.*)",
     fromMe: false,
     desc: "Bir kullanıcının uyarılarını kontrol eder",
-    usage: ".warnings @user\n.warnings reply",
+    usage: ".uyarı @user\n.uyarı reply",
     use: "group",
   },
   async (message, match) => {
@@ -144,47 +144,47 @@ Module(
     const targetNumericId = targetUser?.split("@")[0];
 
     try {
-      const warnings = await getWarn(message.jid, targetUser);
+      const uyarı = await getWarn(message.jid, targetUser);
 
-      if (!warnings || warnings.length === 0) {
+      if (!uyarı || uyarı.length === 0) {
         return await message.client.sendMessage(message.jid, {
           text: `✓ *Uyarı Yok*\n\n` +
-            `- User: \`@${targetNumericId}\`\n` +
-            `- Status: \`Clean record\`\n` +
-            `- Warnings: \`0/${warnLimit}\``,
+            `- Kullanıcı: \`@${targetNumericId}\`\n` +
+            `- Durum: \`Temiz sicil\`\n` +
+            `- Uyarılar: \`0/${warnLimit}\``,
           mentions: [targetUser],
         });
       }
 
-      const currentWarns = warnings.length;
-      const remaining = warnLimit - currentWarns;
+      const currentWarns = uyarı.length;
+      const kalan = warnLimit - currentWarns;
 
-      let warningsList = `📋 *Warning History*\n\n`;
-      warningsList += `- User: \`@${targetNumericId}\`\n`;
-      warningsList += `- Total Warnings: \`${currentWarns}/${warnLimit}\`\n`;
-      warningsList += `- Remaining: \`${remaining > 0 ? remaining : 0}\`\n\n`;
+      let uyarıList = `📋 *Uyarı Geçmişi*\n\n`;
+      uyarıList += `- Kullanıcı: \`@${targetNumericId}\`\n`;
+      uyarıList += `- Toplam Uyarılar: \`${currentWarns}/${warnLimit}\`\n`;
+      uyarıList += `- Kalan: \`${kalan > 0 ? kalan : 0}\`\n\n`;
 
-      warnings.slice(0, 5).forEach((warn, index) => {
+      uyarı.slice(0, 5).forEach((warn, index) => {
         const date = new Date(warn.timestamp).toLocaleString();
         const warnedByNumeric = warn.warnedBy?.split("@")[0];
-        warningsList += `*${index + 1}.* ${warn.reason}\n`;
-        warningsList += `   _By: @${warnedByNumeric}_\n`;
-        warningsList += `   _Date: ${date}_\n\n`;
+        uyarıList += `*${index + 1}.* ${warn.reason}\n`;
+        uyarıList += `   _Uyaran: @${warnedByNumeric}_\n`;
+        uyarıList += `   _Tarih: ${date}_\n\n`;
       });
 
-      if (warnings.length > 5) {
-        warningsList += `_... and ${warnings.length - 5} more warnings_\n\n`;
+      if (uyarı.length > 5) {
+        uyarıList += `_... ve ${uyarı.length - 5} daha fazla uyarı_\n\n`;
       }
 
-      if (remaining <= 0) {
-        warningsList += `⚠ _User has exceeded the warning limit!_`;
-      } else if (remaining === 1) {
-        warningsList += `⚠ _Next warning will result in a kick!_`;
+      if (kalan <= 0) {
+        uyarıList += `⚠ _Kullanmak içinr has exceeded the warning limit!_`;
+      } else if (kalan === 1) {
+        uyarıList += `⚠ _Sonraki uyarı atılmayla sonuçlanacak!_`;
       }
 
       await message.client.sendMessage(message.jid, {
-        text: warningsList,
-        mentions: [targetUser, ...warnings.slice(0, 5).map((w) => w.warnedBy)],
+        text: uyarıList,
+        mentions: [targetUser, ...uyarı.slice(0, 5).map((w) => w.warnedBy)],
       });
     } catch (error) {
       console.error("Warning check error:", error);
@@ -224,10 +224,10 @@ Module(
       if (currentCount === 0) {
         return await message.client.sendMessage(message.jid, {
           text: "ℹ *Uyarı Yok*\n\n" +
-            "- User: `@" +
+            "- Kullanıcı: `@" +
             targetNumericId +
             "`\n" +
-            "- Status: `No warnings to remove`",
+            "- Durum: `Kaldırılacak uyarı yok`",
           mentions: [targetUser],
         });
       }
@@ -238,15 +238,15 @@ Module(
         const newCount = await getWarnCount(message.jid, targetUser);
         await message.client.sendMessage(message.jid, {
           text: "✓ *Uyarı Kaldırıldı!*\n\n" +
-            "- User: `@" +
+            "- Kullanıcı: `@" +
             targetNumericId +
             "`\n" +
-            "- Removed: `1 warning`\n" +
-            "- Remaining: `" +
+            "- Kaldırıldı: `1 uyarı`\n" +
+            "- Kalan: `" +
             newCount +
-            " warning(s)`\n" +
-            "- Status: `" +
-            (newCount === 0 ? "Clean record" : "Still has warnings") +
+            " uyarı`\n" +
+            "- Durum: `" +
+            (newCount === 0 ? "Temiz sicil" : "Hâlâ uyarıları var") +
             "`",
           mentions: [targetUser],
         });
@@ -294,10 +294,10 @@ Module(
       if (currentCount === 0) {
         return await message.client.sendMessage(message.jid, {
           text: "ℹ *Uyarı Yok*\n\n" +
-            "- User: `@" +
+            "- Kullanıcı: `@" +
             targetNumericId +
             "`\n" +
-            "- Status: `No warnings to reset`",
+            "- Durum: `Sıfırlanacak uyarı yok`",
           mentions: [targetUser],
         });
       }
@@ -307,13 +307,13 @@ Module(
       if (removed) {
         await message.client.sendMessage(message.jid, {
           text: "✓ *Uyarılar Sıfırlandı!*\n\n" +
-            "- User: `@" +
+            "- Kullanıcı: `@" +
             targetNumericId +
             "`\n" +
-            "- Removed: `" +
+            "- Kaldırıldı: `" +
             currentCount +
-            " warning(s)`\n" +
-            "- Status: `Clean record`",
+            " uyarı`\n" +
+            "- Durum: `Temiz sicil`",
           mentions: [targetUser],
         });
       } else {
@@ -351,13 +351,13 @@ Module(
 
       if (Object.keys(allWarnings).length === 0) {
         return await message.sendReply(`✓ *Temiz Grup!*\n\n` +
-            `- No users have warnings in this group.\n` +
-            `_Everyone is following the rules!_`
+            `- Bu grupta hiçbir kullanıcının uyarısı yok.\n` +
+            `_Herkes kurallara uyuyor!_`
         );
       }
 
-      let warnList = `📋 *Group Warning List*\n\n`;
-      warnList += `- Warning Limit: \`${warnLimit}\`\n\n`;
+      let warnList = `📋 *Grup Uyarı Listesi*\n\n`;
+      warnList += `- Uyarı Sınırı: \`${warnLimit}\`\n\n`;
 
       const sortedUsers = Object.entries(allWarnings).sort(
         ([, a], [, b]) => b.length - a.length
@@ -368,13 +368,13 @@ Module(
       sortedUsers.forEach(([userJid, userWarnings], index) => {
         const userNumericId = userJid?.split("@")[0];
         const warnCount = userWarnings.length;
-        const remaining = warnLimit - warnCount;
+        const kalan = warnLimit - warnCount;
         const status =
-          remaining <= 0
-            ? "⚠ LIMIT EXCEEDED"
-            : remaining === 1
-            ? "⚠ FINAL WARNING"
-            : `✓ ${remaining} remaining`;
+          kalan <= 0
+            ? "⚠ SINIR AŞILDI"
+            : kalan === 1
+            ? "⚠ SON UYARI"
+            : `✓ ${kalan} kalan`;
 
         warnList += `*${index + 1}.* @${userNumericId}\n`;
         warnList += `   _Warnings: \`${warnCount}/${warnLimit}\`_\n`;
@@ -382,7 +382,7 @@ Module(
 
         if (userWarnings.length > 0) {
           const latestWarning = userWarnings[0];
-          warnList += `   _Latest: \`${latestWarning.reason.substring(0, 30)}${
+          warnList += `   _Son: \`${latestWarning.reason.substring(0, 30)}${
             latestWarning.reason.length > 30 ? "..." : ""
           }\`_\n`;
         }
@@ -391,8 +391,8 @@ Module(
         mentions.push(userJid);
       });
 
-      warnList += `_Total warned users: ${sortedUsers.length}_\n`;
-      warnList += `_Use ${handler}warnings @user for detailed history_`;
+      warnList += `_Toplam uyarılan kullanıcı: ${sortedUsers.length}_\n`;
+      warnList += `_Kullanmak için ${handler}uyarı @user için detaylı geçmişi görebilirsiniz_`;
 
       await message.client.sendMessage(message.jid, {
         text: warnList,
@@ -418,17 +418,17 @@ Module(
 
     if (!newLimit || newLimit < 1 || newLimit > 20) {
       return await message.sendReply(`⚠ *Geçersiz Uyarı Sınırı*\n\n` +
-          `- Please provide a number between 1 and 20.\n` +
-          `- Current limit: \`${warnLimit}\`\n\n` +
-          `*Usage:* \`${handler}setwarnlimit 5\``
+          `- Lütfen 1 ile 20 arasında bir sayı girin.\n` +
+          `- Mevcut sınır: \`${warnLimit}\`\n\n` +
+          `*Kullanım:* \`${handler}setwarnlimit 5\``
       );
     }
 
     try {
       await message.sendReply(`✓ *Uyarı Sınırı Güncellendi!*\n\n` +
-          `- New limit: \`${newLimit} warnings\`\n` +
-          `- Previous limit: \`${warnLimit}\`\n\n` +
-          `_Users will now be kicked after ${newLimit} warnings._`
+          `- Yeni sınır: \`${newLimit} uyarı\`\n` +
+          `- Önceki sınır: \`${warnLimit}\`\n\n` +
+          `_Kullanmak içinrs will now be kicked after ${newLimit} uyarı._`
       );
     } catch (error) {
       console.error("Set warn limit error:", error);
@@ -462,7 +462,7 @@ Module(
 
       const totalUsers = Object.keys(allWarnings).length;
       const totalWarnings = Object.values(allWarnings).reduce(
-        (sum, warnings) => sum + warnings.length,
+        (sum, uyarı) => sum + uyarı.length,
         0
       );
 
@@ -478,15 +478,15 @@ Module(
       });
 
       const stats =
-        `📊 *Group Warning Statistics*\n\n` +
-        `- Warning Limit: \`${warnLimit}\`\n` +
-        `- Total Warned Users: \`${totalUsers}\`\n` +
-        `- Total Warnings Issued: \`${totalWarnings}\`\n\n` +
-        `*User Status:*\n` +
-        `- ⚠ At Limit: \`${atLimit}\`\n` +
-        `- ⚠ Near Limit: \`${nearLimit}\`\n` +
-        `- ✓ Safe: \`${safe}\`\n\n` +
-        `_Use ${handler}warnlist to see detailed list_`;
+        `📊 *Grup Uyarı İstatistikleri*\n\n` +
+        `- Uyarı Sınırı: \`${warnLimit}\`\n` +
+        `- Toplam Uyarılan Kullanıcı: \`${totalUsers}\`\n` +
+        `- Verilen Toplam Uyarı: \`${totalWarnings}\`\n\n` +
+        `*Kullanıcı Durumu:*\n` +
+        `- ⚠ Sınırda: \`${atLimit}\`\n` +
+        `- ⚠ Sınıra Yakın: \`${nearLimit}\`\n` +
+        `- ✓ Güvende: \`${safe}\`\n\n` +
+        `_Kullanmak için ${handler}warnlist detaylı listeyi görmek için_`;
 
       await message.sendReply(stats);
     } catch (error) {

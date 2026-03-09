@@ -206,7 +206,7 @@ Module({ on: "text", fromMe }, async (message) => {
           );
           const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-          let qualityText = "_*Select Video Quality*_\n\n";
+          let qualityText = "_*Video Kalitesini Seçin*_\n\n";
           qualityText += `_*${info.title}*_\n\n(${videoId})\n\n`;
 
           if (uniqueQualities.length === 0) {
@@ -483,7 +483,7 @@ Module(
     fromMe: true,
     desc: "URL izleyici otomatik indirme - sohbetlerde veya küresel olarak etkinleştirin",
     usage:
-      ".autodl - show menu\n.autodl on/off - enable/disable in current chat\n.autodl on/off groups - enable/disable in all groups\n.autodl on/off dms - enable/disable in all DMs\n.autodl status - show current status",
+      ".autodl - show menu\n.autodl on/off - enable/disable in current chat\n.autodl on/off gruplar - enable/disable in all gruplar\n.autodl on/off dms - enable/disable in all DMs\n.autodl status - show current status",
   },
   async (message, match) => {
     const input = match[1]?.trim();
@@ -508,15 +508,15 @@ Module(
       const globalDMs = config.AUTODL_ALL_DMS === "true";
 
       return await message.sendReply(`*_✨ ⬇️ Otomatik İndirme Yöneticisi_*\n\n` +
-          `- _Current chat:_ ${chatJid.includes("@g.us") ? "Group" : "DM"}\n` +
-          `- _Status:_ ${enabled ? "Enabled ✅" : "Disabled ❌"}\n` +
-          `- _Global Groups:_ ${
-            globalGroups ? "Enabled ✅" : "Disabled ❌"
+          `- _Current chat:_ ${chatJid.includes("@g.us") ? "Grup" : "DM"}\n` +
+          `- _Durum:_ ${enabled ? "Açık ✅" : "Kapalı ❌"}\n` +
+          `- _Genel Gruplar:_ ${
+            globalGroups ? "Açık ✅" : "Kapalı ❌"
           }\n` +
-          `- _Global DMs:_ ${globalDMs ? "Enabled ✅" : "Disabled ❌"}\n\n` +
+          `- _Genel DM'ler:_ ${globalDMs ? "Açık ✅" : "Kapalı ❌"}\n\n` +
           `_Commands:_\n` +
           `- \`${HANDLER_PREFIX}autodl on/off\` - Sets in current chat\n` +
-          `- \`${HANDLER_PREFIX}autodl on/off groups\` - Sets in all groups\n` +
+          `- \`${HANDLER_PREFIX}autodl on/off gruplar\` - Sets in all gruplar\n` +
           `- \`${HANDLER_PREFIX}autodl on dms\` - Sets in all DMs\n` +
           `- \`${HANDLER_PREFIX}autodl off dms\` - Sets in all DMs\n` +
           `- \`${HANDLER_PREFIX}autodl status\` - Show detailed status`
@@ -528,9 +528,9 @@ Module(
     const target = parts[1]?.toLowerCase();
 
     if (cmd === "on") {
-      if (target === "groups") {
+      if (target === "gruplar") {
         await setVar("AUTODL_ALL_GROUPS", "true");
-        return await message.sendReply("_❌ Tüm gruplarda AutoDL aktif ✅_\n_Kapatmak için .autodl off groups kullanın_"
+        return await message.sendReply("_❌ Tüm gruplarda AutoDL aktif ✅_\n_Kapatmak için .autodl off gruplar kullanın_"
         );
       } else if (target === "dms") {
         await setVar("AUTODL_ALL_DMS", "true");
@@ -546,9 +546,9 @@ Module(
     }
 
     if (cmd === "off") {
-      if (target === "groups") {
+      if (target === "gruplar") {
         await setVar("AUTODL_ALL_GROUPS", "false");
-        return await message.sendReply("_✨ Tüm gruplarda AutoDL devre dışı ❌_\n_Açmak için .autodl on groups kullanın_"
+        return await message.sendReply("_✨ Tüm gruplarda AutoDL devre dışı ❌_\n_Açmak için .autodl on gruplar kullanın_"
         );
       } else if (target === "dms") {
         await setVar("AUTODL_ALL_DMS", "false");
@@ -570,10 +570,10 @@ Module(
           `• _Enabled chats:_ ${
             enabledList.length > 0 ? enabledList.join(", ") : "None"
           }\n` +
-          `• _Global Groups:_ ${
-            globalGroups ? "Enabled ✅" : "Disabled ❌"
+          `• _Genel Gruplar:_ ${
+            globalGroups ? "Açık ✅" : "Kapalı ❌"
           }\n` +
-          `• _Global DMs:_ ${globalDMs ? "Enabled ✅" : "Disabled ❌"}`
+          `• _Genel DM'ler:_ ${globalDMs ? "Açık ✅" : "Kapalı ❌"}`
       );
     }
 

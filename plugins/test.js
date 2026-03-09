@@ -56,7 +56,7 @@ Module(
     var dob = new Date(actual).getTime();
     var today = new Date().getTime();
     var age = (dob - today) / 1000;
-    return await m.sendReply("_" + TimeCalculator(age) + " remaining_");
+    return await m.sendReply("_" + TimeCalculator(age) + " kalan_");
   }
 );
 Module(

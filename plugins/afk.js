@@ -120,7 +120,7 @@ async function saveAFKData() {
   }
 }
 
-async function setAFK(userJid, reason = "I am currently away from keyboard") {
+async function setAFK(userJid, reason = "Şu anda klavyeden uzaktayım") {
   const now = new Date();
   const afkData = {
     reason: reason,
@@ -195,10 +195,10 @@ Module(
         );
         const lastSeen = timeSince(data.lastSeen);
         afkList += `${count}. @${jid.split("@")[0]}\n`;
-        afkList += `   📝 _Reason:_ \`${data.reason}\`\n`;
-        afkList += `   ⏰ _AFK for:_ \`${timeAFK}\`\n`;
-        afkList += `   👁️ _Last seen:_ \`${lastSeen}\`\n`;
-        afkList += `   💬 _Messages received:_ \`${data.messageCount}\`\n\n`;
+        afkList += `   📝 _Sebep:_ \`${data.reason}\`\n`;
+        afkList += `   ⏰ _AFK süresi:_ \`${timeAFK}\`\n`;
+        afkList += `   👁️ _Son görülme:_ \`${lastSeen}\`\n`;
+        afkList += `   💬 _Alınan mesajlar:_ \`${data.messageCount}\`\n\n`;
         count++;
       }
 
@@ -216,27 +216,27 @@ Module(
         const lastSeen = timeSince(afkData.lastSeen);
 
         return await message.sendReply(`*_🌙 Şu anda AFK modundasınız_*\n\n` +
-            `📝 _Reason:_ \`${afkData.reason}\`\n` +
-            `⏰ _AFK for:_ \`${timeAFK}\`\n` +
-            `👁️ _Last seen:_ \`${lastSeen}\`\n` +
-            `💬 _Messages received:_ \`${afkData.messageCount}\`\n\n` +
+            `📝 _Sebep:_ \`${afkData.reason}\`\n` +
+            `⏰ _AFK süresi:_ \`${timeAFK}\`\n` +
+            `👁️ _Son görülme:_ \`${lastSeen}\`\n` +
+            `💬 _Alınan mesajlar:_ \`${afkData.messageCount}\`\n\n` +
             `_Type any message to go back online._`
         );
       } else {
         await setAFK(userJid, input);
         return await message.sendReply(`*_🌙 AFK nedeni güncellendi_*\n\n` +
-            `📝 _New reason:_ \`${input}\`\n\n` +
-            `_I'll auto-reply when someone messages or mentions you._`
+            `📝 _Yeni sebep:_ \`${input}\`\n\n` +
+            `_Biri size mesaj attığında veya sizi etiketlediğinde otomatik yanıt vereceğim._`
         );
       }
     } else {
-      const reason = input || "I am currently away from keyboard";
+      const reason = input || "Şu anda klavyeden uzaktayım";
       await setAFK(userJid, reason);
 
       return await message.sendReply(`*_🌙 Artık AFK modundasınız_*\n\n` +
-          `📝 _Reason:_ \`${reason}\`\n` +
-          `⏰ _Since:_ \`${new Date().toLocaleTimeString()}\`\n\n` +
-          `_I'll auto-reply when someone messages or mentions you._\n` +
+          `📝 _Sebep:_ \`${reason}\`\n` +
+          `⏰ _Bu zamandan beri:_ \`${new Date().toLocaleTimeString()}\`\n\n` +
+          `_Biri size mesaj attığında veya sizi etiketlediğinde otomatik yanıt vereceğim._\n` +
           `_Type any message to go back online._`
       );
     }
@@ -264,7 +264,7 @@ Module(
           const welcomeBack =
             `*_🌅 Welcome back!_*\n\n` +
             `⏰ _You were AFK for:_ \`${timeAFK}\`\n` +
-            `💬 _Messages received:_ \`${afkData.messageCount}\`\n` +
+            `💬 _Alınan mesajlar:_ \`${afkData.messageCount}\`\n` +
             `📝 _Your reason:_ ${afkData.reason}`;
 
           await message.sendReply(welcomeBack);
@@ -295,10 +295,10 @@ Module(
 
             const afkReply =
               `*_🌙 @${mentionedJid.split("@")[0]} is currently AFK_*\n\n` +
-              `📝 _Reason:_ \`${afkData.reason}\`\n` +
-              `⏰ _AFK for:_ \`${timeAFK}\`\n` +
-              `👁️ _Last seen:_ \`${lastSeen}\`\n` +
-              `💬 _Messages received:_ \`${afkData.messageCount + 1}\``;
+              `📝 _Sebep:_ \`${afkData.reason}\`\n` +
+              `⏰ _AFK süresi:_ \`${timeAFK}\`\n` +
+              `👁️ _Son görülme:_ \`${lastSeen}\`\n` +
+              `💬 _Alınan mesajlar:_ \`${afkData.messageCount + 1}\``;
 
             await message.sendMessage(afkReply, "text", {
               quoted: message.data,
@@ -321,10 +321,10 @@ Module(
 
           const afkReply =
             `*_🌙 Bot owner is currently AFK_*\n\n` +
-            `📝 _Reason:_ \`${afkData.reason}\`\n` +
-            `⏰ _AFK for:_ \`${timeAFK}\`\n` +
-            `👁️ _Last seen:_ \`${lastSeen}\`\n` +
-            `💬 _Messages received:_ \`${afkData.messageCount + 1}\`\n\n` +
+            `📝 _Sebep:_ \`${afkData.reason}\`\n` +
+            `⏰ _AFK süresi:_ \`${timeAFK}\`\n` +
+            `👁️ _Son görülme:_ \`${lastSeen}\`\n` +
+            `💬 _Alınan mesajlar:_ \`${afkData.messageCount + 1}\`\n\n` +
             `_Your message has been noted. They'll get back to you when available._`;
 
           await message.sendReply(afkReply);
@@ -344,10 +344,10 @@ Module(
 
           const afkReply =
             `*_🌙 @${repliedToJid.split("@")[0]} is currently AFK_*\n\n` +
-            `📝 _Reason:_ \`${afkData.reason}\`\n` +
-            `⏰ _AFK for:_ \`${timeAFK}\`\n` +
-            `👁️ _Last seen:_ \`${lastSeen}\`\n` +
-            `💬 _Messages received:_ \`${afkData.messageCount + 1}\``;
+            `📝 _Sebep:_ \`${afkData.reason}\`\n` +
+            `⏰ _AFK süresi:_ \`${timeAFK}\`\n` +
+            `👁️ _Son görülme:_ \`${lastSeen}\`\n` +
+            `💬 _Alınan mesajlar:_ \`${afkData.messageCount + 1}\``;
 
           await message.sendMessage(afkReply, "text", {
             quoted: message.data,

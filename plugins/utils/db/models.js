@@ -15,7 +15,7 @@ const warnDB = config.sequelize.define("_warn", {
   reason: {
     type: DataTypes.TEXT,
     allowNull: true,
-    defaultValue: "No reason provided",
+    defaultValue: "Sebep belirtilmedi",
   },
   warnedBy: {
     type: DataTypes.STRING,

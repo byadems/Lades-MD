@@ -54,24 +54,24 @@ Module(
 
       if (!results || results.length === 0) {
         return await message.edit(
-          "_No results found!_",
+          "_❌ Sonuç bulunamadı!_",
           message.jid,
           searchMsg.key
         );
       }
 
-      let resultText = "YouTube Search Results\n\n";
-      resultText += `_Found ${results.length} results for:_ *${query}*\n\n`;
+      let resultText = "YouTube Arama Sonuçları\n\n";
+      resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
       results.forEach((video, index) => {
         resultText += `*${index + 1}.* ${video.title}\n`;
-        resultText += `   _Duration:_ \`${
+        resultText += `   _Süre:_ \`${
           video.duration
-        }\` | _Views:_ \`${formatViews(video.views)}\`\n`;
-        resultText += `   _Channel:_ ${video.channel.name}\n\n`;
+        }\` | _Görüntülenme:_ \`${formatViews(video.views)}\`\n`;
+        resultText += `   _Kanal:_ ${video.channel.name}\n\n`;
       });
 
-      resultText += "_Reply with a number (1-10) to download audio_";
+      resultText += "_Ses indirmek için bir numara (1-10) ile yanıtlayın_";
 
       await message.edit(resultText, message.jid, searchMsg.key);
     } catch (error) {
@@ -102,24 +102,24 @@ Module(
 
       if (!results || results.length === 0) {
         return await message.edit(
-          "_No results found!_",
+          "_❌ Sonuç bulunamadı!_",
           message.jid,
           searchMsg.key
         );
       }
 
-      let resultText = "YouTube Search Results\n\n";
-      resultText += `_Found ${results.length} results for:_ *${query}*\n\n`;
+      let resultText = "YouTube Arama Sonuçları\n\n";
+      resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
       results.forEach((video, index) => {
         resultText += `*${index + 1}.* ${video.title}\n`;
-        resultText += `   _Duration:_ \`${
+        resultText += `   _Süre:_ \`${
           video.duration
-        }\` | _Views:_ \`${formatViews(video.views)}\`\n`;
-        resultText += `   _Channel:_ ${video.channel.name}\n\n`;
+        }\` | _Görüntülenme:_ \`${formatViews(video.views)}\`\n`;
+        resultText += `   _Kanal:_ ${video.channel.name}\n\n`;
       });
 
-      resultText += "_Reply with a number (1-10) to see video details_";
+      resultText += "_Video detaylarını görüntülemek için bir numara (1-10) ile yanıtlayın_";
 
       await message.edit(resultText, message.jid, searchMsg.key);
     } catch (error) {
@@ -178,12 +178,12 @@ Module(
       );
       const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-      let qualityText = "_*Select Video Quality*_\n\n";
+      let qualityText = "_*Video Kalitesini Seçin*_\n\n";
       qualityText += `_*${info.title}*_\n\n(${videoId})\n\n`;
 
       if (uniqueQualities.length === 0) {
         return await message.edit(
-          "_No video formats available for this video._",
+          "_❌ Bu video için uygun format bulunamadı._",
           message.jid,
           infoMsg.key
         );
@@ -240,10 +240,10 @@ Module(
         }
         qualityText += `*${
           uniqueQualities.length + 1
-        }.* _*Audio Only*_${audioSizeInfo}\n`;
+        }.* _*Sadece Ses*_${audioSizeInfo}\n`;
       }
 
-      qualityText += "\n_Reply with a number to download_";
+      qualityText += "\n_İndirmek için bir numara ile yanıtlayın_";
 
       await message.edit(qualityText, message.jid, infoMsg.key);
     } catch (error) {
@@ -290,7 +290,7 @@ Module(
       const result = await downloadVideo(url, "360p");
       videoPath = result.path;
 
-      await message.edit("_Uploading video..._", message.jid, downloadMsg.key);
+      await message.edit("_📤 Video yükleniyor..._", message.jid, downloadMsg.key);
 
       const stats = fs.statSync(videoPath);
 
@@ -299,20 +299,20 @@ Module(
         await message.sendMessage({ stream }, "document", {
           fileName: `${result.title}.mp4`,
           mimetype: "video/mp4",
-          caption: `_*${result.title}*_\n\n_File size: ${formatBytes(
+          caption: `_*${result.title}*_\n\n_Dosya boyutu: ${formatBytes(
             stats.size
-          )}_\n_Quality: 360p_`,
+          )}_\n_Kalite: 360p_`,
         });
         stream.destroy();
       } else {
         const stream = fs.createReadStream(videoPath);
         await message.sendReply({ stream }, "video", {
-          caption: `_*${result.title}*_\n\n_Quality: 360p_`,
+          caption: `_*${result.title}*_\n\n_Kalite: 360p_`,
         });
         stream.destroy();
       }
 
-      await message.edit("_Download complete!_", message.jid, downloadMsg.key);
+      await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (fs.existsSync(videoPath)) {
@@ -321,7 +321,7 @@ Module(
     } catch (error) {
       console.error("Video download error:", error);
       if (downloadMsg) {
-        await message.edit("_Download failed!_", message.jid, downloadMsg.key);
+        await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
         await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
@@ -372,7 +372,7 @@ Module(
       const mp3Path = await convertM4aToMp3(audioPath);
       audioPath = mp3Path;
 
-      await message.edit("_Sending audio..._", message.jid, downloadMsg.key);
+      await message.edit("_📤 Ses gönderiliyor..._", message.jid, downloadMsg.key);
 
       const stream = fs.createReadStream(audioPath);
       await message.sendMessage({ stream }, "document", {
@@ -382,7 +382,7 @@ Module(
       });
       stream.destroy();
 
-      await message.edit("_Download complete!_", message.jid, downloadMsg.key);
+      await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (fs.existsSync(audioPath)) {
@@ -391,7 +391,7 @@ Module(
     } catch (error) {
       console.error("YTA download error:", error);
       if (downloadMsg) {
-        await message.edit("_Download failed!_", message.jid, downloadMsg.key);
+        await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
         await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
@@ -408,7 +408,7 @@ Module(
     pattern: "play ?(.*)",
     fromMe: fromMe,
     desc: "YouTube araması veya bağlantısı üzerinden ses oynat",
-    usage: ".play <song name or link>",
+    usage: ".play <şarkı adı veya bağlantı>",
     use: "download",
   },
   async (message, match) => {
@@ -452,7 +452,7 @@ Module(
         audioPath = mp3Path;
 
         await message.edit(
-          `_Sending *${result.title}*..._`,
+          `_📤 *${result.title}* gönderiliyor..._`,
           message.jid,
           downloadMsg.key
         );
@@ -464,7 +464,7 @@ Module(
         stream1.destroy();
 
         await message.edit(
-          `_Downloaded *${result.title}*!_`,
+          `_✅ *${result.title}* indirildi!_`,
           message.jid,
           downloadMsg.key
         );
@@ -480,7 +480,7 @@ Module(
 
         if (!results || results.length === 0) {
           return await message.edit(
-            "_No results found!_",
+            "_❌ Sonuç bulunamadı!_",
             message.jid,
             downloadMsg.key
           );
@@ -488,7 +488,7 @@ Module(
 
         const video = results[0];
         await message.edit(
-          `_Downloading *${video.title}*..._`,
+          `_⬇️ *${video.title}* indiriliyor..._`,
           message.jid,
           downloadMsg.key
         );
@@ -500,7 +500,7 @@ Module(
         audioPath = mp3Path;
 
         await message.edit(
-          `_Sending *${video.title}*..._`,
+          `_📤 *${video.title}* gönderiliyor..._`,
           message.jid,
           downloadMsg.key
         );
@@ -512,7 +512,7 @@ Module(
         stream2.destroy();
 
         await message.edit(
-          `_Downloaded *${video.title}*!_`,
+          `_✅ *${video.title}* indirildi!_`,
           message.jid,
           downloadMsg.key
         );
@@ -525,7 +525,7 @@ Module(
     } catch (error) {
       console.error("Play error:", error);
       if (downloadMsg) {
-        await message.edit("_Download failed!_", message.jid, downloadMsg.key);
+        await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
         await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
@@ -555,8 +555,8 @@ Module(
     }
     const repliedText = message.reply_message.message;
     if (
-      repliedText.includes("YouTube Search Results") &&
-      repliedText.includes("to download audio")
+      repliedText.includes("YouTube Arama Sonuçları") &&
+      repliedText.includes("ses indirmek için")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
         return await message.sendReply("_⚠️ Lütfen 1-10 arasında bir sayı seçin_");
@@ -568,7 +568,7 @@ Module(
 
       try {
         const queryMatch = repliedText.match(
-          /Found \d+ results for:_\s*\*(.+?)\*/
+          /\d+ sonuç bulundu:_\s*\*(.+?)\*/
         );
         if (!queryMatch) return;
 
@@ -585,7 +585,7 @@ Module(
 
         try {
           downloadMsg = await message.sendReply(
-            `_Downloading *${selectedVideo.title}*..._`
+            `_⬇️ *${selectedVideo.title}* indiriliyor..._`
           );
 
           const result = await downloadAudio(selectedVideo.url);
@@ -595,7 +595,7 @@ Module(
           audioPath = mp3Path;
 
           await message.edit(
-            "_Sending audio..._",
+            "_📤 Ses gönderiliyor..._",
             message.jid,
             downloadMsg.key
           );
@@ -607,7 +607,7 @@ Module(
           stream3.destroy();
 
           await message.edit(
-            "_Download complete!_",
+            "_✅ İndirme tamamlandı!_",
             message.jid,
             downloadMsg.key
           );
@@ -620,7 +620,7 @@ Module(
           console.error("Song download error:", error);
           if (downloadMsg) {
             await message.edit(
-              "_Download failed!_",
+              "_❌ İndirme başarısız!_",
               message.jid,
               downloadMsg.key
             );
@@ -635,8 +635,8 @@ Module(
         await message.sendReply("_✨ Seçiminiz işlenemedi._");
       }
     } else if (
-      repliedText.includes("YouTube Search Results") &&
-      repliedText.includes("see video details")
+      repliedText.includes("YouTube Arama Sonuçları") &&
+      repliedText.includes("video detaylarını görüntüle")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
         return await message.sendReply("_⚠️ Lütfen 1-10 arasında bir sayı seçin_");
@@ -644,7 +644,7 @@ Module(
 
       try {
         const queryMatch = repliedText.match(
-          /Found \d+ results for:_\s*\*(.+?)\*/
+          /\d+ sonuç bulundu:_\s*\*(.+?)\*/
         );
         if (!queryMatch) return;
 
@@ -664,13 +664,13 @@ Module(
         const thumbnailBuffer = Buffer.from(thumbnailResponse.data);
 
         let caption = `_*${selectedVideo.title}*_\n\n`;
-        caption += `*Channel:* ${selectedVideo.channel.name}\n`;
-        caption += `*Duration:* \`${selectedVideo.duration}\`\n`;
-        caption += `*Views:* \`${formatViews(selectedVideo.views)}\`\n`;
-        caption += `*Uploaded:* ${selectedVideo.uploadedAt || "N/A"}\n\n`;
+        caption += `*Kanal:* ${selectedVideo.channel.name}\n`;
+        caption += `*Süre:* \`${selectedVideo.duration}\`\n`;
+        caption += `*Görüntülenme:* \`${formatViews(selectedVideo.views)}\`\n`;
+        caption += `*Yükleme:* ${selectedVideo.uploadedAt || "Bilinmiyor"}\n\n`;
         caption += `*URL:* ${selectedVideo.url}\n\n`;
-        caption += "_Reply with:_\n";
-        caption += "*1.* Audio\n";
+        caption += "_Yanıtlayın:_\n";
+        caption += "*1.* Ses\n";
         caption += "*2.* Video";
 
         await message.sendReply(thumbnailBuffer, "image", {
@@ -681,8 +681,8 @@ Module(
         await message.sendReply("_🎬 Video bilgisi alınamadı._");
       }
     } else if (
-      repliedText.includes("Reply with:") &&
-      repliedText.includes("* Audio")
+      repliedText.includes("Yanıtlayın:") &&
+      repliedText.includes("* Ses")
     ) {
       if (selectedNumber !== 1 && selectedNumber !== 2) {
         return await message.sendReply("_🎬 Ses için 1'i Video için 2'yi seçin_"
@@ -711,7 +711,7 @@ Module(
             filePath = mp3Path;
 
             await message.edit(
-              "_Sending audio..._",
+              "_📤 Ses gönderiliyor..._",
               message.jid,
               downloadMsg.key
             );
@@ -723,7 +723,7 @@ Module(
             stream4.destroy();
 
             await message.edit(
-              "_Download complete!_",
+              "_✅ İndirme tamamlandı!_",
               message.jid,
               downloadMsg.key
             );
@@ -736,7 +736,7 @@ Module(
             console.error("YTS audio download error:", error);
             if (downloadMsg) {
               await message.edit(
-                "_Download failed!_",
+                "_❌ İndirme başarısız!_",
                 message.jid,
                 downloadMsg.key
               );
@@ -754,7 +754,7 @@ Module(
             filePath = result.path;
 
             await message.edit(
-              "_Uploading video..._",
+              "_📤 Video yükleniyor..._",
               message.jid,
               downloadMsg.key
             );
@@ -766,21 +766,21 @@ Module(
               await message.sendMessage({ stream: stream5 }, "document", {
                 fileName: `${result.title}.mp4`,
                 mimetype: "video/mp4",
-                caption: `_*${result.title}*_\n\n_File size: ${formatBytes(
+                caption: `_*${result.title}*_\n\n_Dosya boyutu: ${formatBytes(
                   stats.size
-                )}_\n_Quality: 360p_`,
+                )}_\n_Kalite: 360p_`,
               });
               stream5.destroy();
             } else {
               const stream6 = fs.createReadStream(filePath);
               await message.sendReply({ stream: stream6 }, "video", {
-                caption: `_*${result.title}*_\n\n_Quality: 360p_`,
+                caption: `_*${result.title}*_\n\n_Kalite: 360p_`,
               });
               stream6.destroy();
             }
 
             await message.edit(
-              "_Download complete!_",
+              "_✅ İndirme tamamlandı!_",
               message.jid,
               downloadMsg.key
             );
@@ -793,7 +793,7 @@ Module(
             console.error("YTS video download error:", error);
             if (downloadMsg) {
               await message.edit(
-                "_Download failed!_",
+                "_❌ İndirme başarısız!_",
                 message.jid,
                 downloadMsg.key
               );
@@ -809,8 +809,8 @@ Module(
         await message.sendReply("_❌ İndirme işlemi başarısız oldu._");
       }
     } else if (
-      repliedText.includes("Select Video Quality") &&
-      repliedText.includes("Reply with a number")
+      repliedText.includes("Video Kalitesini Seçin") &&
+      repliedText.includes("İndirmek için bir numara ile yanıtlayın")
     ) {
       try {
         const lines = repliedText.split("\n");
@@ -848,7 +848,7 @@ Module(
         }
 
         const selectedLine = qualityLines[selectedNumber - 1];
-        const isAudioOnly = selectedLine.includes("Audio Only");
+        const isAudioOnly = selectedLine.includes("Sadece Ses");
 
         if (isAudioOnly) {
           let downloadMsg;
@@ -864,7 +864,7 @@ Module(
             audioPath = mp3Path;
 
             await message.edit(
-              "_Sending audio..._",
+              "_📤 Ses gönderiliyor..._",
               message.jid,
               downloadMsg.key
             );
@@ -878,7 +878,7 @@ Module(
             stream.destroy();
 
             await message.edit(
-              "_Download complete!_",
+              "_✅ İndirme tamamlandı!_",
               message.jid,
               downloadMsg.key
             );
@@ -912,14 +912,14 @@ Module(
 
           try {
             downloadMsg = await message.sendReply(
-              `_Downloading video at *${selectedQuality}*..._`
+              `_⬇️ *${selectedQuality}* kalitesinde video indiriliyor..._`
             );
 
             const result = await downloadVideo(url, selectedQuality);
             videoPath = result.path;
 
             await message.edit(
-              "_Uploading video..._",
+              "_📤 Video yükleniyor..._",
               message.jid,
               downloadMsg.key
             );
@@ -931,21 +931,21 @@ Module(
               await message.sendMessage({ stream: stream7 }, "document", {
                 fileName: `${result.title}.mp4`,
                 mimetype: "video/mp4",
-                caption: `_*${result.title}*_\n\n_File size: ${formatBytes(
+                caption: `_*${result.title}*_\n\n_Dosya boyutu: ${formatBytes(
                   stats.size
-                )}_\n_Quality: ${selectedQuality}_`,
+                )}_\n_Kalite: ${selectedQuality}_`,
               });
               stream7.destroy();
             } else {
               const stream8 = fs.createReadStream(videoPath);
               await message.sendReply({ stream: stream8 }, "video", {
-                caption: `_*${result.title}*_\n\n_Quality: ${selectedQuality}_`,
+                caption: `_*${result.title}*_\n\n_Kalite: ${selectedQuality}_`,
               });
               stream8.destroy();
             }
 
             await message.edit(
-              "_Download complete!_",
+              "_✅ İndirme tamamlandı!_",
               message.jid,
               downloadMsg.key
             );
@@ -1006,7 +1006,7 @@ Module(
       const { title, artist } = spotifyInfo;
 
       await message.edit(
-        `_Downloading *${title}* by *${artist}*..._`,
+        `_⬇️ *${artist}* - *${title}* indiriliyor..._`,
         message.jid,
         downloadMsg.key
       );
@@ -1016,7 +1016,7 @@ Module(
 
       if (!results || results.length === 0) {
         return await message.edit(
-          "_No matching songs found on YouTube!_",
+          "_❌ YouTube'da eşleşen şarkı bulunamadı!_",
           message.jid,
           downloadMsg.key
         );
@@ -1030,7 +1030,7 @@ Module(
       audioPath = mp3Path;
 
       await message.edit(
-        "_Sending audio..._",
+        "_📤 Ses gönderiliyor..._",
         message.jid,
         downloadMsg.key
       );
@@ -1042,7 +1042,7 @@ Module(
       stream.destroy();
 
       await message.edit(
-        "_Download complete!_",
+        "_✅ İndirme tamamlandı!_",
         message.jid,
         downloadMsg.key
       );
@@ -1054,7 +1054,7 @@ Module(
     } catch (error) {
       console.error("Spotify download error:", error);
       if (downloadMsg) {
-        await message.edit("_Download failed!_", message.jid, downloadMsg.key);
+        await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
         await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
