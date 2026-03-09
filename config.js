@@ -46,7 +46,20 @@ function applySQLiteResilience(sequelizeInstance) {
 
   const originalQuery = sequelizeInstance.query.bind(sequelizeInstance);
   const writeQueue = [];
+  const bufferedMessageQueries = []; // For messages and message_stats
   let queueActive = false;
+
+  // Ensure periodic flush of buffered message queries (every 1 hour)
+  setInterval(async () => {
+    if (bufferedMessageQueries.length > 0) {
+      logger.info(`Periodically flushing ${bufferedMessageQueries.length} buffered message queries to DB...`);
+      for (const req of bufferedMessageQueries) {
+        writeQueue.push(req);
+      }
+      bufferedMessageQueries.length = 0; // Clear buffer
+      setImmediate(flushQueue);
+    }
+  }, 1000 * 60 * 60);
 
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
@@ -56,20 +69,34 @@ function applySQLiteResilience(sequelizeInstance) {
     queueActive = true;
 
     while (writeQueue.length > 0) {
-      const { task, resolve, reject } = writeQueue.shift();
+      const { task, resolve, reject, isBuffered } = writeQueue.shift();
       try {
         const result = await task();
-        resolve(result);
+        if (resolve) resolve(result);
       } catch (error) {
-        reject(error);
+        if (!isBuffered) { // only reject if it's an active awaiter
+           if (reject) reject(error);
+        } else {
+           logger.error({ err: error }, "Failed to execute buffered DB write query");
+        }
       }
     }
 
     queueActive = false;
   };
 
+  // Add cleanup hook to ensure everything gets saved before process exit
+  process.on('SIGINT', async () => {
+     if (bufferedMessageQueries.length > 0) {
+       logger.info(`SIGINT received: Flushing ${bufferedMessageQueries.length} buffered queries...`);
+       writeQueue.push(...bufferedMessageQueries);
+       bufferedMessageQueries.length = 0;
+       await flushQueue();
+     }
+  });
+
   const isWriteQuery = (sql) => {
-    if (!sql || typeof sql !== "string") return true; // default to safe mode
+    if (!sql || typeof sql !== "string") return true; 
     const normalizedSql = sql.trim().toUpperCase();
     return (
       normalizedSql.startsWith("INSERT") ||
@@ -81,13 +108,41 @@ function applySQLiteResilience(sequelizeInstance) {
       normalizedSql.startsWith("PRAGMA")
     );
   };
+  
+  const isHighVolumeQuery = (sql) => {
+      if (!sql || typeof sql !== "string") return false;
+      const lower = sql.toLowerCase();
+      // Target the tables generating the highest load
+      return lower.includes('into "messages"') || lower.includes("into `messages`") || lower.includes("into messages") ||
+             lower.includes('into "message_stats"') || lower.includes("into `message_stats`") || lower.includes("into message_stats") ||
+             lower.includes('update "messages"') || lower.includes("update `messages`") || lower.includes("update messages") ||
+             lower.includes('update "message_stats"') || lower.includes("update `message_stats`") || lower.includes("update message_stats");
+  };
 
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
-    // only queue writes; reads can run concurrently
     if (!isWriteQuery(sql)) {
       return originalQuery(sql, ...rest);
     }
 
+    // High volume queries are pushed to a slow buffer
+    if (isHighVolumeQuery(sql)) {
+        bufferedMessageQueries.push({
+            task: () => originalQuery(sql, ...rest),
+            isBuffered: true
+        });
+        
+        // If buffer gets too huge, flush it before 1 hour
+        if (bufferedMessageQueries.length > 200) {
+            logger.info(`Buffer reached 200 items, flushing early...`);
+            writeQueue.push(...bufferedMessageQueries.splice(0, bufferedMessageQueries.length));
+            setImmediate(flushQueue);
+        }
+        
+        // Immediately resolve to unblock the caller (store.js usually doesn't await the specific result fields)
+        return Promise.resolve([[], 0]);
+    }
+
+    // Normal queries execute immediately in queue
     return new Promise((resolve, reject) => {
       writeQueue.push({
         task: () => originalQuery(sql, ...rest),
@@ -103,6 +158,19 @@ function applySQLiteResilience(sequelizeInstance) {
     sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
       if (!isWriteQuery(sql)) {
         return originalQueryRaw(sql, ...rest);
+      }
+
+      if (isHighVolumeQuery(sql)) {
+          bufferedMessageQueries.push({
+              task: () => originalQueryRaw(sql, ...rest),
+              isBuffered: true
+          });
+          
+          if (bufferedMessageQueries.length > 200) {
+             writeQueue.push(...bufferedMessageQueries.splice(0, bufferedMessageQueries.length));
+             setImmediate(flushQueue);
+          }
+          return Promise.resolve([[], 0]);
       }
 
       return new Promise((resolve, reject) => {
