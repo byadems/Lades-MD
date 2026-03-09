@@ -43,12 +43,12 @@ Module(
     use: "whatsapp",
   },
   async (m, t) => {
-    if (!m.reply_message) return await m.sendReply("_Reply to a message_");
+    if (!m.reply_message) return await m.sendReply("_Bir mesajı yanıtlayın_");
     const query = t[1] || m.jid;
     const jidMap = query.split(" ").filter((x) => x.includes("@"));
     if (!jidMap.length) {
       return await m.sendReply(
-        "_No valid JID found in the query, use `send jid1 jid2 ...`_"
+        "_Sorguda geçerli bir Jid bulunamadı, şunu kullanın: `send jid1 jid2 ...`_"
       );
     }
     for (const jid of jidMap) {
@@ -66,12 +66,12 @@ Module(
     use: "whatsapp",
   },
   async (m, t) => {
-    if (!m.reply_message) return await m.sendReply("_Reply to a message_");
+    if (!m.reply_message) return await m.sendReply("_Bir mesajı yanıtlayın_");
     const query = t[1] || m.jid;
     const jidMap = query.split(" ").filter((x) => x.includes("@"));
     if (!jidMap.length) {
       return await m.sendReply(
-        "_No valid JID found in the query, use `forward jid1 jid2 ...`_"
+        "_Sorguda geçerli bir Jid bulunamadı, şunu kullanın: `forward jid1 jid2 ...`_"
       );
     }
     for (const jid of jidMap) {
@@ -90,7 +90,7 @@ Module(
   },
   async (m, t) => {
     if (!m.reply_message)
-      return await m.sendReply("_Reply to a command message_");
+      return await m.sendReply("_Bir komut mesajını yanıtlayın_");
     await m.client.ev.emit("messages.upsert", {
       messages: [m.quoted],
       type: "notify",
@@ -109,7 +109,7 @@ Module(
       realQuoted = m.quoted;
 
     if (!m.reply_message || !quoted) {
-      return await m.sendReply("_Not a view once msg!_");
+      return await m.sendReply("_Tek gösterimlik mesaj değil!_");
     }
 
     if (match[1] && match[1].includes("@")) m.jid = match[1];
@@ -145,7 +145,7 @@ Module(
       });
     }
 
-    await m.sendReply("_Not a view once msg!_");
+    await m.sendReply("_Tek gösterimlik mesaj değil!_");
   }
 );
 Module(
@@ -163,7 +163,7 @@ Module(
         return await m.client.sendMessage(m.jid, { delete: m.quoted.key });
       if (!m.quoted.key.fromMe) {
         var admin = await isAdmin(m);
-        if (!admin) return await m.sendReply("_I'm not an admin!_");
+        if (!admin) return await m.sendReply("_Ben bir yönetici değilim!_");
         return await m.client.sendMessage(m.jid, { delete: m.quoted.key });
       }
     }

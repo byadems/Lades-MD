@@ -67,7 +67,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group command!_");
+      return await message.sendReply("_Bu bir grup komutudur!_");
 
     let adminAccesValidated = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -99,7 +99,7 @@ Module(
 
       if (usersWithMessages.length === 0) {
         return await message.sendReply(
-          "_No members found with messages in the database._"
+          "_Veritabanında mesajı olan hiçbir üye bulunamadı._"
         );
       }
 
@@ -145,7 +145,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group command!_");
+      return await message.sendReply("_Bu bir grup komutudur!_");
 
     let adminAccesValidated = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -153,7 +153,7 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1]) {
         return await message.sendReply(
-          "_Usage:_\n" +
+          "_Kullanım:_\n" +
             "• `.inactive 30d` - Show members inactive for 30+ days\n" +
             "• `.inactive 10d kick` - Kick members inactive for 10+ days\n" +
             "• `.inactive 2w` - Show members inactive for 2+ weeks\n" +
@@ -169,7 +169,7 @@ Module(
       const cutoffDate = parseDuration(durationStr);
       if (!cutoffDate) {
         return await message.sendReply(
-          "_Invalid duration format!_\n" + "_Examples:_ 30d, 2w, 3m, 1y"
+          "_Geçersiz süre formatı!_\n" + "_Examples:_ 30d, 2w, 3m, 1y"
         );
       }
 
@@ -177,7 +177,7 @@ Module(
         var admin = await isAdmin(message);
         if (!admin)
           return await message.sendReply(
-            "_Bot needs admin privileges to kick members!_"
+            "_Üyeleri çıkarmak için botun yönetici yetkilerine ihtiyacı var!_"
           );
       }
 
@@ -350,7 +350,7 @@ Module(
             if (parsedLimit > 0 && parsedLimit <= 50) {
               limit = parsedLimit;
             } else if (parsedLimit > 50) {
-              return await message.sendReply("_Maximum limit is 50 users._");
+              return await message.sendReply("_Maksimum sınır 50 kullanıcıdır._");
             }
           }
         } else {
@@ -358,10 +358,10 @@ Module(
           if (parsedLimit && parsedLimit > 0 && parsedLimit <= 50) {
             limit = parsedLimit;
           } else if (parsedLimit > 50) {
-            return await message.sendReply("_Maximum limit is 50 users._");
+            return await message.sendReply("_Maksimum sınır 50 kullanıcıdır._");
           } else if (parsedLimit <= 0) {
             return await message.sendReply(
-              "_Limit must be a positive number._"
+              "_Sınır pozitif bir sayı olmalıdır._"
             );
           }
         }
@@ -420,7 +420,7 @@ Module(
       } catch (error) {
         console.error("Error in users command:", error);
         return await message.sendReply(
-          "_Failed to fetch user data. Please try again._"
+          "_Kullanıcı verisi alınamadı. Lütfen tekrar deneyin._"
         );
       }
     }

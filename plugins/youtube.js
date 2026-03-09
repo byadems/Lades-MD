@@ -45,12 +45,12 @@ Module(
     const query = match[1];
     if (!query) {
       return await message.sendReply(
-        "_Please provide a search query!_\n_Example: .song faded alan walker_"
+        "_Lütfen aranacak kelimeyi girin!_\n_Örnek: .song sezen aksu_"
       );
     }
 
     try {
-      const searchMsg = await message.sendReply("_Searching YouTube..._");
+      const searchMsg = await message.sendReply("_YouTube'da aranıyor..._");
       const results = await searchYoutube(query, 10);
 
       if (!results || results.length === 0) {
@@ -77,7 +77,7 @@ Module(
       await message.edit(resultText, message.jid, searchMsg.key);
     } catch (error) {
       console.error("Song search error:", error);
-      await message.sendReply("_Search failed. Please try again later._");
+      await message.sendReply("_Arama başarısız oldu. Lütfen daha sonra tekrar deneyin._");
     }
   }
 );
@@ -94,12 +94,12 @@ Module(
     const query = match[1];
     if (!query) {
       return await message.sendReply(
-        "_Please provide a search query!_\n_Example: .yts ncs music_"
+        "_Lütfen aranacak kelimeyi girin!_\n_Örnek: .yts ncs music_"
       );
     }
 
     try {
-      const searchMsg = await message.sendReply("_Searching YouTube..._");
+      const searchMsg = await message.sendReply("_YouTube'da aranıyor..._");
       const results = await searchYoutube(query, 10);
 
       if (!results || results.length === 0) {
@@ -126,7 +126,7 @@ Module(
       await message.edit(resultText, message.jid, searchMsg.key);
     } catch (error) {
       console.error("YTS search error:", error);
-      await message.sendReply("_Search failed. Please try again later._");
+      await message.sendReply("_Arama başarısız oldu. Lütfen daha sonra tekrar deneyin._");
     }
   }
 );
@@ -148,7 +148,7 @@ Module(
 
     if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
       return await message.sendReply(
-        "_Please provide a valid YouTube link!_\n_Example: .ytv https://youtube.com/watch?v=xxxxx or https://youtube.com/shorts/xxxxx_"
+        "_Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .ytv https://youtube.com/watch?v=xxxxx_"
       );
     }
 
@@ -161,7 +161,7 @@ Module(
     }
 
     try {
-      const infoMsg = await message.sendReply("_📊 Fetching video info..._");
+      const infoMsg = await message.sendReply("_📊 Video bilgileri alınıyor..._");
       const info = await getVideoInfo(url);
 
       const videoFormats = info.formats
@@ -252,7 +252,7 @@ Module(
     } catch (error) {
       console.error("YTV info error:", error);
       await message.sendReply(
-        "_Failed to fetch video info. Please check the link._"
+        "_Video bilgisi alınamadı. Lütfen bağlantıyı kontrol edin._"
       );
     }
   }
@@ -275,7 +275,7 @@ Module(
 
     if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
       return await message.sendReply(
-        "_Please provide a valid YouTube link!_\n_Example: .video https://youtube.com/watch?v=xxxxx or https://youtube.com/shorts/xxxxx_"
+        "_Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .video https://youtube.com/watch?v=xxxxx_"
       );
     }
 
@@ -291,7 +291,7 @@ Module(
     let videoPath;
 
     try {
-      downloadMsg = await message.sendReply("_Downloading video..._");
+      downloadMsg = await message.sendReply("_Video indiriliyor..._");
       const result = await downloadVideo(url, "360p");
       videoPath = result.path;
 
@@ -328,7 +328,7 @@ Module(
       if (downloadMsg) {
         await message.edit("_Download failed!_", message.jid, downloadMsg.key);
       } else {
-        await message.sendReply("_Download failed. Please try again._");
+        await message.sendReply("_İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
 
       if (videoPath && fs.existsSync(videoPath)) {
@@ -355,7 +355,7 @@ Module(
 
     if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
       return await message.sendReply(
-        "_Please provide a valid YouTube link!_\n_Example: .yta https://youtube.com/watch?v=xxxxx or https://youtube.com/shorts/xxxxx_"
+        "_Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .yta https://youtube.com/watch?v=xxxxx_"
       );
     }
 
@@ -371,7 +371,7 @@ Module(
     let audioPath;
 
     try {
-      downloadMsg = await message.sendReply("_Downloading audio..._");
+      downloadMsg = await message.sendReply("_Ses indiriliyor..._");
       const result = await downloadAudio(url);
       audioPath = result.path;
 
@@ -399,7 +399,7 @@ Module(
       if (downloadMsg) {
         await message.edit("_Download failed!_", message.jid, downloadMsg.key);
       } else {
-        await message.sendReply("_Download failed. Please try again._");
+        await message.sendReply("_İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
 
       if (audioPath && fs.existsSync(audioPath)) {
@@ -421,7 +421,7 @@ Module(
     let input = match[1] || message.reply_message?.text;
     if (!input) {
       return await message.sendReply(
-        "_Please provide a song name or link!_\n_Example: .play faded alan walker_"
+        "_Lütfen şarkı adını veya bağlantısını verin!_\n_Örnek: .play sezen aksu_"
       );
     }
 
@@ -451,7 +451,7 @@ Module(
       }
 
       if (url) {
-        downloadMsg = await message.sendReply("_Downloading audio..._");
+        downloadMsg = await message.sendReply("_Ses indiriliyor..._");
         const result = await downloadAudio(url);
         audioPath = result.path;
 
@@ -482,7 +482,7 @@ Module(
         }
       } else {
         const query = input;
-        downloadMsg = await message.sendReply("_Searching..._");
+        downloadMsg = await message.sendReply("_Aranıyor..._");
         const results = await searchYoutube(query, 1);
 
         if (!results || results.length === 0) {
@@ -534,7 +534,7 @@ Module(
       if (downloadMsg) {
         await message.edit("_Download failed!_", message.jid, downloadMsg.key);
       } else {
-        await message.sendReply("_Download failed. Please try again._");
+        await message.sendReply("_İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
 
       if (audioPath && fs.existsSync(audioPath)) {
@@ -566,7 +566,7 @@ Module(
       repliedText.includes("to download audio")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
-        return await message.sendReply("_Please select a number between 1-10_");
+        return await message.sendReply("_Lütfen 1-10 arasında bir sayı seçin_");
       }
 
       const lines = repliedText.split("\n");
@@ -583,7 +583,7 @@ Module(
         const results = await searchYoutube(query, 10);
 
         if (!results[selectedNumber - 1]) {
-          return await message.sendReply("_Invalid selection!_");
+          return await message.sendReply("_Geçersiz seçim!_");
         }
 
         const selectedVideo = results[selectedNumber - 1];
@@ -639,14 +639,14 @@ Module(
         }
       } catch (error) {
         console.error("Song selection error:", error);
-        await message.sendReply("_Failed to process your selection._");
+        await message.sendReply("_Seçiminiz işlenemedi._");
       }
     } else if (
       repliedText.includes("YouTube Search Results") &&
       repliedText.includes("see video details")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
-        return await message.sendReply("_Please select a number between 1-10_");
+        return await message.sendReply("_Lütfen 1-10 arasında bir sayı seçin_");
       }
 
       try {
@@ -659,7 +659,7 @@ Module(
         const results = await searchYoutube(query, 10);
 
         if (!results[selectedNumber - 1]) {
-          return await message.sendReply("_Invalid selection!_");
+          return await message.sendReply("_Geçersiz seçim!_");
         }
 
         const selectedVideo = results[selectedNumber - 1];
@@ -685,7 +685,7 @@ Module(
         });
       } catch (error) {
         console.error("YTS video info error:", error);
-        await message.sendReply("_Failed to fetch video info._");
+        await message.sendReply("_Video bilgisi alınamadı._");
       }
     } else if (
       repliedText.includes("Reply with:") &&
@@ -693,7 +693,7 @@ Module(
     ) {
       if (selectedNumber !== 1 && selectedNumber !== 2) {
         return await message.sendReply(
-          "_Please select 1 for Audio or 2 for Video_"
+          "_Ses için 1'i Video için 2'yi seçin_"
         );
       }
 
@@ -710,7 +710,7 @@ Module(
 
         if (selectedNumber === 1) {
           try {
-            downloadMsg = await message.sendReply(`_Downloading audio..._`);
+            downloadMsg = await message.sendReply(`_Ses indiriliyor..._`);
 
             const result = await downloadAudio(url);
             filePath = result.path;
@@ -756,7 +756,7 @@ Module(
           }
         } else if (selectedNumber === 2) {
           try {
-            downloadMsg = await message.sendReply(`_Downloading video..._`);
+            downloadMsg = await message.sendReply(`_Video indiriliyor..._`);
 
             const result = await downloadVideo(url, "360p");
             filePath = result.path;
@@ -814,7 +814,7 @@ Module(
         }
       } catch (error) {
         console.error("YTS download selection error:", error);
-        await message.sendReply("_Failed to process download._");
+        await message.sendReply("_İndirme işlemi başarısız oldu._");
       }
     } else if (
       repliedText.includes("Select Video Quality") &&
@@ -841,7 +841,7 @@ Module(
         }
 
         if (!videoId || videoId.length < 10) {
-          return await message.sendReply("_Failed to retrieve video ID._");
+          return await message.sendReply("_Video kimliği alınamadı._");
         }
 
         const url = `https://www.youtube.com/watch?v=${videoId}`;
@@ -852,7 +852,7 @@ Module(
         const qualityLines = lines.filter((line) => line.match(/^\*\d+\./));
 
         if (!qualityLines[selectedNumber - 1]) {
-          return await message.sendReply("_Invalid quality selection!_");
+          return await message.sendReply("_Geçersiz kalite seçimi!_");
         }
 
         const selectedLine = qualityLines[selectedNumber - 1];
@@ -863,7 +863,7 @@ Module(
           let audioPath;
 
           try {
-            downloadMsg = await message.sendReply("_Downloading audio..._");
+            downloadMsg = await message.sendReply("_Ses indiriliyor..._");
 
             const result = await downloadAudio(url);
             audioPath = result.path;
@@ -979,7 +979,7 @@ Module(
         }
       } catch (error) {
         console.error("YTV quality selection error:", error);
-        await message.sendReply("_Failed to process quality selection._");
+        await message.sendReply("_Kalite seçimi işlenemedi._");
       }
     }
   }
@@ -1002,7 +1002,7 @@ Module(
 
     if (!url || !url.includes("spotify.com")) {
       return await message.sendReply(
-        "_Please provide a valid Spotify link!_\n_Example: .spotify https://open.spotify.com/track/xxxxx_"
+        "_Lütfen geçerli bir Spotify bağlantısı verin!_\n_Örnek: .spotify https://open.spotify.com/track/xxxxx_"
       );
     }
 
@@ -1010,7 +1010,7 @@ Module(
     let audioPath;
 
     try {
-      downloadMsg = await message.sendReply("_Fetching Spotify info..._");
+      downloadMsg = await message.sendReply("_Spotify bilgileri alınıyor..._");
       const spotifyInfo = await spotifyTrack(url);
       const { title, artist } = spotifyInfo;
 
@@ -1065,7 +1065,7 @@ Module(
       if (downloadMsg) {
         await message.edit("_Download failed!_", message.jid, downloadMsg.key);
       } else {
-        await message.sendReply("_Download failed. Please try again._");
+        await message.sendReply("_İndirme başarısız oldu. Lütfen tekrar deneyin._");
       }
 
       if (audioPath && fs.existsSync(audioPath)) {

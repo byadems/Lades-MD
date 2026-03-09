@@ -31,12 +31,12 @@ Module(
     let mediaLinks = match[1] || message.reply_message?.text;
     if (mediaLinks.startsWith("ll")) return;
     if (!mediaLinks)
-      return await message.sendReply("_*Need Instagram link(s)*_");
+      return await message.sendReply("_*Instagram bağlantı(lar)ı gerekli*_");
 
     // extract all urls from the text
     const allUrls = mediaLinks.match(/\bhttps?:\/\/\S+/gi) || [];
     if (!allUrls.length)
-      return await message.sendReply("_*Need Instagram link(s)*_");
+      return await message.sendReply("_*Instagram bağlantı(lar)ı gerekli*_");
 
     // filter and validate instagram urls
     const instagramUrls = [];
@@ -62,7 +62,7 @@ Module(
     }
 
     if (!instagramUrls.length)
-      return await message.sendReply("_Need valid Instagram link(s)_");
+      return await message.sendReply("_Geçerli Instagram bağlantı(lar)ı gerekli_");
 
     try {
       const allMediaUrls = [];
@@ -84,7 +84,7 @@ Module(
 
       if (!allMediaUrls.length)
         return await message.sendReply(
-          "_Something went wrong, Please try again!_"
+          "_Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
         );
 
       // send as single media or album
@@ -115,7 +115,7 @@ Module(
     } catch (err) {
       console.error("Insta command error:", err?.message || err);
       return await message.sendReply(
-        "_Something went wrong, Please try again!_"
+        "_Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
       );
     }
   }
@@ -137,14 +137,14 @@ Module(
     if (/\bhttps?:\/\/\S+/gi.test(videoLink)) {
       videoLink = videoLink.match(/\bhttps?:\/\/\S+/gi)[0];
     }
-    if (!videoLink) return await message.sendReply("_Need facebook link_");
+    if (!videoLink) return await message.sendReply("_Facebook bağlantısı gerekli_");
     try {
       const { url } = await fb(videoLink);
       return await message.sendReply({ url }, "video");
     } catch (e) {
       console.error("Facebook download error:", e.message);
       return await message.sendReply(
-        "_Something went wrong, Please try again!_"
+        "_Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
       );
     }
   }
@@ -160,7 +160,7 @@ Module(
     use: "search",
   },
   async (message, match) => {
-    if (!match[1]) return await message.sendReply("_Need Instagram username!_");
+    if (!match[1]) return await message.sendReply("_Instagram kullanıcı adı gerekli!_");
 
     if (match[1].startsWith("https") && match[1].includes("instagram")) {
       const usernameRegex = /instagram\.com\/([^/?]+)/i;
@@ -171,7 +171,7 @@ Module(
     try {
       var accountInfo = await igStalk(encodeURIComponent(match[1]));
     } catch {
-      return await message.sendReply("_Server busy!_");
+      return await message.sendReply("_Sunucu meşgul!_");
     }
 
     await message.sendMessage({ url: accountInfo.profile_pic }, "image", {
@@ -207,7 +207,7 @@ Module(
     )
       return;
     if (!userIdentifier)
-      return await message.sendReply("_Need an Instagram username or link!_");
+      return await message.sendReply("_Bir Instagram kullanıcı adı veya bağlantısı gerekli!_");
 
     userIdentifier = !/\bhttps?:\/\/\S+/gi.test(userIdentifier)
       ? `https://instagram.com/stories/${userIdentifier}/`
@@ -216,10 +216,10 @@ Module(
     try {
       var storyData = await downloadGram(userIdentifier);
     } catch {
-      return await message.sendReply("*_Sorry, server error_*");
+      return await message.sendReply("*_Üzgünüm, sunucu hatası_*");
     }
     if (!storyData || !storyData.length)
-      return await message.sendReply("*_Not found!_*");
+      return await message.sendReply("*_Bulunamadı!_*");
     if (storyData.length === 1)
       return await message.sendReply(
         { url: storyData[0] },
@@ -254,7 +254,7 @@ Module(
     let userQuery = match[1] !== "" ? match[1] : message.reply_message.text;
     if (userQuery === "g") return;
     if (!userQuery)
-      return await message.sendReply("_Need search term or pin video link_");
+      return await message.sendReply("_Arama terimi veya video bağlantısı gerekli_");
 
     if (/\bhttps?:\/\/\S+/gi.test(userQuery)) {
       userQuery = userQuery.match(/\bhttps?:\/\/\S+/gi)[0];
@@ -263,7 +263,7 @@ Module(
         pinterestResult = await pinterestDl(userQuery);
       } catch (err) {
         console.error("pinterestDl error:", err?.message || err);
-        return await message.sendReply("_Server error_");
+        return await message.sendReply("_Sunucu hatası_");
       }
 
       if (
@@ -272,7 +272,7 @@ Module(
         !pinterestResult.result
       )
         return await message.sendReply(
-          "_No downloadable media found for this link_"
+          "_Bu bağlantı için indirilebilir medya bulunamadı_"
         );
 
       const url = pinterestResult.result;
@@ -287,13 +287,13 @@ Module(
       try {
         const res = await pinterestSearch(searchQuery, desiredCount);
         if (!res || !res.status || !Array.isArray(res.result)) {
-          return await message.sendReply("_No results found for this query_");
+          return await message.sendReply("_Bu sorgu için sonuç bulunamadı_");
         }
         searchResults = res.result;
       } catch (err) {
         console.error("pinterestSearch error:", err?.message || err);
         return await message.sendReply(
-          "_Server error while searching Pinterest_"
+          "_Pinterest'te arama yaparken sunucu hatası_"
         );
       }
 
@@ -342,7 +342,7 @@ Module(
   },
   async (message, match) => {
     let videoLink = match[1] !== "" ? match[1] : message.reply_message.text;
-    if (!videoLink) return await message.sendReply("_Need a TikTok URL_");
+    if (!videoLink) return await message.sendReply("_Bir TikTok URL'si gerekli_");
     videoLink = videoLink.match(/\bhttps?:\/\/\S+/gi)[0];
     let downloadResult;
     try {
@@ -350,7 +350,7 @@ Module(
       await message.sendReply(downloadResult, "video");
     } catch (error) {
       return await message.sendReply(
-        "_Something went wrong, Please try again!_"
+        "_Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
       );
     }
   }

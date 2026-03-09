@@ -25,7 +25,7 @@ Module(
   async (message, match) => {
     if (!match[0].split(" ")[0]?.toLowerCase().endsWith("warn")) return;
     if (!message.isGroup)
-      return await message.sendReply("_This is a group-only command!_");
+      return await message.sendReply("_Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -35,15 +35,15 @@ Module(
     const botIsAdmin = await isAdmin(message);
     if (!botIsAdmin) {
       return await message.sendReply(
-        "_I need admin privileges to manage warnings!_"
+        "_Uyarıları yönetmek için yönetici yetkilerine ihtiyacım var!_"
       );
     }
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
       return await message.sendReply(
-        `_Please mention a user or reply to their message!_\n\n` +
-          `*Usage:*\n` +
+        `_Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_\n\n` +
+          `*Kullanım:*\n` +
           `• \`${handler}warn @user reason\`\n` +
           `• \`${handler}warn reply reason\`\n` +
           `• \`${handler}warnings @user\` - Check warnings\n` +
@@ -55,12 +55,12 @@ Module(
 
     const isTargetAdmin = await isAdmin(message, targetUser);
     if (isTargetAdmin) {
-      return await message.sendReply("_Cannot warn group admins!_");
+      return await message.sendReply("_Grup yöneticileri uyarılamaz!_");
     }
 
     const targetNumericId = targetUser?.split("@")[0];
     if (sudoUsers.includes(targetNumericId)) {
-      return await message.sendReply("_Cannot warn bot owners/sudo users!_");
+      return await message.sendReply("_Bot sahiplerini/yöneticileri uyaramazsınız!_");
     }
 
     let rawReason = match[1] || "No reason provided";
@@ -85,7 +85,7 @@ Module(
 
           await message.client.sendMessage(message.jid, {
             text:
-              `⚠ *User Kicked!*\n\n` +
+              `⚠ *Kullanıcı Gruptan Çıkarıldı!*\n\n` +
               `- User: \`@${targetNumericId}\`\n` +
               `- Reason: \`${reason}\`\n` +
               `- Warnings: \`${currentWarns}/${warnLimit} (LIMIT EXCEEDED)\`\n` +
@@ -96,7 +96,7 @@ Module(
         } catch (kickError) {
           await message.client.sendMessage(message.jid, {
             text:
-              `⚠ *Warning Limit Exceeded!*\n\n` +
+              `⚠ *Uyarı Sınırı Aşıldı!*\n\n` +
               `- User: \`@${targetNumericId}\`\n` +
               `- Warnings: \`${currentWarns}/${warnLimit}\`\n` +
               `- Error: \`Failed to kick user\`\n\n` +
@@ -107,7 +107,7 @@ Module(
       } else {
         await message.client.sendMessage(message.jid, {
           text:
-            `⚠ *User Warned!*\n\n` +
+            `⚠ *Kullanıcı Uyarıldı!*\n\n` +
             `- User: \`@${targetNumericId}\`\n` +
             `- Reason: \`${reason}\`\n` +
             `- Warnings: \`${currentWarns}/${warnLimit}\`\n` +
@@ -122,7 +122,7 @@ Module(
       }
     } catch (error) {
       console.error("Warning error:", error);
-      await message.sendReply("_Failed to add warning! Please try again._");
+      await message.sendReply("_Uyarı eklenemedi! Lütfen tekrar deneyin._");
     }
   }
 );
@@ -137,7 +137,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group-only command!_");
+      return await message.sendReply("_Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -154,7 +154,7 @@ Module(
       if (!warnings || warnings.length === 0) {
         return await message.client.sendMessage(message.jid, {
           text:
-            `✓ *No Warnings*\n\n` +
+            `✓ *Uyarı Yok*\n\n` +
             `- User: \`@${targetNumericId}\`\n` +
             `- Status: \`Clean record\`\n` +
             `- Warnings: \`0/${warnLimit}\``,
@@ -194,7 +194,7 @@ Module(
       });
     } catch (error) {
       console.error("Warning check error:", error);
-      await message.sendReply("_Failed to retrieve warnings!_");
+      await message.sendReply("_Uyarılar alınamadı!_");
     }
   }
 );
@@ -209,7 +209,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group-only command!_");
+      return await message.sendReply("_Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -219,7 +219,7 @@ Module(
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
       return await message.sendReply(
-        "_Please mention a user or reply to their message!_"
+        "_Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
       );
     }
 
@@ -231,7 +231,7 @@ Module(
       if (currentCount === 0) {
         return await message.client.sendMessage(message.jid, {
           text:
-            "ℹ *No Warnings*\n\n" +
+            "ℹ *Uyarı Yok*\n\n" +
             "- User: `@" +
             targetNumericId +
             "`\n" +
@@ -246,7 +246,7 @@ Module(
         const newCount = await getWarnCount(message.jid, targetUser);
         await message.client.sendMessage(message.jid, {
           text:
-            "✓ *Warning Removed!*\n\n" +
+            "✓ *Uyarı Kaldırıldı!*\n\n" +
             "- User: `@" +
             targetNumericId +
             "`\n" +
@@ -260,11 +260,11 @@ Module(
           mentions: [targetUser],
         });
       } else {
-        await message.sendReply("_Failed to remove warning!_");
+        await message.sendReply("_Uyarı kaldırılamadı!_");
       }
     } catch (error) {
       console.error("Warning removal error:", error);
-      await message.sendReply("_Failed to remove warning!_");
+      await message.sendReply("_Uyarı kaldırılamadı!_");
     }
   }
 );
@@ -279,21 +279,21 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group-only command!_");
+      return await message.sendReply("_Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
       return await message.sendReply(
-        "_You need admin privileges to reset warnings!_"
+        "_Uyarıları sıfırlamak için yönetici ayrıcalıklarına ihtiyacınız var!_"
       );
     }
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
       return await message.sendReply(
-        "_Please mention a user or reply to their message!_"
+        "_Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
       );
     }
 
@@ -305,7 +305,7 @@ Module(
       if (currentCount === 0) {
         return await message.client.sendMessage(message.jid, {
           text:
-            "ℹ *No Warnings*\n\n" +
+            "ℹ *Uyarı Yok*\n\n" +
             "- User: `@" +
             targetNumericId +
             "`\n" +
@@ -319,7 +319,7 @@ Module(
       if (removed) {
         await message.client.sendMessage(message.jid, {
           text:
-            "✓ *Warnings Reset!*\n\n" +
+            "✓ *Uyarılar Sıfırlandı!*\n\n" +
             "- User: `@" +
             targetNumericId +
             "`\n" +
@@ -330,11 +330,11 @@ Module(
           mentions: [targetUser],
         });
       } else {
-        await message.sendReply("_Failed to reset warnings!_");
+        await message.sendReply("_Uyarılar sıfırlanamadı!_");
       }
     } catch (error) {
       console.error("Warning reset error:", error);
-      await message.sendReply("_Failed to reset warnings!_");
+      await message.sendReply("_Uyarılar sıfırlanamadı!_");
     }
   }
 );
@@ -349,14 +349,14 @@ Module(
   },
   async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group-only command!_");
+      return await message.sendReply("_Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
       return await message.sendReply(
-        "_You need admin privileges to view the warning list!_"
+        "_Uyarı listesini görüntülemek için yönetici yetkilerine ihtiyacınız var!_"
       );
     }
 
@@ -365,7 +365,7 @@ Module(
 
       if (Object.keys(allWarnings).length === 0) {
         return await message.sendReply(
-          `✓ *Clean Group!*\n\n` +
+          `✓ *Temiz Grup!*\n\n` +
             `- No users have warnings in this group.\n` +
             `_Everyone is following the rules!_`
         );
@@ -415,7 +415,7 @@ Module(
       });
     } catch (error) {
       console.error("Warning list error:", error);
-      await message.sendReply("_Failed to retrieve warning list!_");
+      await message.sendReply("_Uyarı listesi alınamadı!_");
     }
   }
 );
@@ -433,7 +433,7 @@ Module(
 
     if (!newLimit || newLimit < 1 || newLimit > 20) {
       return await message.sendReply(
-        `⚠ *Invalid Warning Limit*\n\n` +
+        `⚠ *Geçersiz Uyarı Sınırı*\n\n` +
           `- Please provide a number between 1 and 20.\n` +
           `- Current limit: \`${warnLimit}\`\n\n` +
           `*Usage:* \`${handler}setwarnlimit 5\``
@@ -442,14 +442,14 @@ Module(
 
     try {
       await message.sendReply(
-        `✓ *Warning Limit Updated!*\n\n` +
+        `✓ *Uyarı Sınırı Güncellendi!*\n\n` +
           `- New limit: \`${newLimit} warnings\`\n` +
           `- Previous limit: \`${warnLimit}\`\n\n` +
           `_Users will now be kicked after ${newLimit} warnings._`
       );
     } catch (error) {
       console.error("Set warn limit error:", error);
-      await message.sendReply("_Failed to update warning limit!_");
+      await message.sendReply("_Uyarı sınırı güncellenemedi!_");
     }
   }
 );
@@ -464,14 +464,14 @@ Module(
   },
   async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_This is a group-only command!_");
+      return await message.sendReply("_Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
       return await message.sendReply(
-        "_You need admin privileges to view warning statistics!_"
+        "_Uyarı istatistiklerini görüntülemek için yönetici ayrıcalıklarına ihtiyacınız var!_"
       );
     }
 
@@ -509,7 +509,7 @@ Module(
       await message.sendReply(stats);
     } catch (error) {
       console.error("Warning stats error:", error);
-      await message.sendReply("_Failed to retrieve warning statistics!_");
+      await message.sendReply("_Uyarı istatistikleri alınamadı!_");
     }
   }
 );

@@ -17,7 +17,7 @@ Module(
   },
   async (m, match) => {
     if (!m.reply_message)
-      return await m.sendMessage("_Reply to an audio or a sticker_");
+      return await m.sendMessage("_Bir sesi veya çıkartmayı yanıtlayın_");
     var audiomsg = m.reply_message.audio;
     var stickermsg = m.reply_message.sticker;
     var q = await m.reply_message.download();
@@ -54,7 +54,7 @@ Module(
           : config.AUDIO_DATA;
       if (config.AUDIO_DATA == "default") {
         await m.sendReply(
-          `_Using default audio metadata, use .setvar AUDIO_INFO=title;artist;imageurl to change_`
+          `_Varsayılan ses verisi kullanılıyor, değiştirmek için .setvar kullanın_`
         );
       }
       let spl = inf.split(";"),
@@ -88,7 +88,7 @@ Module(
       return await m.client.sendMessage(
         m.jid,
         {
-          text: "_Reply to an audio or a sticker_",
+          text: "_Bir sesi veya çıkartmayı yanıtlayın_",
         },
         {
           quoted: m.data,
@@ -109,7 +109,7 @@ Module(
         var result = await webp2mp4(q, __dirname + "/temp/output.mp4");
       } catch (e) {
         console.log(e);
-        return await m.sendReply("*Failed*");
+        return await m.sendReply("*Başarısız*");
       }
       await m.client.sendMessage(
         m.jid,
@@ -120,7 +120,7 @@ Module(
         },
         { quoted: m.quoted }
       );
-    } else return await m.sendReply("_Reply to an animated sticker!_");
+    } else return await m.sendReply("_Hareketli bir çıkartmayı yanıtlayın!_");
   }
 );
 

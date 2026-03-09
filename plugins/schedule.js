@@ -108,17 +108,17 @@ Module(
     if (match[1] === "d") return;
     if (!m.reply_message) {
       return await m.sendReply(
-        "_Reply to a message you want to schedule_\n\n*Usage:*\n• schedule <jid> <time>\n• schedule <time> <jid>\n\n*Time formats:*\n• 2h30m (2 hours 30 minutes)\n• 1d (1 day)\n• 30m (30 minutes)\n• 14:30 (2:30 PM today)\n• 2:45pm (2:45 PM today)"
+        "_Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*Kullanım:*\n• schedule <jid> <zaman>\n• schedule <zaman> <jid>"
       );
     }
     if (!match[1]) {
       return await m.sendReply(
-        "_Please provide JID and time_\n\n*Example:*\n• schedule 919876543210@s.whatsapp.net 2h\n• schedule 919876543210@lid 2h\n• schedule 30m 919876543210@s.whatsapp.net"
+        "_Lütfen JID ve zaman sağlayın_\n\n*Örnek:*\n• schedule 905554443322@s.whatsapp.net 2h"
       );
     }
     const args = match[1].trim().split(/\s+/);
     if (args.length < 2) {
-      return await m.sendReply("_Please provide both JID and time_");
+      return await m.sendReply("_Lütfen hem JID hem de zamanı belirtin_");
     }
     let jid, timeStr;
     if (isValidJID(args[0])) {
@@ -134,24 +134,24 @@ Module(
         timeStr = args.filter((arg) => arg !== jidArg).join(" ");
       } else {
         return await m.sendReply(
-          "_Invalid JID format. JID should end with @g.us, @s.whatsapp.net, or @lid_"
+          "_Geçersiz JID formatı. JID, @g.us, @s.whatsapp.net veya @lid ile bitmelidir_"
         );
       }
     }
     const scheduleTime = parseTime(timeStr);
     if (!scheduleTime) {
       return await m.sendReply(
-        "_Invalid time format_\n\n*Supported formats:*\n• 2h30m, 1d, 30m, 5s\n• 14:30, 2:45pm\n• YYYY-MM-DD HH:mm"
+        "_Geçersiz zaman formatı_\n\n*Desteklenen formatlar:*\n• 2h30m, 1g, 30m, 5s\n• 14:30, 14:45\n• YYYY-AA-GG SS:dd"
       );
     }
     const originalTime = moment(scheduleTime).add(1, "minute").toDate();
     if (originalTime <= new Date()) {
-      return await m.sendReply("_Schedule time must be in the future_");
+      return await m.sendReply("_Zamanlama zamanı gelecekte olmalıdır_");
     }
     const minTime = moment().add(2, "minutes").toDate();
     if (originalTime < minTime) {
       return await m.sendReply(
-        "_Minimum scheduling time is 2 minutes. Please schedule for at least 2 minutes from now._"
+        "_Minimum zamanlama süresi 2 dakikadır. Lütfen şu andan itibaren en az 2 dakika sonraya ayarlayın._"
       );
     }
     try {
@@ -166,7 +166,7 @@ Module(
       );
     } catch (error) {
       console.error("Schedule error:", error);
-      await m.sendReply("_Failed to schedule message. Please try again._");
+      await m.sendReply("_Mesaj zamanlanamadı. Lütfen tekrar deneyin._");
     }
   }
 );
@@ -180,7 +180,7 @@ Module(
     try {
       const pending = await scheduledMessages.getAllPending();
       if (pending.length === 0) {
-        return await m.sendReply("📭 _No pending scheduled messages_");
+        return await m.sendReply("📭 _Bekleyen zamanlanmış mesaj yok_");
       }
       let response = "📋 *Scheduled Messages*\n\n";
       pending.sort(
@@ -204,7 +204,7 @@ Module(
       await m.sendReply(response);
     } catch (error) {
       console.error("List scheduled error:", error);
-      await m.sendReply("_Failed to fetch scheduled messages_");
+      await m.sendReply("_Zamanlanmış mesajlar alınamadı_");
     }
   }
 );
@@ -217,12 +217,12 @@ Module(
   async (m, match) => {
     if (!match[1]) {
       return await m.sendReply(
-        "_Please provide message ID to cancel_\n\n*Usage:* cancel <id>"
+        "_İptal edilecek mesajın ID'sini belirtin_\n\n*Kullanım:* cancel <id>"
       );
     }
     const messageId = parseInt(match[1].trim());
     if (isNaN(messageId)) {
-      return await m.sendReply("_Please provide a valid message ID_");
+      return await m.sendReply("_Lütfen geçerli bir mesaj ID'si girin_");
     }
     try {
       const success = await scheduledMessages.delete(messageId);
@@ -231,11 +231,11 @@ Module(
           `✅ *Scheduled message ${messageId} cancelled successfully*`
         );
       } else {
-        await m.sendReply("❌ *Message not found or already sent*");
+        await m.sendReply("❌ *Mesaj bulunamadı veya zaten gönderildi*");
       }
     } catch (error) {
       console.error("Cancel scheduled error:", error);
-      await m.sendReply("_Failed to cancel scheduled message_");
+      await m.sendReply("_Zamanlanmış mesaj iptal edilemedi_");
     }
   }
 );

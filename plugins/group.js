@@ -196,7 +196,7 @@ Module(
         message.jid
       );
       if (!approvalList.length)
-        return await message.sendReply("_No pending requests!_");
+        return await message.sendReply("_Bekleyen istek yok!_");
       let approvalJids = approvalList.map((x) => x.jid);
       if (match[1]) {
         match = match[1].toLowerCase();
@@ -231,7 +231,7 @@ Module(
           }
           default: {
             return await message.sendReply(
-              "_Invalid input_\n_Eg: .requests approve all_\n_.requests reject all_"
+              "_Geçersiz giriş_\n_Örn: .requests approve all_\n_.requests reject all_"
             );
           }
         }
@@ -278,7 +278,7 @@ Module(
   async (message, match) => {
     if (!message.isGroup)
       return await message.sendReply(
-        "_Leave from where? This is a group command bruh!_"
+        "_Nereden çıkayım? Bu bir grup komutu dostum!_"
       );
     return await message.client.groupLeave(message.jid);
   }
@@ -298,7 +298,7 @@ Module(
       );
       if (!repliedMessage.found) {
         return await message.sendReply(
-          "_Original message not found in database!_"
+          "_Orijinal mesaj veritabanında bulunamadı!_"
         );
       }
       const messageData = repliedMessage.messageData;
@@ -319,7 +319,7 @@ Module(
       }
       if (!quotedMessageId) {
         return await message.sendReply(
-          "_The replied message doesn't contain a quoted message!_"
+          "_Yanıtlanan mesaj, alıntılanmış bir mesaj içermiyor!_"
         );
       }
       const originalQuoted = await getFullMessage(quotedMessageId);
@@ -341,12 +341,12 @@ Module(
         return await message.forwardMessage(message.jid, reconstructedMsg);
       } else {
         return await message.sendReply(
-          "_Quoted message not found and no cached data available!_"
+          "_Alıntılanan mesaj bulunamadı ve mevcut önbellek verisi yok!_"
         );
       }
     } catch (error) {
       console.error("Error in quoted command:", error);
-      return await message.sendReply("_Failed to load quoted message!_");
+      return await message.sendReply("_Alıntılanan mesaj yüklenemedi!_");
     }
   }
 );
@@ -572,7 +572,7 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       let newName = match[1] || message.reply_message?.text;
-      if (!newName) return await message.sendReply("_Need text!_");
+      if (!newName) return await message.sendReply("_Metin gerekli!_");
       var { restrict } = await message.client.groupMetadata(message.jid);
       if (restrict && !(await isAdmin(message)))
         return await message.sendReply(Lang.NOT_ADMIN);
@@ -598,7 +598,7 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       let newName = match[1] || message.reply_message?.text;
-      if (!newName) return await message.sendReply("_Need text!_");
+      if (!newName) return await message.sendReply("_Metin gerekli!_");
       var { restrict } = await message.client.groupMetadata(message.jid);
       if (restrict && !(await isAdmin(message)))
         return await message.sendReply(Lang.NOT_ADMIN);
@@ -608,7 +608,7 @@ Module(
           (match[1] || message.reply_message?.text).slice(0, 512)
         );
       } catch {
-        return await message.sendReply("_Failed to change!_");
+        return await message.sendReply("_Değiştirilemedi!_");
       }
     }
   }
@@ -628,7 +628,7 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1])
         return await message.sendReply(
-          "_*Need jids*_\n_*.common jid1,jid2*_\n _OR_ \n_*.common kick group_jid*_"
+          "_*Jid'ler gerekli*_\n_*.common jid1,jid2*_\n _VEYA_ \n_*.common kick grup_jid*_"
         );
       if (match[1].includes("kick")) {
         var co = match[1].split(" ")[1];
@@ -693,7 +693,7 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1])
-        return await message.sendReply("_*Need jids*_\n_*.diff jid1,jid2*_");
+        return await message.sendReply("_*Jid'ler gerekli*_\n_*.diff jid1,jid2*_");
       var co = match[1].split(",");
       var g1 = (await message.client.groupMetadata(co[0])).participants;
       var g2 = (await message.client.groupMetadata(co[1])).participants;
@@ -735,7 +735,7 @@ Module(
       participants = groupMetadata.participants;
     } catch (error) {
       return await message.sendReply(
-        "_Error: Unable to fetch group metadata. Please check the group ID._"
+        "_Hata: Grup bilgisi alınamadı. Lütfen grup kimliğini kontrol edin._"
       );
     }
     const isTagAdmin = match[1]?.includes("admin");
@@ -799,7 +799,7 @@ Module(
     let rgx =
       /^(?:https?:\/\/)?chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})(?:\?.*)?$/;
     let matchResult = match[1] && match[1].match(rgx);
-    if (!matchResult) return await message.sendReply("_*Need group link*_");
+    if (!matchResult) return await message.sendReply("_*Grup bağlantısı gerekli*_");
     let inviteCode = matchResult[1];
     await message.client.groupAcceptInvite(inviteCode);
   }
@@ -833,7 +833,7 @@ Module(
     const command = args[0]?.toLowerCase();
     if (!command || (command !== "all" && command !== "recent")) {
       return await message.sendReply(
-        "*Usage:*\n" +
+        "*Kullanım:*\n" +
           "• `.getjids all` - Show all group JIDs\n" +
           "• `.getjids recent` - Show recent chat JIDs (default 10)\n" +
           "• `.getjids recent 15` - Show 15 recent chat JIDs"
@@ -845,7 +845,7 @@ Module(
       const recentChats = await fetchRecentChats(100);
       const dmChats = recentChats.filter((chat) => chat.type === "private");
       const totalChats = groups.length + dmChats.length;
-      if (!totalChats) return await message.sendReply("_No chats found!_");
+      if (!totalChats) return await message.sendReply("_Sohbet bulunamadı!_");
       const chunkSize = 100;
       let totalMessages = Math.ceil(totalChats / chunkSize);
       let chatIndex = 0;
@@ -888,11 +888,11 @@ Module(
     } else if (command === "recent") {
       const limit = parseInt(args[1]) || 10;
       if (limit > 50) {
-        return await message.sendReply("_*Maximum limit is 50 chats!*_");
+        return await message.sendReply("_*Maksimum sınır 50 sohbettir!*_");
       }
       const recentChats = await fetchRecentChats(limit);
       if (!recentChats.length) {
-        return await message.sendReply("_No recent chats found!_");
+        return await message.sendReply("_Son sohbet bulunamadı!_");
       }
       let allGroups = {};
       try {
@@ -970,7 +970,7 @@ Module(
       await message.client.setProfilePicture(botJid, {
         url: image,
       });
-      return await message.sendReply("_*Updated profile pic ✅*_");
+      return await message.sendReply("_*Profil resmi güncellendi ✅*_");
     }
     if (message.reply_message && !message.reply_message.image) {
       try {
@@ -979,7 +979,7 @@ Module(
           "image"
         );
       } catch {
-        return await message.sendReply("_Profile pic not found!_");
+        return await message.sendReply("_Profil resmi bulunamadı!_");
       }
       return await message.sendReply({ url: image }, "image");
     }
@@ -1001,7 +1001,7 @@ Module(
       if (message.reply_message && message.reply_message.image) {
         var image = await message.reply_message.download();
         await message.client.setProfilePicture(message.jid, { url: image });
-        return await message.sendReply("_*Group icon updated ✅*_");
+        return await message.sendReply("_*Grup simgesi güncellendi ✅*_");
       }
       if (!message.reply_message.image) {
         try {
@@ -1010,7 +1010,7 @@ Module(
             "image"
           );
         } catch {
-          return await message.sendReply("_Profile pic not found!_");
+          return await message.sendReply("_Profil resmi bulunamadı!_");
         }
         return await message.sendReply({ url: image }, "image");
       }

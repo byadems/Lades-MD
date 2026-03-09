@@ -52,12 +52,12 @@ Module(
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.sticker)
       return await message.sendReply(
-        "_Reply to a sticker_\n_Ex: *.stickcmd kick*_"
+        "_Bir çıkartmayı yanıtlayın_\n_Ör: *.stickcmd kick*_"
       );
     try {
       await stickcmd.set(match[1], await extractData(message));
     } catch {
-      return await message.sendReply("_Failed!_");
+      return await message.sendReply("_Başarısız!_");
     }
     await message.client.sendMessage(
       message.jid,
@@ -86,7 +86,7 @@ Module(
         return await message.client.sendMessage(
           message.jid,
           {
-            text: `_Removed sticker from commands!_`,
+            text: `_Çıkartma komutlardan kaldırıldı!_`,
           },
           {
             quoted: message.quoted,
@@ -99,7 +99,7 @@ Module(
             `_Removed ${match[1]} from sticked commands!_`
           );
         if (!delete_again)
-          return await message.sendReply("_No such sticker/command found!_");
+          return await message.sendReply("_Böyle bir çıkartma/komut bulunamadı!_");
       }
       if (!deleted && !match[1])
         return await message.send("_No such sticker found!_");
@@ -110,10 +110,10 @@ Module(
           `_Successfully removed ${match[1]} from sticked commands!_`
         );
       if (!deleted)
-        return await message.sendReply("_No such command was found!_");
+        return await message.sendReply("_Böyle bir komut bulunamadı!_");
     } else
       return await message.sendReply(
-        "_Need command or reply to a sticker!_\n_Ex: *.unstick kick*_"
+        "_Sticker yanıtlanmalı veya komut girilmeli!_\n_Ör: *.unstick kick*_"
       );
   }
 );
@@ -129,7 +129,7 @@ Module(
     var all = await stickcmd.get();
     var commands = all.map((element) => element.dataValues.command);
     var msg = commands.join("_\n_");
-    message.sendReply("_*Stickified commands:*_\n\n_" + msg + "_");
+    message.sendReply("_*Çıkartma yapılmış komutlar:*_\n\n_" + msg + "_");
   }
 );
 
@@ -148,25 +148,25 @@ Module(
       match = match[1]?.toLowerCase();
       if (!match)
         return await message.sendReply(
-          "*Wrong format!*\n*.automute 22 00 (For 10 PM)*\n*.automute 06 00 (For 6 AM)*\n*.automute off*"
+          "*Yanlış format!*\n*.automute 22 00 (Saat 22:00 için)*\n*.automute 06 00 (Saat 06:00 için)*\n*.automute off*"
         );
       if (match.includes("am") || match.includes("pm"))
         return await message.sendReply(
-          "_Time must be in HH MM format (24 hour)_"
+          "_Zaman SS DD (24 saat) formatında olmalıdır_"
         );
       if (match == "off") {
         await automute.delete(message.jid);
         return await message.sendReply(
-          "*Automute has been disabled in this group ❗*"
+          "*Bu grupta otomatik susturma devre dışı bırakıldı ❗*"
         );
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
         return await message.sendReply(
-          "*_Wrong format!_\n_.automute 22 00 (For 10 PM)_\n_.automute 06 00 (For 6 AM)_*"
+          "*_Yanlış format!_\n_.automute 22 00 (Saat 22:00 için)_\n_.automute 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("_I'm not an admin_");
+      if (!admin) return await message.sendReply("_Ben yönetici değilim_");
       await automute.set(message.jid, match.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
         `*_Group will auto mute at ${tConvert(
@@ -193,25 +193,25 @@ Module(
       match = match[1]?.toLowerCase();
       if (!match)
         return await message.sendReply(
-          "*_Wrong format!_*\n*_.autounmute 22 00 (For 10 PM)_*\n*_.autounmute 06 00 (For 6 AM)_*\n*_.autounmute off_*"
+          "*_Yanlış format!_*\n*_.autounmute 22 00 (Saat 22:00 için)_*\n*_.autounmute 06 00 (Saat 06:00 için)_*\n*_.autounmute off_*"
         );
       if (match.includes("am") || match.includes("pm"))
         return await message.sendReply(
-          "_Time must be in HH MM format (24 hour)_"
+          "_Zaman SS DD (24 saat) formatında olmalıdır_"
         );
       if (match === "off") {
         await autounmute.delete(message.jid);
         return await message.sendReply(
-          "*_Auto unmute has been disabled in this group ❗_*"
+          "*_Bu grupta otomatik sesi açma devre dışı bırakıldı ❗_*"
         );
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
         return await message.sendReply(
-          "*_Wrong format_!\n_.autounmute 22 00 (For 10 PM)_\n_.autounmute 06 00 (For 6 AM)_*"
+          "*_Yanlış format_!\n_.autounmute 22 00 (Saat 22:00 için)_\n_.autounmute 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("*I'm not admin*");
+      if (!admin) return await message.sendReply("*Yönetici değilim*");
       await autounmute.set(message.jid, match?.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
         `*_Group will auto open at ${tConvert(match)}, rebooting.._*`
@@ -247,8 +247,8 @@ Module(
 *➥ Mute:* ${tConvert(mute[e].time)}
 *➥ Unmute:* ${tConvert(mute[e].unmute || "Not set")}` + "\n\n";
       }
-      if (!msg) return await message.sendReply("_No mutes/unmutes found!_");
-      message.sendReply("*Scheduled Mutes/Unmutes*\n\n" + msg);
+      if (!msg) return await message.sendReply("_Susturma/Açma kaydı bulunamadı!_");
+      message.sendReply("*Zamanlanmış Susturmalar/Açmalar*\n\n" + msg);
     }
   }
 );
@@ -265,10 +265,10 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("_I'm not admin!_");
+      if (!admin) return await message.sendReply("_Ben yönetici değilim!_");
       if (match[1] === "on") {
         await antifake.set(message.jid);
-        return await message.sendReply("_Antifake enabled!_");
+        return await message.sendReply("_Antifake açıldı!_");
       }
       if (match[1] === "allow") {
         return await message.sendReply(
@@ -277,7 +277,7 @@ Module(
       }
       if (match[1] === "off") {
         await antifake.delete(message.jid);
-        return await message.sendReply("_Antifake disabled!_");
+        return await message.sendReply("_Antifake kapatıldı!_");
       }
       const buttons = [
         {
@@ -304,7 +304,7 @@ Module(
       ];
 
       const buttonMessage = {
-        text: "Antifake control menu",
+        text: "Antifake kontrol menüsü",
         footer: "",
         buttons: buttons,
         headerType: 1,

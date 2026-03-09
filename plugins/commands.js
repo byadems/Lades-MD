@@ -37,7 +37,7 @@ Module(
     const commandName = args[1]?.trim();
     if (!commandName) {
       return await message.sendReply(
-        "_Please provide a command name. Example: .info insta_"
+        "_Lütfen bir komut adı girin. Örnek: .info insta_"
       );
     }
 
@@ -257,7 +257,7 @@ _Hi $user!_
       const current = ALIVE;
       if (!current) {
         return await message.sendReply(
-          "_No custom alive message set! Using default message._"
+          "_Özel çevrimiçi mesajı ayarlanmadı! Varsayılan mesaj kullanılıyor._"
         );
       }
       return await message.sendReply(
@@ -268,14 +268,14 @@ _Hi $user!_
     if (input === "del" || input === "delete") {
       await setVar("ALIVE", "");
       return await message.sendReply(
-        "_Custom alive message deleted! Bot will use default message._"
+        "_Özel çevrimiçi mesaj silindi! Bot varsayılan mesajı kullanacak._"
       );
     }
 
     const aliveMessage = match[1];
     if (aliveMessage.length > 2000) {
       return await message.sendReply(
-        "_Alive message is too long! Please keep it under 2000 characters._"
+        "_Çevrimiçi mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );
     }
 
@@ -398,7 +398,7 @@ Module(
       (cmd) => cmd.use === "game" && cmd.pattern
     );
     if (!gameCommands.length) {
-      return await message.sendReply("_No games are installed._");
+      return await message.sendReply("_Yüklü oyun yok._");
     }
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
     let response = `*───「 Available Games 」───*\n\n`;
@@ -466,7 +466,7 @@ Module(
   async (message, match) => {
     const name = match[1]?.trim();
     if (!name)
-      return await message.sendReply("_Provide a name: .setname Lades_");
+      return await message.sendReply("_İsim verin: .setname Lades_");
     const parts = config.BOT_INFO.split(";");
     parts[0] = name;
     await setVar("BOT_INFO", parts.join(";"));
@@ -486,7 +486,7 @@ Module(
   async (message, match) => {
     const owner = match[1]?.trim();
     if (!owner)
-      return await message.sendReply("_Provide owner: .setowner OwnerName_");
+      return await message.sendReply("_Sahip verin: .setowner SahipAdi_");
     const parts = config.BOT_INFO.split(";");
     parts[1] = owner;
     await setVar("BOT_INFO", parts.join(";"));
@@ -505,7 +505,7 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.image) {
-      return await message.sendReply("_Reply to an image with .setimage_");
+      return await message.sendReply("_Bir resmi .setimage ile yanıtlayın_");
     }
 
     try {
@@ -521,7 +521,7 @@ Module(
 
       const url = uploadRes.url || uploadRes.display_url;
       if (!url) {
-        return await message.sendReply("_Image upload failed._");
+        return await message.sendReply("_Görsel yüklemesi başarısız oldu._");
       }
 
       const parts = config.BOT_INFO.split(";");
@@ -533,7 +533,7 @@ Module(
     } catch (error) {
       console.error("Error setting image:", error);
       return await message.sendReply(
-        "_Failed to set image. Please try again._"
+        "_Görsel ayarlanamadı. Lütfen tekrar deneyin._"
       );
     }
   }
@@ -551,11 +551,11 @@ Module(
 
     if (!aliveMessage) {
       return await message.sendReply(
-        "*Testing Default Alive Message:*\nI'm alive!"
+        "*Varsayılan Çevrimiçi Mesaj Test Ediliyor:*\nÇevrimiçiyim!"
       );
     }
 
-    await message.sendReply("*Testing Alive Message:*");
+    await message.sendReply("*Çevrimiçi Mesajı Test Ediliyor:*");
     await parseAlive(message, aliveMessage);
   }
 );

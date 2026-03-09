@@ -40,7 +40,7 @@ Module(
 
     if (subCommand === "help") {
       await message.sendReply(
-        `_1. Input images using .pdf_\n_2. Get output pdf using .pdf get_\n_3. Added images by mistake? then delete all inputted images using .pdf delete_\n_4. All files will be auto deleted after the output is produced_`
+        `_1. .pdf ile resimleri ekleyin_\n_2. .pdf get ile PDF çıktısını alın_\n_3. Yanlışlıkla resim mi eklediniz? .pdf delete ile temizleyin_\n_4. Çıktı alındıktan sonra tüm dosyalar otomatik silinir_`
       );
     } else if (subCommand === "delete") {
       const currentFiles = await fileSystem.readdir(imageInputDirectory);
@@ -55,7 +55,7 @@ Module(
       try {
         await fileSystem.unlink(finalPdfOutputPath);
       } catch (error) {}
-      await message.sendReply(`_Successfully cleared all files!_`);
+      await message.sendReply(`_Tüm dosyalar başarıyla temizlendi!_`);
     } else if (subCommand === "get") {
       const allStoredFiles = await fileSystem.readdir(imageInputDirectory);
       const imageFilePaths = allStoredFiles
@@ -63,7 +63,7 @@ Module(
         .map((fileName) => path.join(imageInputDirectory, fileName));
 
       if (!imageFilePaths.length) {
-        return await message.sendReply("_No files inputted_");
+        return await message.sendReply("_Dosya girişi yapılmadı_");
       }
 
       const pdfGenerationStream = imageToPdf(imageFilePaths, sizes.A4);
@@ -101,7 +101,7 @@ Module(
       const allImages = albumData.images || [];
 
       if (allImages.length === 0)
-        return await message.sendReply("_No images in album (videos can't be converted to PDF)_");
+        return await message.sendReply("_Albümde resim yok (videolar PDF'ye dönüştürülemez)_");
 
       await message.send(
         `_Adding ${allImages.length} album images to PDF..._`
@@ -153,12 +153,12 @@ Module(
         );
       } else {
         return await message.sendReply(
-          "_Reply to an image to add it for PDF conversion!_"
+          "_PDF dönüşümüne eklemek için bir resmi yanıtlayın!_"
         );
       }
     } else {
       return await message.sendReply(
-        '_Reply to an image, or use ".pdf help" for more information._'
+        '_Bir resmi yanıtlayın veya daha fazla bilgi için ".pdf help" kullanın._'
       );
     }
   }

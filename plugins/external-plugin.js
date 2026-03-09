@@ -50,7 +50,7 @@ Module(
         plugin_name = plugin_name[1].split(" ")[0];
       } catch {
         return await message.sendReply(
-          "_Invalid plugin. No plugin name found!_"
+          "_Geçersiz eklenti. Eklenti adı bulunamadı!_"
         );
       }
       fs.writeFileSync("./plugins/" + plugin_name + ".js", response.data);

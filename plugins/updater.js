@@ -39,12 +39,12 @@ Module(
   async (message, match) => {
     if (!(await isGitRepo())) {
       return await message.sendReply(
-        "_This bot isn't running from a Git repository. Automatic updates aren't available._"
+        "_Bu bot bir Git deposundan çalıştırılmıyor. Otomatik güncellemeler mevcut değil._"
       );
     }
 
     const command = match[1] ? match[1].toLowerCase() : "";
-    const processingMsg = await message.sendReply("_Checking for updates..._");
+    const processingMsg = await message.sendReply("_Güncellemeler kontrol ediliyor..._");
 
     try {
       // fetch remote version & commits

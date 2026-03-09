@@ -22,11 +22,11 @@ Module(
     use: "utility",
   },
   async (m, t) => {
-    if (!t[1]) return await m.sendReply("_Give me your Date of Birth_");
+    if (!t[1]) return await m.sendReply("_Doğum tarihinizi girin_");
     if (
       !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(t[1])
     )
-      return await m.sendReply("_Date must be in dd/mm/yy format_");
+      return await m.sendReply("_Tarih gg/aa/yy formatında olmalıdır_");
     var DOB = t[1];
     var actual = DOB.includes("-")
       ? DOB.split("-")[1] + "-" + DOB.split("-")[0] + "-" + DOB.split("-")[2]
@@ -44,11 +44,11 @@ Module(
     use: "utility",
   },
   async (m, t) => {
-    if (!t[1]) return await m.sendReply("_Give me a future date!_");
+    if (!t[1]) return await m.sendReply("_Bana gelecek bir tarih verin!_");
     if (
       !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(t[1])
     )
-      return await m.sendReply("_Date must be in dd/mm/yy format_");
+      return await m.sendReply("_Tarih gg/aa/yy formatında olmalıdır_");
     var DOB = t[1];
     var actual = DOB.includes("-")
       ? DOB.split("-")[1] + "-" + DOB.split("-")[0] + "-" + DOB.split("-")[2]
@@ -67,7 +67,7 @@ Module(
   },
   async (message, match) => {
     const start = process.hrtime();
-    let sent_msg = await message.sendReply("*❮ ᴛᴇsᴛɪɴɢ ᴘɪɴɢ ❯*");
+    let sent_msg = await message.sendReply("*❮ ᴛᴇsᴛ ᴘɪɴɢ ❯*");
     const diff = process.hrtime(start);
     const ms = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(2);
     await message.edit("*ʟᴀᴛᴇɴᴄʏ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);

@@ -81,7 +81,7 @@ Module(
     const input = args[1];
     if (!input || !input.includes("=")) {
       return await message.sendReply(
-        "_Invalid format. Use: .setvar KEY=VALUE_"
+        "_Geçersiz format. Kullanım: .setvar ANAHTAR=DEGER_"
       );
     }
 
@@ -90,7 +90,7 @@ Module(
 
     if (key.trim().toUpperCase() === "SUDO") {
       return await message.sendReply(
-        "_Setting SUDO via setvar is deprecated!_\n\n_Use `.setsudo` command instead to properly manage sudo users with LID support._"
+        "_Artık setvar ile yetki verilmemektedir, .setsudo komutunu kullanın_"
       );
     }
 
@@ -115,7 +115,7 @@ Module(
     const key = args[1]?.trim();
     if (!key) {
       return await message.sendReply(
-        "_Please provide a variable name. Use: .getvar MY_VAR_"
+        "_Lütfen değişken adını girin. Kullanım: .getvar DEGISKEN_"
       );
     }
 
@@ -139,7 +139,7 @@ Module(
     const key = args[1]?.trim();
     if (!key) {
       return await message.sendReply(
-        "_Please provide a variable name. Use: .delvar MY_VAR_"
+        "_Lütfen değişken adını girin. Kullanım: .delvar DEGISKEN_"
       );
     }
     try {
@@ -166,7 +166,7 @@ Module(
     const input = args[1];
     if (!input || !input.includes("=")) {
       return await message.sendReply(
-        "_Invalid format. Use: .setenv KEY=VALUE_"
+        "_Geçersiz format. Kullanım: .setenv ANAHTAR=DEGER_"
       );
     }
 
@@ -177,7 +177,7 @@ Module(
     try {
       if (!fs.existsSync("./config.env")) {
         return await message.sendReply(
-          "_Setting env variables unsupported on containers. Use setvar or set from platform settings._"
+          "_Değişken ayarları konteynerlerde desteklenmiyor. .setvar komutunu kullanın._"
         );
       }
 
@@ -259,7 +259,7 @@ Module(
       !["english", "manglish", "turkish"].includes(match[1].toLowerCase())
     )
       return await message.sendReply(
-        "_Invalid language! Available languages are English, Manglish and Turkish_"
+        "_Geçersiz dil! Mevcut diller: Türkçe, İngilizce, Manglish"
       );
     return await setVar("LANGUAGE", match[1].toLowerCase(), message);
   }
@@ -338,23 +338,23 @@ Module(
     if (target === "off") {
       await setVar("ANTI_DELETE", "off");
       await setVar("ANTI_DELETE_JID", "");
-      return await message.sendReply(`_Anti-delete deactivated ❌_`);
+      return await message.sendReply(`_Mesaj silme engeli kapatıldı ❌_`);
     } else if (target === "chat") {
       await setVar("ANTI_DELETE", "chat");
       await setVar("ANTI_DELETE_JID", "");
       return await message.sendReply(
-        `_Anti-delete activated ✅_\n\n_Recovered messages will be sent to the original chat_`
+        `_Mesaj silme engellendi ✅_\n\n_Kurtarılan mesajlar orijinal sohbete gönderilecek_`
       );
     } else if (target === "sudo") {
       await setVar("ANTI_DELETE", "sudo");
       await setVar("ANTI_DELETE_JID", "");
       return await message.sendReply(
-        `_Anti-delete activated ✅_\n\n_Recovered messages will be sent to the first sudo_`
+        `_Mesaj silme engellendi ✅_\n\n_Kurtarılan mesajlar ilk yöneticiye gönderilecek_`
       );
     } else if (target.includes("@")) {
       if (!target.match(/^\d+@(s\.whatsapp\.net|g\.us)$/)) {
         return await message.sendReply(
-          `_Invalid JID format!_\n\n_Accepted formats:_\n- \`123020340234@s.whatsapp.net\` (personal)\n- \`123020340234@g.us\` (group)_`
+          `_Geçersiz JID formatı!_\n\n_Kabul edilen formatlar:_\n- \`123020340234@s.whatsapp.net\` (personal)\n- \`123020340234@g.us\` (group)_`
         );
       }
       await setVar("ANTI_DELETE", "custom");
@@ -364,7 +364,7 @@ Module(
       );
     } else {
       return await message.sendReply(
-        `_Invalid option!_\n\n_Usage:_\n\`.antidelete chat\` - _sends to original chat_\n\`.antidelete sudo\` - _sends to first sudo_\n\`.antidelete <jid>\` - _sends to custom JID_\n\`.antidelete off\` - _disables anti-delete_`
+        `_Geçersiz seçenek!_\n\n_Kullanım:_\n\`.antidelete chat\` - _sends to original chat_\n\`.antidelete sudo\` - _sends to first sudo_\n\`.antidelete <jid>\` - _sends to custom JID_\n\`.antidelete off\` - _disables anti-delete_`
       );
     }
   }
@@ -388,14 +388,14 @@ Module(
       } else if (m.reply_message) {
         targetLid = m.reply_message.jid;
       } else {
-        return await m.sendReply("_Need reply or mention in groups_");
+        return await m.sendReply("_Gruplarda yanıtlamak veya bahsetmek gerekli_");
       }
     } else {
       // in DM: use sender
       targetLid = m.sender;
     }
 
-    if (!targetLid) return await m.sendReply("_Could not determine target_");
+    if (!targetLid) return await m.sendReply("_Hedef belirlenemedi_");
 
     try {
       // get current SUDO_MAP
@@ -411,7 +411,7 @@ Module(
 
       // check if already sudo
       if (sudoMap.includes(targetLid)) {
-        return await m.sendReply("_User is already a sudo_");
+        return await m.sendReply("_Kullanıcı zaten bir yetkili_");
       }
 
       // add to sudo map
@@ -449,7 +449,7 @@ Module(
     }
 
     if (sudoMap.length === 0) {
-      return await message.sendReply("_No sudo users configured_");
+      return await message.sendReply("_Ayarlanmış yönetici (sudo) yok_");
     }
 
     const sudoList = sudoMap
@@ -482,14 +482,14 @@ Module(
       } else if (m.reply_message) {
         targetLid = m.reply_message.jid;
       } else {
-        return await m.sendReply("_Need reply or mention in groups_");
+        return await m.sendReply("_Gruplarda yanıtlamak veya bahsetmek gerekli_");
       }
     } else {
       // in DM: use sender
       targetLid = m.sender;
     }
 
-    if (!targetLid) return await m.sendReply("_Could not determine target_");
+    if (!targetLid) return await m.sendReply("_Hedef belirlenemedi_");
 
     try {
       // get current SUDO_MAP
@@ -505,7 +505,7 @@ Module(
 
       // check if user is sudo
       if (!sudoMap.includes(targetLid)) {
-        return await m.sendReply("_User is not a sudo_");
+        return await m.sendReply("_Kullanıcı bir yetkili değil_");
       }
 
       // remove from sudo map
@@ -560,12 +560,12 @@ Module(
       if (!disabled.includes(match)) {
         disabled.push(match.trim());
         await message.sendReply(
-          `_Successfully turned off \`${handler}${match}\` command_\n_Use \`${handler}toggle ${match}\` to enable this command back_`
+          `_Başarıyla kapatıldı \`${handler}${match}\` command_\n_Use \`${handler}toggle ${match}\` to enable this command back_`
         );
         return await setVar("DISABLED_COMMANDS", disabled.join(","), false);
       } else {
         await message.sendReply(
-          `_Successfully turned on \`${handler}${match}\` command_`
+          `_Başarıyla açıldı \`${handler}${match}\` command_`
         );
         return await setVar(
           "DISABLED_COMMANDS",
@@ -600,7 +600,7 @@ Module(
       });
       if (match[1] === "on") {
         if (!(await isAdmin(message)))
-          return await message.sendReply("_I'm not an admin!_");
+          return await message.sendReply("_Ben bir yönetici değilim!_");
         await antibot.set(message.jid);
       }
       if (match[1] === "off") {
@@ -643,7 +643,7 @@ Module(
       });
       if (match[1] === "on") {
         if (!(await isAdmin(message)))
-          return await message.sendReply("_I'm not an admin!_");
+          return await message.sendReply("_Ben bir yönetici değilim!_");
         await antispam.set(message.jid);
       }
       if (match[1] === "off") {
@@ -807,7 +807,7 @@ Module(
         case "on":
         case "enable":
           if (!(await isAdmin(message))) {
-            return await message.sendReply("_I'm not an admin!_");
+            return await message.sendReply("_Ben bir yönetici değilim!_");
           }
 
           if (!config) {
@@ -824,7 +824,7 @@ Module(
           }
 
           return await message.sendReply(
-            `✅ *Antilink Enabled!*\n\n` +
+            `✅ *Bağlantı Engelleme Etkin!*\n\n` +
               `• Mode: *${config.mode.toUpperCase()}*\n` +
               `• Type: *${config.isWhitelist ? "WHITELIST" : "BLACKLIST"}*\n` +
               `• Use \`${handler}antilink help\` for more options`
@@ -839,12 +839,12 @@ Module(
             });
           }
 
-          return await message.sendReply("❌ *Antilink Disabled!*");
+          return await message.sendReply("❌ *Bağlantı Engelleme Kapatıldı!*");
 
         case "mode":
           if (!value || !["warn", "kick", "delete"].includes(value)) {
             return await message.sendReply(
-              `_Invalid mode! Available modes:_\n\n` +
+              `_Geçersiz mod! Mevcut modlar:_\n\n` +
                 `• \`warn\` - Warn users for links\n` +
                 `• \`kick\` - Kick users for links\n` +
                 `• \`delete\` - Only delete the message\n\n` +
@@ -853,7 +853,7 @@ Module(
           }
 
           if (!(await isAdmin(message))) {
-            return await message.sendReply("_I'm not an admin!_");
+            return await message.sendReply("_Ben bir yönetici değilim!_");
           }
 
           if (!config) {
@@ -884,7 +884,7 @@ Module(
         case "whitelist":
           if (!value) {
             return await message.sendReply(
-              `_Add domains to whitelist:_\n\n` +
+              `_Alan adlarını beyaz listeye ekleyin:_\n\n` +
                 `_Usage:_ \`${handler}antilink allow google.com,youtube.com\`\n` +
                 `_Current:_ ${config?.allowedLinks || "gist,instagram,youtu"}`
             );
@@ -911,7 +911,7 @@ Module(
           }
 
           return await message.sendReply(
-            `✅ *Allowed links updated!*\n\n` +
+            `✅ *İzin verilen bağlantılar güncellendi!*\n\n` +
               `*Whitelist mode:* Only these domains are allowed\n` +
               `*Domains:* ${allowedDomains.join(", ")}`
           );
@@ -920,7 +920,7 @@ Module(
         case "blacklist":
           if (!value) {
             return await message.sendReply(
-              `_Add domains to blacklist:_\n\n` +
+              `_Alan adlarını kara listeye ekleyin:_\n\n` +
                 `_Usage:_ \`${handler}antilink block facebook.com,twitter.com\`\n` +
                 `_Current:_ ${config?.blockedLinks || "None"}`
             );
@@ -947,7 +947,7 @@ Module(
           }
 
           return await message.sendReply(
-            `✅ *Blocked links updated!*\n\n` +
+            `✅ *Engellenen bağlantılar güncellendi!*\n\n` +
               `*Blacklist mode:* These domains are blocked\n` +
               `*Domains:* ${blockedDomains.join(", ")}`
           );
@@ -956,7 +956,7 @@ Module(
         case "msg":
           if (!value) {
             return await message.sendReply(
-              `_Set custom warning message:_\n\n` +
+              `_Özel uyarı mesajı ayarlayın:_\n\n` +
                 `_Usage:_ \`${handler}antilink message Links not allowed!\`\n` +
                 `_Current:_ ${config?.customMessage || "Default message"}`
             );
@@ -976,7 +976,7 @@ Module(
           }
 
           return await message.sendReply(
-            `✅ *Custom message set!*\n\n` + `*Message:* ${value}`
+            `✅ *Özel mesaj ayarlandı!*\n\n` + `*Message:* ${value}`
           );
 
         case "reset":
@@ -984,12 +984,12 @@ Module(
             await antilinkConfig.delete(message.jid);
           }
           return await message.sendReply(
-            "🔄 *Antilink settings reset to default!*"
+            "🔄 *Bağlantı engelleme ayarları sıfırlandı!*"
           );
 
         case "help":
           return await message.sendReply(
-            `🛡️ *Antilink System Help*\n\n` +
+            `🛡️ *Bağlantı Engelleme Sistemi Yardımı*\n\n` +
               `*Basic Commands:*\n` +
               `• \`${handler}antilink on/off\` - Enable/disable\n` +
               `• \`${handler}antilink mode warn/kick/delete\` - Set action\n\n` +
@@ -1046,7 +1046,7 @@ Module(
     } catch (error) {
       console.error("Antilink error:", error);
       return await message.sendReply(
-        "_An error occurred while updating antilink settings._"
+        "_Antilink ayarları güncellenirken bir hata oluştu._"
       );
     }
   }
@@ -1074,20 +1074,20 @@ Module(
       if (match[1].includes("warn")) {
         if (match[1].endsWith("on")) {
           if (!(await isAdmin(message)))
-            return await message.sendReply("_I'm not an admin!_");
+            return await message.sendReply("_Ben bir yönetici değilim!_");
           if (!antiwordWarn.includes(message.jid)) {
             antiwordWarn.push(message.jid);
             await setVar("ANTIWORD_WARN", antiwordWarn.join(","), false);
           }
           return await message.sendReply(
-            `_Antiword warn has been activated in this group!_`
+            `_Bu grupta kelime uyarı sistemi aktif edildi!_`
           );
         }
         if (match[1].endsWith("off")) {
           if (!(await isAdmin(message)))
-            return await message.sendReply("_I'm not an admin!_");
+            return await message.sendReply("_Ben bir yönetici değilim!_");
           if (antiwordWarn.includes(message.jid)) {
-            await message.sendReply(`_Antiword warn deactivated!_`);
+            await message.sendReply(`_Kelime uyarı sistemi kapatıldı!_`);
             return await setVar(
               "ANTIWORD_WARN",
               antiwordWarn.filter((x) => x != message.jid).join(",") || "null",
@@ -1098,7 +1098,7 @@ Module(
       }
       if (match[1] === "on") {
         if (!(await isAdmin(message)))
-          return await message.sendReply("_I'm not an admin!_");
+          return await message.sendReply("_Ben bir yönetici değilim!_");
         await antiword.set(message.jid);
       }
       if (match[1] === "off") {
@@ -1138,7 +1138,7 @@ Module(
 
     if (!input) {
       return await message.sendReply(
-        "*📞 Call Rejection Management*\n\n" +
+        "*📞 Arama Reddetme Yönetimi*\n\n" +
           "*Basic Controls:*\n" +
           "• `.callreject on` - Enable call rejection\n" +
           "• `.callreject off` - Disable call rejection\n\n" +
@@ -1171,7 +1171,7 @@ Module(
       case "enable":
         await setVar("REJECT_CALLS", "true", false);
         await message.sendReply(
-          "*✅ Call rejection enabled*\n\nAll incoming calls will be rejected except whitelisted numbers."
+          "*✅ Arama reddetme etkin*\n\nBeyaz listedekiler dışındaki tüm gelen aramalar reddedilecektir."
         );
         break;
 
@@ -1179,7 +1179,7 @@ Module(
       case "disable":
         await setVar("REJECT_CALLS", "false", false);
         await message.sendReply(
-          "*❌ Call rejection disabled*\n\nAll incoming calls will be accepted."
+          "*❌ Arama reddetme kapalı*\n\nTüm gelen aramalar kabul edilecektir."
         );
         break;
 
@@ -1191,7 +1191,7 @@ Module(
 
             if (chatNumber === myNumber) {
               return await message.sendReply(
-                "*❌ You cannot whitelist your own number*"
+                "*❌ Kendi numaranızı beyaz listeye alamazsınız*"
               );
             }
 
@@ -1214,14 +1214,14 @@ Module(
             );
           } else {
             return await message.sendReply(
-              "*❌ Please provide a phone number*\n\n*Usage:* `.callreject allow 919876543210`\n\n*Note:* In DM chats, you can use `.callreject allow` without a number to whitelist that contact."
+              "*❌ Lütfen bir telefon numarası girin*\n\n*Kullanım:* `.callreject allow 905554443322`\n\n*Not:* DM sohbetlerinde, numarayı eklemeden kişiyi beyaz listeye almak için `.callreject allow` kullanabilirsiniz."
             );
           }
         } else {
           const number = rest.replace(/[^0-9]/g, "");
           if (!number) {
             return await message.sendReply(
-              "*❌ Please provide a valid phone number*\n\n*Usage:* `.callreject allow 919876543210`"
+              "*❌ Lütfen geçerli bir telefon numarası girin*\n\n*Kullanım:* `.callreject allow 905554443322`"
             );
           }
 
@@ -1268,14 +1268,14 @@ Module(
             );
           } else {
             return await message.sendReply(
-              "*❌ Please provide a phone number*\n\n*Usage:* `.callreject remove 919876543210`\n\n*Note:* In DM chats, you can use `.callreject remove` without a number to remove that contact from whitelist."
+              "*❌ Lütfen bir telefon numarası girin*\n\n*Kullanım:* `.callreject remove 905554443322`\n\n*Not:* DM'de o kişiyi beyaz listeden çıkarmak için numara olmadan `.callreject remove` kullanabilirsiniz."
             );
           }
         } else {
           const number = rest.replace(/[^0-9]/g, "");
           if (!number) {
             return await message.sendReply(
-              "*❌ Please provide a valid phone number*\n\n*Usage:* `.callreject remove 919876543210`"
+              "*❌ Lütfen geçerli bir telefon numarası girin*\n\n*Kullanım:* `.callreject remove 905554443322`"
             );
           }
 
@@ -1308,7 +1308,7 @@ Module(
 
         if (allowedNumbers.length === 0) {
           return await message.sendReply(
-            "*📞 No numbers in the whitelist*\n\nAll calls will be rejected when call rejection is enabled."
+            "*📞 Beyaz listede numara yok*\n\nArama reddetme etkin olduğunda tüm aramalar reddedilecektir."
           );
         }
 
@@ -1328,7 +1328,7 @@ Module(
           : [];
 
         if (currentAllowed.length === 0) {
-          return await message.sendReply("*📞 Whitelist is already empty*");
+          return await message.sendReply("*📞 Beyaz liste zaten boş*");
         }
 
         await setVar("ALLOWED_CALLS", "", false);
@@ -1342,7 +1342,7 @@ Module(
         if (!rest) {
           const currentMsg = config.CALL_REJECT_MESSAGE;
           return await message.sendReply(
-            "*📞 Call Rejection Message*\n\n" +
+            "*📞 Arama Reddetme Mesajı*\n\n" +
               `*Current Message:* ${currentMsg || "Not set"}\n\n` +
               "*Commands:*\n" +
               "• `.callreject msg <your message>` - Set rejection message\n" +
@@ -1354,7 +1354,7 @@ Module(
         if (rest.toLowerCase() === "off" || rest.toLowerCase() === "disable") {
           await setVar("CALL_REJECT_MESSAGE", "", false);
           await message.sendReply(
-            "*🔇 Call rejection message disabled*\n\nRejected callers will not receive any message."
+            "*🔇 Arama reddetme mesajı kapatıldı*\n\nReddedilen arayanlara hiçbir mesaj gönderilmeyecek."
           );
         } else {
           await setVar("CALL_REJECT_MESSAGE", rest, false);
@@ -1366,7 +1366,7 @@ Module(
 
       default:
         await message.sendReply(
-          "*❌ Invalid command*\n\n" +
+          "*❌ Geçersiz komut*\n\n" +
             "*Valid commands:* on, off, allow, remove, list, clear, msg\n\n" +
             "*Examples:*\n" +
             "• `.callreject on` - Enable call rejection\n" +

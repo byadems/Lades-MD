@@ -289,7 +289,7 @@ Module(
       message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 120)
       await message.sendReply(
-        `_Alert: Duration more than 2 mins. This process may fail or take much more time!_`
+        `_Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
       );
     var savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
@@ -355,7 +355,7 @@ Module(
       message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 120)
       await message.sendReply(
-        `_Alert: Duration more than 2 mins. This process may fail or take much more time!_`
+        `_Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
       );
     var savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
@@ -738,7 +738,7 @@ Module(
       (!message.reply_message.video && !message.reply_message.image)
     ) {
       return await message.sendReply(
-        "_Reply to a video or image to crop it to square format_"
+        "_Kare formatında kırpmak için bir videoyu veya resmi yanıtlayın_"
       );
     }
 
@@ -826,7 +826,7 @@ Module(
       (!message.reply_message.video && !message.reply_message.image)
     ) {
       return await message.sendReply(
-        "_Reply to a video or image to resize it_"
+        "_Boyutunu değiştirmek için bir videoyu veya resmi yanıtlayın_"
       );
     }
 
@@ -957,7 +957,7 @@ Module(
       (!message.reply_message.video && !message.reply_message.image)
     ) {
       return await message.sendReply(
-        "_Reply to a video or image to compress it_"
+        "_Sıkıştırmak için bir videoyu veya resmi yanıtlayın_"
       );
     }
 

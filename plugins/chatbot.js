@@ -319,7 +319,7 @@ Module(
       case "on":
         if (!config.GEMINI_API_KEY) {
           return await message.sendReply(
-            `*_❌ GEMINI_API_KEY Not Configured_*\n\n` +
+            `*_❌ GEMINI_API_KEY Yapılandırılmadı_*\n\n` +
               `_Cannot enable chatbot without Gemini API key._\n\n` +
               `*_How to get your API key:_*\n` +
               `- _Visit: https://aistudio.google.com/app/apikey_\n` +
@@ -335,7 +335,7 @@ Module(
         if (target === "groups") {
           await setVar("CHATBOT_ALL_GROUPS", "true");
           return await message.sendReply(
-            `*_🤖 Chatbot Enabled for All Groups_*\n\n` +
+            `*_🤖 Sohbet Botu Tüm Gruplar için Açıldı_*\n\n` +
               `✅ _Chatbot will now respond in all groups_\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
               `📍 _Trigger:_ _Mentions and replies only_\n\n` +
@@ -344,7 +344,7 @@ Module(
         } else if (target === "dms") {
           await setVar("CHATBOT_ALL_DMS", "true");
           return await message.sendReply(
-            `*_🤖 Chatbot Enabled for All DMs_*\n\n` +
+            `*_🤖 Sohbet Botu Tüm DM'ler için Açıldı_*\n\n` +
               `✅ _Chatbot will now respond in all direct messages_\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
               `📍 _Trigger:_ _All messages_\n\n` +
@@ -353,7 +353,7 @@ Module(
         } else {
           await enableChatbot(chatJid);
           return await message.sendReply(
-            `*_🤖 Chatbot Enabled_*\n\n` +
+            `*_🤖 Sohbet Botu Açıldı_*\n\n` +
               `📍 _Chat:_ \`${chatJid.includes("@g.us") ? "Group" : "DM"}\`\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
               `💭 _Context:_ _Fresh start_\n\n` +
@@ -365,7 +365,7 @@ Module(
         if (target === "groups") {
           await setVar("CHATBOT_ALL_GROUPS", "false");
           return await message.sendReply(
-            `*_🤖 Chatbot Disabled for All Groups_*\n\n` +
+            `*_🤖 Sohbet Botu Tüm Gruplar için Kapatıldı_*\n\n` +
               `❌ _Chatbot will no longer respond in groups globally_\n` +
               `📝 _Individual group settings are preserved_\n\n` +
               `_Use \`.chatbot on groups\` to re-enable._`
@@ -373,7 +373,7 @@ Module(
         } else if (target === "dms") {
           await setVar("CHATBOT_ALL_DMS", "false");
           return await message.sendReply(
-            `*_🤖 Chatbot Disabled for All DMs_*\n\n` +
+            `*_🤖 Sohbet Botu Tüm DM'ler için Kapatıldı_*\n\n` +
               `❌ _Chatbot will no longer respond in DMs globally_\n` +
               `📝 _Individual DM settings are preserved_\n\n` +
               `_Use \`.chatbot on dms\` to re-enable._`
@@ -381,7 +381,7 @@ Module(
         } else {
           await disableChatbot(chatJid);
           return await message.sendReply(
-            `*_🤖 Chatbot Disabled_*\n\n` +
+            `*_🤖 Sohbet Botu Kapatıldı_*\n\n` +
               `_Chatbot is now disabled in this chat._\n` +
               `_Conversation context has been cleared._`
           );
@@ -391,7 +391,7 @@ Module(
         const promptMatch = input.match(/set\s+"([^"]+)"/);
         if (!promptMatch) {
           return await message.sendReply(
-            `_Please provide the system prompt in quotes._\n\n` +
+            `_Lütfen sistem komutunu tırnak içinde belirtin._\n\n` +
               `*_Example:_*\n` +
               `\`.chatbot set "You are a helpful assistant specialized in programming."\``
           );
@@ -399,7 +399,7 @@ Module(
         const newPrompt = promptMatch[1];
         await saveSystemPrompt(newPrompt);
         return await message.sendReply(
-          `*_🎯 System Prompt Updated_*\n\n` +
+          `*_🎯 Sistem Komutu Güncellendi_*\n\n` +
             `📝 _New Prompt:_ \`${newPrompt}\`\n\n` +
             `_This will apply to all new conversations._`
         );
@@ -419,7 +419,7 @@ Module(
         } else {
           clearContext(chatJid);
           return await message.sendReply(
-            `*_💭 Context Cleared_*\n\n` +
+            `*_💭 Bağlam Temizlendi_*\n\n` +
               `_Conversation history has been reset._\n` +
               `_Next message will start a fresh conversation._`
           );
@@ -477,7 +477,7 @@ Module(
 
       default:
         return await message.sendReply(
-          `_Unknown command: \`${command}\`_\n\n_Use \`.chatbot\` to see available commands._`
+          `_Bilinmeyen komut: \`${command}\`_\n\n_Use \`.chatbot\` to see available commands._`
         );
     }
   }
@@ -547,7 +547,7 @@ Module(
         } catch (error) {
           console.error("Error downloading image:", error);
           return await message.sendReply(
-            "_❌ Failed to download image. Please try again._"
+            "_❌ Görsel indirilemedi. Lütfen tekrar deneyin._"
           );
         }
       } else if (messageText.length < 2) {
@@ -605,7 +605,7 @@ Module(
           if (imagePart) imageParts.push(imagePart);
         } catch (error) {
           console.error("Error downloading image:", error);
-          return await message.sendReply("❌ Failed to download the image.");
+          return await message.sendReply("❌ Görsel indirilemedi.");
         }
         if (!prompt) prompt = "What do you see in this image?";
       }
@@ -624,12 +624,12 @@ Module(
           }
 
           if (!imageParts.length) {
-            return await message.sendReply("❌ No images found in album.");
+            return await message.sendReply("❌ Albümde resim bulunamadı.");
           }
           if (!prompt) prompt = "Analyze these images for me.";
         } catch (error) {
           console.error("Error downloading album:", error);
-          return await message.sendReply("❌ Failed to download album.");
+          return await message.sendReply("❌ Albüm indirilemedi.");
         }
       }
       else if (message.reply_message.text && !prompt) {
@@ -638,12 +638,12 @@ Module(
     }
 
     if (!prompt && !imageParts.length) {
-      return await message.sendReply("Please provide a prompt or reply to a message/image.");
+      return await message.sendReply("Lütfen bir komut girin veya bir mesaja/resme yanıt verin.");
     }
 
     let sent_msg;
     try {
-      sent_msg = await message.sendReply("_Thinking..._");
+      sent_msg = await message.sendReply("_Düşünüyor..._");
       const fullText = await callGenerativeAI(prompt, imageParts, message, sent_msg);
 
       if (!fullText) {
@@ -655,9 +655,9 @@ Module(
     } catch (error) {
       console.error("AI command error:", error.message);
       if (sent_msg) {
-        await message.edit("❌ An error occurred with the AI API.", message.jid, sent_msg.key);
+        await message.edit("❌ AI API'si ile ilgili bir hata oluştu.", message.jid, sent_msg.key);
       } else {
-        await message.sendReply("❌ An error occurred with the AI API.");
+        await message.sendReply("❌ AI API'si ile ilgili bir hata oluştu.");
       }
     }
   }
