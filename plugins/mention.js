@@ -185,8 +185,7 @@ Module(
           }
         }
 
-        return await message.sendReply(`Lütfen 'set' komutu için içerik sağlayın!\n\n*Kullanım:*\n• Herhangi bir mesajı yanıtlayın ve \ yazın`${handler}mention set\`\n• Or use \`${handler}mention set <text>\` for text message`
-        );
+        return await message.sendReply(`💬 Lütfen 'set' komutu için içerik sağlayın!\n\n*Kullanım:*\n• Herhangi bir mesajı yanıtlayın ve \`${handler}mention set\` yazın\n• Veya metin mesajı için \`${handler}mention set <metin>\` kullanın`);
 
       case "help":
         const helpText = `*Auto Mention Reply Help*
