@@ -141,7 +141,7 @@ Module(
     fromMe: true,
     use: "owner",
     usage: ".pupdate plugin_name",
-    desc: "Updates a plugin",
+    desc: "Bir eklentiyi (plugin) günceller",
   },
   async (m, match) => {
     const plugin = match[1];

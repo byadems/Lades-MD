@@ -481,7 +481,7 @@ Module(
   {
     pattern: "autodl ?(.*)",
     fromMe: true,
-    desc: "Auto-download URL watcher - enable in chats or globally",
+    desc: "URL izleyici otomatik indirme - sohbetlerde veya küresel olarak etkinleştirin",
     usage:
       ".autodl - show menu\n.autodl on/off - enable/disable in current chat\n.autodl on/off groups - enable/disable in all groups\n.autodl on/off dms - enable/disable in all DMs\n.autodl status - show current status",
   },

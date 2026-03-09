@@ -41,7 +41,7 @@ Module(
   {
     pattern: "img ?(.*)",
     use: "search",
-    desc: "Searches for an image on Google Images and sends the requested number of results.",
+    desc: "Google Görseller'de resim arar ve istenen sayıda sonucu gönderir.",
   },
   async (message, match) => {
     if (!match[1]) return await message.send("*_Need a search term!_*");
@@ -245,7 +245,7 @@ Module(
   {
     pattern: "slow",
     use: "edit",
-    desc: "Slows down music & decreases pitch. For making slowed+reverb audios",
+    desc: "Müziği yavaşlatır ve ses tonunu düşürür. Slowed+reverb sesleri yapmak için",
   },
   async (message, match) => {
     if (message.reply_message === false)
@@ -310,7 +310,7 @@ Module(
   {
     pattern: "sped ?(.*)",
     use: "edit",
-    desc: "Speeds up music & increases pitch. For making sped-up+reverb audios",
+    desc: "Müziği hızlandırır ve ses tonunu yükseltir. Sped-up+reverb sesleri yapmak için",
   },
   async (message, match) => {
     if (message.reply_message === false)
@@ -431,7 +431,7 @@ Module(
   {
     pattern: "attp ?(.*)",
     use: "utility",
-    desc: "Text to animated sticker",
+    desc: "Metinden hareketli çıkartmaya",
   },
   async (message, match) => {
     if (match[1] == "") return await message.send("*Need text*");
@@ -525,7 +525,7 @@ Module(
   {
     pattern: "doc ?(.*)",
     use: "edit",
-    desc: "Converts replied media to document format",
+    desc: "Yanıtlanan medyayı belge (document) formatına dönüştürür",
   },
   async (message, match) => {
     if (message.reply_message === false)
@@ -646,7 +646,7 @@ Module(
   {
     pattern: "upload ?(.*)",
     use: "utility",
-    desc: "Downloads file from URL and sends as document",
+    desc: "URL'den dosya indirir ve belge olarak gönderir",
   },
   async (message, match) => {
     var url =
@@ -728,7 +728,7 @@ Module(
   {
     pattern: "square ?(.*)",
     use: "edit",
-    desc: "Crops video/image to 1:1 aspect ratio (square format)",
+    desc: "Video/resmi 1:1 oranında (kare formatında) kırpar",
   },
   async (message, match) => {
     if (
@@ -815,7 +815,7 @@ Module(
   {
     pattern: "resize ?(.*)",
     use: "edit",
-    desc: "Change video/image aspect ratio. Usage: .resize 16:9, .resize 9:16, .resize 4:3, .resize 21:9",
+    desc: "Video/resim en-boy oranını değiştirin. Kullanım: .resize 16:9, .resize 9:16",
   },
   async (message, match) => {
     if (
@@ -945,7 +945,7 @@ Module(
   {
     pattern: "compress ?(.*)",
     use: "edit",
-    desc: "Compress video/image by percentage. Usage: .compress 50 (50% compression), .compress 80 (80% compression)",
+    desc: "Video/resmi yüzdeyle sıkıştırın. Kullanım: .compress 50 (%50 sıkıştırma)",
   },
   async (message, match) => {
     if (

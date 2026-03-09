@@ -33,7 +33,7 @@ Module(
   {
     pattern: "update ?(.*)",
     fromMe: true,
-    desc: "Checks for and applies bot updates.",
+    desc: "Bot güncellemelerini kontrol eder ve uygular.",
     use: "owner",
   },
   async (message, match) => {

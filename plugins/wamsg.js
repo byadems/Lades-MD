@@ -39,7 +39,7 @@ Module(
   {
     pattern: "send ?(.*)",
     fromMe: true,
-    desc: "Forwards replied message to the given jid",
+    desc: "Yanıtlanan mesajı belirtilen jid'e iletir",
     use: "whatsapp",
   },
   async (m, t) => {
@@ -61,7 +61,7 @@ Module(
   {
     pattern: "forward ?(.*)",
     fromMe: true,
-    desc: "Forwards replied message to the given jid",
+    desc: "Yanıtlanan mesajı belirtilen jid'e iletir",
     use: "whatsapp",
   },
   async (m, t) => {
@@ -83,7 +83,7 @@ Module(
   {
     pattern: "retry ?(.*)",
     fromMe: isPrivateMode,
-    desc: "Retries replied command to run the command again",
+    desc: "Yanıtlanan komutu tekrar çalıştırmayı dener",
     use: "misc",
   },
   async (m, t) => {
@@ -99,7 +99,7 @@ Module(
   {
     pattern: "vv ?(.*)",
     fromMe: true,
-    desc: "Anti view once",
+    desc: "Tek görünürlü (view once) mesajları yakalar",
     use: "utility",
   },
   async (m, match) => {
@@ -150,7 +150,7 @@ Module(
   {
     pattern: "delete",
     fromMe: true,
-    desc: "Deletes message for everyone. Supports admin deletion",
+    desc: "Mesajı herkesten siler. Yönetici silmesini destekler",
   },
   async (m, t) => {
     let adminAccesValidated = ADMIN_ACCESS ? await isAdmin(m, m.sender) : false;

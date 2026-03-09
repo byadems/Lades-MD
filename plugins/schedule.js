@@ -102,7 +102,7 @@ Module(
   {
     pattern: "schedule ?(.*)",
     use: "utility",
-    desc: "Schedule a message to be sent later. Reply to a message with: schedule <jid> <time> or schedule <time> <jid>",
+    desc: "İleri bir tarih için mesaj planlar. Mesajı yanıtlayarak kullanın.",
   },
   async (m, match) => {
     if (match[1] === "d") return;
@@ -169,7 +169,7 @@ Module(
   {
     pattern: "scheduled ?(.*)",
     use: "utility",
-    desc: "List all pending scheduled messages",
+    desc: "Bekleyen tüm planlanmış mesajları listeler",
   },
   async (m, match) => {
     try {
@@ -207,7 +207,7 @@ Module(
   {
     pattern: "cancel ?(.*)",
     use: "utility",
-    desc: "Cancel a scheduled message by ID",
+    desc: "ID'ye göre zamanlanmış bir mesajı iptal eder",
   },
   async (m, match) => {
     if (!match[1]) {

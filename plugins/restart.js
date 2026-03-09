@@ -28,7 +28,7 @@ Module(
   {
     pattern: "restart",
     fromMe: true,
-    desc: "Restarts the bot",
+    desc: "Botu yeniden başlatır",
     use: "system",
   },
   async (m) => {

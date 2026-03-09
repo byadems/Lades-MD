@@ -44,7 +44,7 @@ Module(
   {
     pattern: "stickcmd ?(.*)",
     fromMe: true,
-    desc: "Sticks commands on stickers. And if that sticker is sent, it will work as a command!",
+    desc: "Komutları çıkartmalara yapıştırır. Çıkartma gönderilirse komut gibi çalışır!",
     usage: ".stickcmd .kick",
     warn: "Only works on stickers",
     use: "utility",
@@ -74,7 +74,7 @@ Module(
   {
     pattern: "unstick ?(.*)",
     fromMe: true,
-    desc: "Deletes sticked commands on stickers",
+    desc: "Çıkartmalardaki komutları siler",
     usage: ".unstick kick",
     use: "utility",
   },
@@ -120,7 +120,7 @@ Module(
   {
     pattern: "getstick ?(.*)",
     fromMe: true,
-    desc: "Shows sticked commands on stickers",
+    desc: "Çıkartmalardaki komutları gösterir",
     use: "utility",
   },
   async (message, match) => {

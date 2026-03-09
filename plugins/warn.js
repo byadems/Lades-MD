@@ -18,7 +18,7 @@ Module(
   {
     pattern: "warn ?(.*)",
     fromMe: false,
-    desc: "Warn a user in the group. After reaching the limit, user will be kicked.",
+    desc: "Gruptaki bir kullanıcıyı uyarır. Sınıra ulaştığında atılır.",
     usage: ".warn @user reason\n.warn reply reason",
     use: "group",
   },
@@ -126,7 +126,7 @@ Module(
   {
     pattern: "warnings ?(.*)",
     fromMe: false,
-    desc: "Check warnings for a user",
+    desc: "Bir kullanıcının uyarılarını kontrol eder",
     usage: ".warnings @user\n.warnings reply",
     use: "group",
   },
@@ -197,7 +197,7 @@ Module(
   {
     pattern: "rmwarn ?(.*)",
     fromMe: false,
-    desc: "Remove one warning for a user",
+    desc: "Kullanıcıdan bir uyarıyı siler",
     usage: ".rmwarn @user\n.rmwarn reply",
     use: "group",
   },
@@ -264,7 +264,7 @@ Module(
   {
     pattern: "resetwarn ?(.*)",
     fromMe: false,
-    desc: "Reset all warnings for a user",
+    desc: "Kullanıcının tüm uyarılarını sıfırlar",
     usage: ".resetwarn @user\n.resetwarn reply",
     use: "group",
   },
@@ -330,7 +330,7 @@ Module(
   {
     pattern: "warnlist",
     fromMe: false,
-    desc: "List all warned users in the group",
+    desc: "Gruptaki tüm uyarılan kullanıcıları listeler",
     usage: ".warnlist",
     use: "group",
   },
@@ -409,7 +409,7 @@ Module(
   {
     pattern: "setwarnlimit ?(.*)",
     fromMe: true,
-    desc: "Set the warning limit for the group",
+    desc: "Grup için uyarı sınırını ayarlar",
     usage: ".setwarnlimit 5",
     use: "group",
   },
@@ -441,7 +441,7 @@ Module(
   {
     pattern: "warnstats",
     fromMe: false,
-    desc: "Show warning statistics for the group",
+    desc: "Grup için uyarı istatistiklerini gösterir",
     usage: ".warnstats",
     use: "group",
   },

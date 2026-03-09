@@ -183,18 +183,18 @@ const SESSION = SESSION_STRING
   : [];
 
 const settingsMenu = [
-  { title: "PM antispam block", env_var: "PM_ANTISPAM" },
-  //{ title: "Command auto reaction", env_var: "CMD_REACTION" },
-  { title: "Auto read all messages", env_var: "READ_MESSAGES" },
-  { title: "Auto read command messages", env_var: "READ_COMMAND" },
-  { title: "Auto read status updates", env_var: "AUTO_READ_STATUS" },
-  { title: "Admin sudo (group commands)", env_var: "ADMIN_ACCESS" },
-  { title: "With & without handler mode", env_var: "MULTI_HANDLERS" },
-  { title: "Auto reject calls", env_var: "REJECT_CALLS" },
-  { title: "Always online", env_var: "ALWAYS_ONLINE" },
-  { title: "PM Auto blocker", env_var: "PMB_VAR" },
-  { title: "Disable bot in PM", env_var: "DIS_PM" },
-  { title: "Disable bot startup message", env_var: "DISABLE_START_MESSAGE" },
+  { title: "DM anti-spam engelleyici", env_var: "PM_ANTISPAM" },
+  //{ title: "Komutlara otomatik tepki (emoji) ver", env_var: "CMD_REACTION" },
+  { title: "Tüm mesajları otomatik okundu olarak işaretle", env_var: "READ_MESSAGES" },
+  { title: "Komut mesajlarını otomatik okundu olarak işaretle", env_var: "READ_COMMAND" },
+  { title: "Durum güncellemelerini otomatik okundu olarak işaretle", env_var: "AUTO_READ_STATUS" },
+  { title: "Yönetici sudo (grup komutları) izinleri", env_var: "ADMIN_ACCESS" },
+  { title: "Handler'lı (. vs) ve handler'sız mod", env_var: "MULTI_HANDLERS" },
+  { title: "Aramaları otomatik reddet", env_var: "REJECT_CALLS" },
+  { title: "Her zaman çevrimiçi görün", env_var: "ALWAYS_ONLINE" },
+  { title: "DM Otomatik Engelleyici", env_var: "PMB_VAR" },
+  { title: "Botu DM'lerde devre dışı bırak", env_var: "DIS_PM" },
+  { title: "Bot başlangıç mesajını devre dışı bırak", env_var: "DISABLE_START_MESSAGE" },
 ];
 
 const baseConfig = {
@@ -235,7 +235,7 @@ const baseConfig = {
   AUTOUNMUTE_MSG:
     process.env.AUTOUNMUTE_MSG ||
     "_Group auto unmuted!_\n_(edit AUTOUNMUTE_MSG)_",
-  AUTO_READ_STATUS: convertToBool(process.env.AUTO_READ_STATUS) || false,
+  AUTO_READ_STATUS: convertToBool(process.env.AUTO_READ_STATUS) || true,
   READ_MESSAGES: convertToBool(process.env.READ_MESSAGES) || false,
   PMB_VAR: convertToBool(process.env.PMB_VAR) || false,
   DIS_PM: convertToBool(process.env.DIS_PM) || false,

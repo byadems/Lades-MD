@@ -59,7 +59,7 @@ Module(
 Module(
   {
     pattern: "black",
-    desc: "Audio to black video",
+    desc: "Sesi siyah videoya dönüştürür",
     use: "edit",
   },
   async (message, match) => {
@@ -159,7 +159,7 @@ Module(
 Module(
   {
     pattern: "vmix ?(.*)",
-    desc: "Merges/Joins two videos",
+    desc: "İki videoyu birleştirir",
     use: "edit",
   },
   async (message, match) => {
@@ -224,7 +224,7 @@ Module(
 Module(
   {
     pattern: "slowmo",
-    desc: "Video to smooth slow motion",
+    desc: "Videoyu pürüzsüz ağır çekime dönüştürür",
     use: "edit",
   },
   async (message, match) => {
@@ -249,7 +249,7 @@ Module(
 Module(
   {
     pattern: "circle",
-    desc: "Sticker/photo to circle crop",
+    desc: "Çıkartma/fotoğrafı yuvarlak olarak kırpar",
     use: "edit",
   },
   async (message, match) => {
@@ -259,7 +259,7 @@ Module(
 Module(
   {
     pattern: "gif",
-    desc: "Video to gif with audio",
+    desc: "Sesli olarak videoyu gif'e dönüştürür",
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
@@ -308,7 +308,7 @@ Module(
 Module(
   {
     pattern: "find ?(.*)",
-    desc: "Finds music name using AI",
+    desc: "Yapay zeka (AI) kullanarak müzik adını bulur",
     usage: ".find reply to a music",
     use: "search",
   },
@@ -352,7 +352,7 @@ YouTube: ${
 Module(
   {
     pattern: "rotate ?(.*)",
-    desc: "Rotates video (left/right)",
+    desc: "Videoyu döndürür (sol/sağ)",
   },
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.video)
@@ -370,7 +370,7 @@ Module(
   }
 );
 Module(
-  { pattern: "flip ?(.*)", desc: "Flips video" },
+  { pattern: "flip ?(.*)", desc: "Videoyu ters çevirir (flip)" },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");

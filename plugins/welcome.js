@@ -11,7 +11,7 @@ Module(
   {
     pattern: "welcome ?(.*)",
     fromMe: false,
-    desc: "Set welcome message for group. Use placeholders: $mention, $user, $group, $desc, $count, $pp, $gpp, $date, $time",
+    desc: "Grup karşılama mesajını ayarlar. $user, $group vb. etiketler kullanılabilir.",
     usage:
       ".welcome Hey $mention, welcome to $group! $pp\n.welcome on/off (to enable/disable)\n.welcome get (to view current message)\n.welcome del (to delete)",
     use: "group",
@@ -226,7 +226,7 @@ Module(
   {
     pattern: "goodbye ?(.*)",
     fromMe: false,
-    desc: "Set goodbye message for group. Use placeholders: $mention, $user, $group, $desc, $count, $pp, $gpp, $date, $time",
+    desc: "Grup çıkış mesajını ayarlar. $user, $group vb. etiketler kullanılabilir.",
     usage:
       ".goodbye Bye $mention, thanks for being part of $group! $pp\n.goodbye on/off (to enable/disable)\n.goodbye get (to view current message)\n.goodbye del (to delete)",
     use: "group",
@@ -306,7 +306,7 @@ Module(
   {
     pattern: "testwelcome ?(.*)",
     fromMe: false,
-    desc: "Test the welcome message for current group",
+    desc: "Geçerli grup için karşılama mesajını test eder",
     usage: ".testwelcome",
     use: "group",
   },
@@ -337,7 +337,7 @@ Module(
   {
     pattern: "testgoodbye ?(.*)",
     fromMe: false,
-    desc: "Test the goodbye message for current group",
+    desc: "Geçerli grup için veda mesajını test eder",
     usage: ".testgoodbye",
     use: "group",
   },

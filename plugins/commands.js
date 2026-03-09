@@ -31,7 +31,7 @@ Module(
   {
     pattern: "info ?(.*)",
     fromMe: isPrivateMode,
-    desc: "Gives command information",
+    desc: "Komut bilgisini verir",
   },
   async (message, args) => {
     const commandName = args[1]?.trim();
@@ -154,7 +154,7 @@ Module(
   {
     pattern: "alive",
     fromMe: isPrivateMode,
-    desc: "Checks if the bot is alive.",
+    desc: "Botun çevrimiçi olup olmadığını kontrol eder.",
   },
   async (message, match) => {
     await parseAlive(message, ALIVE);
@@ -165,7 +165,7 @@ Module(
   {
     pattern: "setalive ?(.*)",
     fromMe: true,
-    desc: "Sets the alive message for the bot with formatting options.",
+    desc: "Bot için çevrimiçi (alive) mesajı ayarlar.",
     usage:
       ".setalive <message> (with placeholders)\n.setalive help (show formatting help)",
     dontAddCommandList: true,
@@ -287,7 +287,7 @@ Module(
     pattern: "menu",
     fromMe: isPrivateMode,
     use: "utility",
-    desc: "Displays the bot command menu.",
+    desc: "Bot komut menüsünü gösterir.",
   },
   async (message, match) => {
     const stars = ["✦", "✯", "✯", "✰", "◬"];
@@ -387,7 +387,7 @@ Module(
   {
     pattern: "games ?(.*)",
     fromMe: isPrivateMode,
-    desc: "Lists all available games",
+    desc: "Mevcut tüm oyunları listeler",
   },
   async (message, args) => {
     const gameCommands = commands.filter(
@@ -417,7 +417,7 @@ Module(
   {
     pattern: "setinfo ?(.*)",
     fromMe: true,
-    desc: "Shows info about bot configuration commands.",
+    desc: "Bot yapılandırma komutları hakkında bilgi gösterir.",
     use: "settings",
   },
   async (message, match) => {
@@ -456,7 +456,7 @@ Module(
   {
     pattern: "setname ?(.*)",
     fromMe: true,
-    desc: "Sets the bot name",
+    desc: "Bot adını ayarlar",
     use: "settings",
   },
   async (message, match) => {
@@ -476,7 +476,7 @@ Module(
   {
     pattern: "setowner ?(.*)",
     fromMe: true,
-    desc: "Sets the bot owner",
+    desc: "Bot sahibini ayarlar",
     use: "settings",
   },
   async (message, match) => {
@@ -496,7 +496,7 @@ Module(
   {
     pattern: "setimage",
     fromMe: true,
-    desc: "Sets the bot image (reply to image)",
+    desc: "Bot resmini ayarlar (bir resme yanıt verin)",
     use: "settings",
   },
   async (message, match) => {
@@ -537,7 +537,7 @@ Module(
   {
     pattern: "testalive",
     fromMe: true,
-    desc: "Test the current alive message with formatting.",
+    desc: "Mevcut çevrimiçi (alive) mesajını biçimlendirmesiyle test eder.",
     usage: ".testalive",
     use: "utility",
   },

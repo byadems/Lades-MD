@@ -60,7 +60,7 @@ Module(
   {
     pattern: "msgs ?(.*)",
     fromMe: true,
-    desc: "Shows number of messages sent by each member with at least one message, sorted by count",
+    desc: "Grupta mesaj atan kullanıcıların mesaj sayılarını gösterir",
     usage:
       ".msgs (all members with messages)\n.msgs @mention (specific member)",
     use: "group",
@@ -137,7 +137,7 @@ Module(
   {
     pattern: "inactive ?(.*)",
     fromMe: true,
-    desc: "Shows inactive members based on last message time. Can also kick them.",
+    desc: "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
     usage:
       ".inactive 30d (members inactive for 30+ days)\n.inactive 10d kick (kick members inactive for 10+ days)\n\nSupported units: d (days), w (weeks), m (months), y (years)",
     use: "group",
@@ -318,7 +318,7 @@ Module(
   {
     pattern: "users ?(.*)",
     fromMe: true,
-    desc: "Shows top users by message count. In DM shows global stats by default, in groups shows chat-specific stats.",
+    desc: "Mesaj sayısına göre en iyi kullanıcıları gösterir.",
     usage:
       ".users (shows top 10 users - global in DM, chat-specific in groups)\n.users global (shows global top users)\n.users 20 (shows top 20 users)\n.users global 15 (shows top 15 global users)",
     use: "utility",

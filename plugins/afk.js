@@ -173,7 +173,7 @@ Module(
   {
     pattern: "afk ?(.*)",
     fromMe: true,
-    desc: "Set yourself as Away From Keyboard",
+    desc: "Kendinizi AFK (Klavyeden Uzakta) olarak ayarlayın",
     usage:
       ".afk [reason] - _Set AFK with optional reason_\n.afk - _Check current status_\n.afk list - _Show all AFK users_",
   },

@@ -57,7 +57,7 @@ Module(
   {
     pattern: "mention ?(.*)",
     fromMe: true,
-    desc: "Auto mention reply management",
+    desc: "Otomatik etiket (mention) yanıt yönetimi",
     usage:
       ".mention set (reply to message) | .mention set <text> | .mention get | .mention del | .mention help",
   },

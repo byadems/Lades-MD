@@ -23,7 +23,7 @@ Module(
   {
     pattern: "clear ?(.*)",
     fromMe: true,
-    desc: "Clear chat",
+    desc: "Sohbeti temizle",
     use: "misc",
     usage: ".clear (clears the current chat)",
   },
@@ -182,7 +182,7 @@ Module(
     fromMe: false,
     use: "group",
     usage: ".requests approve all or reject all",
-    desc: "Get list of pending join requests",
+    desc: "Bekleyen katılma isteklerinin listesini al",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -557,7 +557,7 @@ Module(
     pattern: "gname ?(.*)",
     fromMe: false,
     use: "group",
-    desc: "Change group subject",
+    desc: "Grup adını (başlığını) değiştir",
     usage: ".gname New Group Name",
   },
   async (message, match) => {
@@ -583,7 +583,7 @@ Module(
     pattern: "gdesc ?(.*)",
     fromMe: false,
     use: "group",
-    desc: "Change group description",
+    desc: "Grup açıklamasını değiştir",
     usage: ".gdesc New group description here",
   },
   async (message, match) => {
@@ -613,7 +613,7 @@ Module(
     pattern: "common ?(.*)",
     fromMe: false,
     use: "group",
-    desc: "Get common participants in two groups, and kick using .common kick jid",
+    desc: "İki gruptaki ortak katılımcıları bulur",
     usage: ".common jid1,jid2\n.common kick group_jid",
   },
   async (message, match) => {
@@ -678,7 +678,7 @@ Module(
     pattern: "diff ?(.*)",
     fromMe: false,
     use: "utility",
-    desc: "Get difference of participants in two groups",
+    desc: "İki gruptaki farklı katılımcıları bulur",
     usage: ".diff jid1,jid2",
   },
   async (message, match) => {
@@ -770,7 +770,7 @@ Module(
     pattern: "block ?(.*)",
     fromMe: true,
     use: "owner",
-    desc: "Block a user",
+    desc: "Kullanıcıyı engelle",
     usage: ".block (reply to a message)\n.block @mention",
   },
   async (message, match) => {
@@ -785,7 +785,7 @@ Module(
     pattern: "join ?(.*)",
     fromMe: true,
     use: "owner",
-    desc: "Join a WhatsApp group using invite link",
+    desc: "Davet bağlantısını kullanarak bir WhatsApp grubuna katılın",
     usage: ".join https://chat.whatsapp.com/abcdef123456",
   },
   async (message, match) => {
@@ -802,7 +802,7 @@ Module(
     pattern: "unblock ?(.*)",
     fromMe: true,
     use: "owner",
-    desc: "Unblock a user",
+    desc: "Kullanıcının engelini kaldır",
     usage: ".unblock (reply to a message)\n.unblock @mention",
   },
   async (message) => {
@@ -815,7 +815,7 @@ Module(
 Module(
   {
     pattern: "getjids ?(.*)",
-    desc: "Get group JIDs - all groups or recent chats",
+    desc: "Grup JID'lerini al - tüm gruplar veya son sohbetler",
     use: "utility",
     usage:
       ".getjids all (shows all group JIDs)\n.getjids recent (shows recent chat JIDs)\n.getjids recent 15 (shows 15 recent chats)",
@@ -951,7 +951,7 @@ Module(
     pattern: "pp ?(.*)",
     fromMe: true,
     use: "owner",
-    desc: "Change/Get profile picture (full screen supported) with replied message",
+    desc: "Profil resmini değiştir/al (tam ekran destekli)",
     usage:
       ".pp (reply to image to set profile pic)\n.pp (reply to user to get their profile pic)",
   },
@@ -982,7 +982,7 @@ Module(
     pattern: "gpp ?(.*)",
     fromMe: false,
     use: "owner",
-    desc: "Change/Get group icon (full screen supported) with replied message",
+    desc: "Grup simgesini değiştir/al (tam ekran destekli)",
     usage: ".gpp (reply to image to set group icon)",
   },
   async (message, match) => {

@@ -23,7 +23,7 @@ Module(
   {
     pattern: "insta ?(.*)",
     fromMe: isFromMe,
-    desc: "Instagram post/reel/tv/highlights downloader - supports multiple links",
+    desc: "Instagram gönderi/Reels/TV indirici - çoklu bağlantı destekler",
     usage: "insta link(s) or reply to link(s)",
     use: "download",
   },
@@ -123,7 +123,7 @@ Module(
   {
     pattern: "fb ?(.*)",
     fromMe: isFromMe,
-    desc: "Facebook video downloader",
+    desc: "Facebook video indirici",
     usage: "fb link or reply to a link",
     use: "download",
   },
@@ -151,7 +151,7 @@ Module(
   {
     pattern: "ig ?(.*)",
     fromMe: isFromMe,
-    desc: "Gets account info from instagram",
+    desc: "Instagram'dan hesap bilgilerini alır",
     usage: "ig username",
     excludeFromCommands: true,
     use: "search",
@@ -188,7 +188,7 @@ Module(
   {
     pattern: "story ?(.*)",
     fromMe: isFromMe,
-    desc: "Instagram stories downloader",
+    desc: "Instagram hikaye (story) indirici",
     usage: ".story username or link",
     use: "download",
   },
@@ -243,7 +243,7 @@ Module(
   {
     pattern: "pinterest ?(.*)",
     fromMe: isFromMe,
-    desc: "Pinterest downloader",
+    desc: "Pinterest indirici",
     usage: ".pinterest query or link",
     use: "download",
   },
@@ -331,7 +331,7 @@ Module(
   {
     pattern: "tiktok ?(.*)",
     fromMe: isFromMe,
-    desc: "TikTok video downloader",
+    desc: "TikTok video indirici",
     usage: ".tiktok reply or link",
     use: "download",
   },

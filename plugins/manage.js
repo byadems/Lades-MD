@@ -74,7 +74,7 @@ Module(
   {
     pattern: "setvar ?(.*)",
     fromMe: true,
-    desc: "Set bot variables remotely",
+    desc: "Bot değişkenlerini (variables) uzaktan ayarla",
     usage: ".setvar MY_VAR=some_value",
   },
   async (message, args) => {
@@ -106,7 +106,7 @@ Module(
   {
     pattern: "getvar ?(.*)",
     fromMe: true,
-    desc: "Get bot variable value",
+    desc: "Bot değişkeninin değerini getir",
     usage: ".getvar MY_VAR",
   },
   async (message, args) => {
@@ -129,7 +129,7 @@ Module(
   {
     pattern: "delvar ?(.*)",
     fromMe: true,
-    desc: "Delete bot variable",
+    desc: "Bot değişkenini sil",
     usage: ".delvar MY_VAR",
   },
   async (message, args) => {
@@ -155,7 +155,7 @@ Module(
   {
     pattern: "setenv ?(.*)",
     fromMe: true,
-    desc: "Set environment variables in config.env",
+    desc: "config.env'deki ortam değişkenlerini ayarla",
     usage: ".setenv MY_VAR=some_value",
   },
   async (message, args) => {
@@ -208,7 +208,7 @@ Module(
   {
     pattern: "allvar",
     fromMe: true,
-    desc: "Get all bot variables",
+    desc: "Tüm bot değişkenlerini getir",
     use: "owner",
   },
   async (message, match) => {
@@ -262,7 +262,7 @@ Module(
   {
     pattern: "settings ?(.*)",
     fromMe: true,
-    desc: "Bot settings to enable extra options related to WhatsApp bot functionality.",
+    desc: "Ek WhatsApp bot seçeneklerini aktifleştirmek için ayarlar.",
     use: "owner",
   },
   async (message, match) => {
@@ -292,7 +292,7 @@ Module(
   {
     pattern: "mode ?(.*)",
     fromMe: true,
-    desc: "Change bot mode to public & private",
+    desc: "Bot modunu genel (public) ve özel (private) olarak değiştirin",
     use: "settings",
   },
   async (message, match) => {
@@ -313,7 +313,7 @@ Module(
   {
     pattern: "antidelete ?(.*)",
     fromMe: true,
-    desc: "Activates anti delete",
+    desc: "Mesaj silme engelini aktifleştirir",
     use: "settings",
   },
   async (message, match) => {
@@ -458,7 +458,7 @@ Module(
   {
     pattern: "delsudo ?(.*)",
     fromMe: true,
-    desc: "Deletes sudo",
+    desc: "Yöneticiyi (sudo) siler",
   },
   async (m, mm) => {
     let targetLid;
@@ -518,7 +518,7 @@ Module(
   {
     pattern: "toggle ?(.*)",
     fromMe: true,
-    desc: "To toggle commands on/off (enable/disable)",
+    desc: "Komutları açıp kapatmak için",
     usage: ".toggle img",
     use: "group",
   },
@@ -614,7 +614,7 @@ Module(
   {
     pattern: "antispam ?(.*)",
     fromMe: false,
-    desc: "Detects spam messages and kicks user.",
+    desc: "Spam mesajları tespit eder ve kullanıcıyı atar.",
     use: "group",
   },
   async (message, match) => {
@@ -657,7 +657,7 @@ Module(
   {
     pattern: "pdm ?(.*)",
     fromMe: false,
-    desc: "Detects promote/demote and sends alert.",
+    desc: "Terfi/yetki alımlarını tespit eder ve uyarı gönderir.",
     use: "group",
   },
   async (message, match) => {
@@ -698,7 +698,7 @@ Module(
   {
     pattern: "antidemote ?(.*)",
     fromMe: true,
-    desc: "Detects demote and automatically promotes demoted one and demotes person who demoted.",
+    desc: "Yetki alınmasını tespit eder ve yapanın yetkisini alıp, mağdura yetkiyi verir.",
     use: "group",
   },
   async (message, match) => {
@@ -734,7 +734,7 @@ Module(
   {
     pattern: "antipromote ?(.*)",
     fromMe: true,
-    desc: "Detects promote and automatically demotes promoted one and demotes person who promoted.",
+    desc: "Yetki verilmesini tespit eder ve yapanın ile yeni yetkilinin yetkilerini alır.",
     use: "group",
   },
   async (message, match) => {
@@ -772,7 +772,7 @@ Module(
   {
     pattern: "antilink ?(.*)",
     fromMe: false,
-    desc: "Advanced antilink system with warn/kick/delete modes and flexible link filtering",
+    desc: "Gelişmiş antilink (link engelleme) sistemi (uyarı/at/sil modlu)",
     use: "group",
   },
   async (message, match) => {
@@ -1032,7 +1032,7 @@ Module(
   {
     pattern: "antiword ?(.*)",
     fromMe: false,
-    desc: "Activates antiword, kicks if user sends not allowed words",
+    desc: "Yasaklı kelime (antiword) engelini aktifleştirir, gönderen atılır",
     use: "group",
   },
   async (message, match) => {
@@ -1103,7 +1103,7 @@ Module(
   {
     pattern: "callreject ?(.*)",
     fromMe: true,
-    desc: "Comprehensive call rejection management system",
+    desc: "Kapsamlı arama reddetme yönetim sistemi",
     usage:
       ".callreject on/off\n.callreject allow <number>\n.callreject remove <number>\n.callreject list\n.callreject clear\n.callreject msg <message>\n.callreject msg off",
     use: "owner",
@@ -1537,7 +1537,7 @@ Module(
     pattern: "uptime",
     fromMe: true,
     use: "utility",
-    desc: "Shows system (OS) /process uptime",
+    desc: "Sistem (OS) / işlem çalışma süresini gösterir (uptime)",
   },
   async (message, match) => {
     const formatTime = (seconds) => {

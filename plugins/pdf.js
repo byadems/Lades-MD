@@ -31,7 +31,7 @@ Module(
   {
     pattern: "pdf ?(.*)",
     fromMe: MODE === "private",
-    desc: "Images to PDF",
+    desc: "Resimlerden PDF'e",
     use: "converters",
     usage: ".pdf help",
   },

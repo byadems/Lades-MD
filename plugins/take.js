@@ -13,7 +13,7 @@ Module(
   {
     pattern: "take ?(.*)",
     use: "edit",
-    desc: "Changes sticker/audio pack & author name. Title, artist, thumbnail etc.",
+    desc: "Çıkartma/ses paketi ve yazar adını değiştirir.",
   },
   async (m, match) => {
     if (!m.reply_message)
@@ -99,7 +99,7 @@ Module(
   {
     pattern: "mp4 ?(.*)",
     use: "edit",
-    desc: "Converts animated sticker to video",
+    desc: "Hareketli çıkartmayı videoya dönüştürür",
   },
   async (m, t) => {
     if (m.reply_message.sticker) {
@@ -126,7 +126,7 @@ Module(
 Module(
   {
     pattern: "url ?(.*)",
-    desc: "Uploads image to imgbb and sends a url",
+    desc: "Resmi imgbb'ye yükler ve bir URL gönderir",
     use: "edit",
   },
   async (m, match) => {

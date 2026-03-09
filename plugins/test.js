@@ -18,7 +18,7 @@ const { Module } = require("../main");
 Module(
   {
     pattern: "age ?(.*)",
-    desc: "Age calculator .age dob",
+    desc: "Yaş hesaplayıcı",
     use: "utility",
   },
   async (m, t) => {
@@ -40,7 +40,7 @@ Module(
 Module(
   {
     pattern: "cntd ?(.*)",
-    desc: "Counts Date",
+    desc: "Tarihi Sayar",
     use: "utility",
   },
   async (m, t) => {
@@ -63,7 +63,7 @@ Module(
   {
     pattern: "ping",
     use: "utility",
-    desc: "Measures ping",
+    desc: "Ağ gecikmesini (ping) ölçer",
   },
   async (message, match) => {
     const start = process.hrtime();

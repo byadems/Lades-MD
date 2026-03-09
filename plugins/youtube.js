@@ -37,7 +37,7 @@ Module(
   {
     pattern: "song ?(.*)",
     fromMe: fromMe,
-    desc: "Search YouTube and download audio",
+    desc: "YouTube'da ara ve ses indir",
     usage: ".song <query>",
     use: "download",
   },
@@ -85,7 +85,7 @@ Module(
   {
     pattern: "yts ?(.*)",
     fromMe: fromMe,
-    desc: "Search YouTube with detailed info",
+    desc: "YouTube araması (detaylı bilgi ile)",
     usage: ".yts <query>",
     use: "download",
   },
@@ -133,7 +133,7 @@ Module(
   {
     pattern: "ytv ?(.*)",
     fromMe: fromMe,
-    desc: "Download YouTube video with quality selection",
+    desc: "Video kalitesi seçimi ile YouTube videosu indir",
     usage: ".ytv <link>",
     use: "download",
   },
@@ -258,7 +258,7 @@ Module(
   {
     pattern: "video ?(.*)",
     fromMe: fromMe,
-    desc: "Download YouTube video at 360p",
+    desc: "YouTube videosunu 360p indir",
     usage: ".video <link>",
     use: "download",
   },
@@ -337,7 +337,7 @@ Module(
   {
     pattern: "yta ?(.*)",
     fromMe: fromMe,
-    desc: "Download YouTube audio as document",
+    desc: "YouTube sesini belge olarak indir",
     usage: ".yta <link>",
     use: "download",
   },
@@ -407,7 +407,7 @@ Module(
   {
     pattern: "play ?(.*)",
     fromMe: fromMe,
-    desc: "Play audio from YouTube search or link",
+    desc: "YouTube araması veya bağlantısı üzerinden ses oynat",
     usage: ".play <song name or link>",
     use: "download",
   },
@@ -981,7 +981,7 @@ Module(
   {
     pattern: "spotify ?(.*)",
     fromMe: fromMe,
-    desc: "Download audio from Spotify link",
+    desc: "Spotify bağlantısından ses indir",
     usage: ".spotify <spotify link>",
     use: "download",
   },

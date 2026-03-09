@@ -8,7 +8,7 @@ Module(
   {
     pattern: "filter ?(.*)",
     fromMe: false,
-    desc: "Create auto-reply filters. Usage: .filter trigger | response | scope(optional) | options(optional)",
+    desc: "Otomatik yanıt filtreleri oluşturun. Kullanım: .filter tetikleyici | yanıt",
     usage:
       ".filter hello | Hi there! | chat\n.filter help | I can help you | global\n.filter bye | Goodbye! | group | exact",
     use: "utility",
@@ -107,7 +107,7 @@ Module(
   {
     pattern: "filters ?(.*)",
     fromMe: false,
-    desc: "List all filters",
+    desc: "Tüm filtreleri listele",
     usage: ".filters\n.filters global\n.filters group",
     use: "utility",
   },
@@ -166,7 +166,7 @@ Module(
   {
     pattern: "delfilter ?(.*)",
     fromMe: false,
-    desc: "Delete a filter",
+    desc: "Bir filtreyi sil",
     usage: ".delfilter trigger\n.delfilter trigger global",
     use: "utility",
   },
@@ -212,7 +212,7 @@ Module(
   {
     pattern: "togglefilter ?(.*)",
     fromMe: false,
-    desc: "Enable/disable a filter",
+    desc: "Bir filtreyi aç/kapat",
     usage: ".togglefilter trigger\n.togglefilter trigger global",
     use: "utility",
   },
@@ -271,7 +271,7 @@ Module(
   {
     pattern: "testfilter ?(.*)",
     fromMe: false,
-    desc: "Test if a message would trigger any filters",
+    desc: "Bir mesajın filtreleri tetikleyip tetiklemeyeceğini test edin",
     usage: ".testfilter hello world",
     use: "utility",
   },
@@ -317,7 +317,7 @@ Module(
   {
     pattern: "filterhelp",
     fromMe: false,
-    desc: "Detailed help for filter system",
+    desc: "Filtre sistemi için ayrıntılı yardım",
     use: "utility",
   },
   async (message) => {
