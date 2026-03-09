@@ -50,13 +50,12 @@ function applySQLiteResilience(sequelizeInstance) {
   let queueActive = false;
 
   // Ensure periodic flush of buffered message queries (every 1 hour)
-  setInterval(async () => {
+  const _bufferFlushInterval = setInterval(async () => {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Periodically flushing ${bufferedMessageQueries.length} buffered message queries to DB...`);
-      for (const req of bufferedMessageQueries) {
-        writeQueue.push(req);
-      }
-      bufferedMessageQueries.length = 0; // Clear buffer
+      const pending = [...bufferedMessageQueries];
+      bufferedMessageQueries.length = 0;
+      writeQueue.push(...pending);
       setImmediate(flushQueue);
     }
   }, 1000 * 60 * 60);
@@ -85,15 +84,17 @@ function applySQLiteResilience(sequelizeInstance) {
     queueActive = false;
   };
 
-  // Add cleanup hook to ensure everything gets saved before process exit
-  process.on('SIGINT', async () => {
-     if (bufferedMessageQueries.length > 0) {
-       logger.info(`SIGINT received: Flushing ${bufferedMessageQueries.length} buffered queries...`);
-       writeQueue.push(...bufferedMessageQueries);
-       bufferedMessageQueries.length = 0;
-       await flushQueue();
-     }
-  });
+  // Expose a flush function so that index.js can call it during shutdown
+  sequelizeInstance.__flushBufferedQueries = async () => {
+    if (bufferedMessageQueries.length > 0) {
+      logger.info(`Shutdown: Flushing ${bufferedMessageQueries.length} buffered message queries to DB...`);
+      const pending = [...bufferedMessageQueries];
+      bufferedMessageQueries.length = 0;
+      writeQueue.push(...pending);
+      await flushQueue();
+    }
+    clearInterval(_bufferFlushInterval);
+  };
 
   const isWriteQuery = (sql) => {
     if (!sql || typeof sql !== "string") return true; 
@@ -134,7 +135,9 @@ function applySQLiteResilience(sequelizeInstance) {
         // If buffer gets too huge, flush it before 1 hour
         if (bufferedMessageQueries.length > 200) {
             logger.info(`Buffer reached 200 items, flushing early...`);
-            writeQueue.push(...bufferedMessageQueries.splice(0, bufferedMessageQueries.length));
+            const pending = [...bufferedMessageQueries];
+            bufferedMessageQueries.length = 0;
+            writeQueue.push(...pending);
             setImmediate(flushQueue);
         }
         
@@ -167,7 +170,9 @@ function applySQLiteResilience(sequelizeInstance) {
           });
           
           if (bufferedMessageQueries.length > 200) {
-             writeQueue.push(...bufferedMessageQueries.splice(0, bufferedMessageQueries.length));
+             const pending = [...bufferedMessageQueries];
+             bufferedMessageQueries.length = 0;
+             writeQueue.push(...pending);
              setImmediate(flushQueue);
           }
           return Promise.resolve([[], 0]);

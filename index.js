@@ -56,6 +56,15 @@ async function main() {
     console.log(`\nReceived ${signal}, shutting down...`);
     logger.info(`Received ${signal}, shutting down...`);
     cleanupKickBot();
+    // Flush buffered DB queries before shutting down (from config.js buffer system)
+    if (typeof config.sequelize?.__flushBufferedQueries === 'function') {
+      try {
+        await config.sequelize.__flushBufferedQueries();
+        console.log("- Buffered DB queries flushed.");
+      } catch (flushErr) {
+        logger.error({ err: flushErr }, "Failed to flush buffered queries during shutdown");
+      }
+    }
     await botManager.shutdown();
     process.exit(0);
   };
