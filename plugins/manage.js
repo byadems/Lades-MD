@@ -88,7 +88,7 @@ Module(
     const value = valueParts.join("=").trim();
 
     if (key.trim().toUpperCase() === "SUDO") {
-      return await message.sendReply("_✨ Artık setvar ile yetki verilmemektedir, .setsudo komutunu kullanın_"
+      return await message.sendReply("_ℹ️ Artık setvar ile yetki verilmemektedir, .setsudo komutunu kullanın_"
       );
     }
 
@@ -384,7 +384,7 @@ Module(
       targetLid = m.sender;
     }
 
-    if (!targetLid) return await m.sendReply("_✨ Hedef belirlenemedi_");
+    if (!targetLid) return await m.sendReply("_❌ Hedef belirlenemedi_");
 
     try {
       // get current SUDO_MAP
@@ -478,7 +478,7 @@ Module(
       targetLid = m.sender;
     }
 
-    if (!targetLid) return await m.sendReply("_✨ Hedef belirlenemedi_");
+    if (!targetLid) return await m.sendReply("_❌ Hedef belirlenemedi_");
 
     try {
       // get current SUDO_MAP
@@ -868,7 +868,7 @@ Module(
         case "allow":
         case "whitelist":
           if (!value) {
-            return await message.sendReply(`_✨ Alan adlarını beyaz listeye ekleyin:_\n\n` +
+            return await message.sendReply(`_💬 Alan adlarını beyaz listeye ekleyin:_\n\n` +
                 `_Kullanım:_ \`${handler}antilink allow google.com,youtube.com\`\n` +
                 `_Mevcut:_ ${config?.allowedLinks || "gist,instagram,youtu"}`
             );
@@ -902,7 +902,7 @@ Module(
         case "block":
         case "blacklist":
           if (!value) {
-            return await message.sendReply(`_✨ Alan adlarını kara listeye ekleyin:_\n\n` +
+            return await message.sendReply(`_💬 Alan adlarını kara listeye ekleyin:_\n\n` +
                 `_Kullanım:_ \`${handler}antilink block facebook.com,twitter.com\`\n` +
                 `_Mevcut:_ ${config?.blockedLinks || "Yok"}`
             );

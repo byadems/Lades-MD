@@ -22,11 +22,11 @@ Module(
     use: "utility",
   },
   async (m, t) => {
-    if (!t[1]) return await m.sendReply("_✨ Doğum tarihinizi girin_");
+    if (!t[1]) return await m.sendReply("_📅 Doğum tarihinizi girin_");
     if (
       !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(t[1])
     )
-      return await m.sendReply("_✨ Tarih gg/aa/yy formatında olmalıdır_");
+      return await m.sendReply("_⚠️ Tarih gg/aa/yy formatında olmalıdır_");
     var DOB = t[1];
     var actual = DOB.includes("-")
       ? DOB.split("-")[1] + "-" + DOB.split("-")[0] + "-" + DOB.split("-")[2]
@@ -44,11 +44,11 @@ Module(
     use: "utility",
   },
   async (m, t) => {
-    if (!t[1]) return await m.sendReply("_✨ Bana gelecek bir tarih verin!_");
+    if (!t[1]) return await m.sendReply("_📅 Bana gelecek bir tarih verin!_");
     if (
       !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(t[1])
     )
-      return await m.sendReply("_✨ Tarih gg/aa/yy formatında olmalıdır_");
+      return await m.sendReply("_⚠️ Tarih gg/aa/yy formatında olmalıdır_");
     var DOB = t[1];
     var actual = DOB.includes("-")
       ? DOB.split("-")[1] + "-" + DOB.split("-")[0] + "-" + DOB.split("-")[2]

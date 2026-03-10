@@ -15,6 +15,6 @@ Module({
         }
         return await message.sendReply(fancy.apply(fancy[parseInt(id)-1],message.reply_message.text || match[1].replace(id,'')))    
     } catch {
-        return await message.sendReply('_✨ Böyle bir stil yok!_')
+        return await message.sendReply('_❌ Böyle bir stil yok!_')
      }
  }));

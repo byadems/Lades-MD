@@ -632,7 +632,7 @@ Module(
         }
       } catch (error) {
         console.error("Song selection error:", error);
-        await message.sendReply("_✨ Seçiminiz işlenemedi._");
+        await message.sendReply("_❌ Seçiminiz işlenemedi._");
       }
     } else if (
       repliedText.includes("YouTube Arama Sonuçları") &&
@@ -971,7 +971,7 @@ Module(
         }
       } catch (error) {
         console.error("YTV quality selection error:", error);
-        await message.sendReply("_✨ Kalite seçimi işlenemedi._");
+        await message.sendReply("_❌ Kalite seçimi işlenemedi._");
       }
     }
   }
@@ -1001,7 +1001,7 @@ Module(
     let audioPath;
 
     try {
-      downloadMsg = await message.sendReply("_✨ Spotify bilgileri alınıyor..._");
+      downloadMsg = await message.sendReply("_⏳ Spotify bilgileri alınıyor..._");
       const spotifyInfo = await spotifyTrack(url);
       const { title, artist } = spotifyInfo;
 

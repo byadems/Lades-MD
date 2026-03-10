@@ -67,7 +67,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu bir grup komutudur!_");
+      return await message.sendReply("_ℹ️ Bu bir grup komutudur!_");
 
     let adminAccesValidated = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -144,7 +144,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu bir grup komutudur!_");
+      return await message.sendReply("_ℹ️ Bu bir grup komutudur!_");
 
     let adminAccesValidated = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -173,7 +173,7 @@ Module(
       if (shouldKick) {
         var admin = await isAdmin(message);
         if (!admin)
-          return await message.sendReply("_✨ Üyeleri çıkarmak için botun yönetici yetkilerine ihtiyacı var!_"
+          return await message.sendReply("_🔒 Üyeleri çıkarmak için botun yönetici yetkilerine ihtiyacı var!_"
           );
       }
 
@@ -356,7 +356,7 @@ Module(
           } else if (parsedLimit > 50) {
             return await message.sendReply("_👤 Maksimum sınır 50 kullanıcıdır._");
           } else if (parsedLimit <= 0) {
-            return await message.sendReply("_✨ Sınır pozitif bir sayı olmalıdır._"
+            return await message.sendReply("_⚠️ Sınır pozitif bir sayı olmalıdır._"
             );
           }
         }

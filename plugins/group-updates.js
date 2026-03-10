@@ -157,7 +157,7 @@ Module(
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
-        return await message.sendReply("*_✨ Yanlış format!_\n_.automute 22 00 (Saat 22:00 için)_\n_.automute 06 00 (Saat 06:00 için)_*"
+        return await message.sendReply("*_⚠️ Yanlış format!_\n_.automute 22 00 (Saat 22:00 için)_\n_.automute 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
       if (!admin) return await message.sendReply("_❌ Ben yönetici değilim_");
@@ -186,7 +186,7 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       match = match[1]?.toLowerCase();
       if (!match)
-        return await message.sendReply("*_✨ Yanlış format!_*\n*_.autounmute 22 00 (Saat 22:00 için)_*\n*_.autounmute 06 00 (Saat 06:00 için)_*\n*_.autounmute off_*"
+        return await message.sendReply("*_⚠️ Yanlış format!_*\n*_.autounmute 22 00 (Saat 22:00 için)_*\n*_.autounmute 06 00 (Saat 06:00 için)_*\n*_.autounmute off_*"
         );
       if (match.includes("am") || match.includes("pm"))
         return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır_"
@@ -198,7 +198,7 @@ Module(
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
-        return await message.sendReply("*_✨ Yanlış format_!\n_.autounmute 22 00 (Saat 22:00 için)_\n_.autounmute 06 00 (Saat 06:00 için)_*"
+        return await message.sendReply("*_⚠️ Yanlış format!_\n_.autounmute 22 00 (Saat 22:00 için)_\n_.autounmute 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
       if (!admin) return await message.sendReply("*❌ Yönetici değilim*");

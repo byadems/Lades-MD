@@ -107,11 +107,11 @@ Module(
   async (m, match) => {
     if (match[1] === "d") return;
     if (!m.reply_message) {
-      return await m.sendReply("_Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*Kullanım:*\n• schedule <jid> <zaman>\n• schedule <zaman> <jid>"
+      return await m.sendReply("_💬 Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*📋 Kullanım:*\n• schedule <jid> <zaman>\n• schedule <zaman> <jid>"
       );
     }
     if (!match[1]) {
-      return await m.sendReply("_Lütfen JID ve zaman sağlayın_\n\n*Örnek:*\n• schedule 905554443322@s.whatsapp.net 2h"
+      return await m.sendReply("_💬 Lütfen JID ve zaman sağlayın_\n\n*📋 Örnek:*\n• schedule 905554443322@s.whatsapp.net 2h"
       );
     }
     const args = match[1].trim().split(/\s+/);
@@ -137,7 +137,7 @@ Module(
     }
     const scheduleTime = parseTime(timeStr);
     if (!scheduleTime) {
-      return await m.sendReply("_Geçersiz zaman formatı_\n\n*Desteklenen formatlar:*\n• 2h30m, 1g, 30m, 5s\n• 14:30, 14:45\n• YYYY-AA-GG SS:dd"
+      return await m.sendReply("_⚠️ Geçersiz zaman formatı_\n\n*📋 Desteklenen formatlar:*\n• 2h30m, 1g, 30m, 5s\n• 14:30, 14:45\n• YYYY-AA-GG SS:dd"
       );
     }
     const originalTime = moment(scheduleTime).add(1, "minute").toDate();
@@ -161,7 +161,7 @@ Module(
       );
     } catch (error) {
       console.error("Schedule error:", error);
-      await m.sendReply("_⚠️ Mesaj zamanlanamadı. Lütfen tekrar deneyin._");
+      await m.sendReply("_❌ Mesaj zamanlanamadı. Lütfen tekrar deneyin._");
     }
   }
 );
@@ -199,7 +199,7 @@ Module(
       await m.sendReply(response);
     } catch (error) {
       console.error("List scheduled error:", error);
-      await m.sendReply("_⏰ Zamanlanmış mesajlar alınamadı_");
+      await m.sendReply("_❌ Zamanlanmış mesajlar alınamadı_");
     }
   }
 );
@@ -229,7 +229,7 @@ Module(
       }
     } catch (error) {
       console.error("Cancel scheduled error:", error);
-      await m.sendReply("_⏰ Zamanlanmış mesaj iptal edilemedi_");
+      await m.sendReply("_❌ Zamanlanmış mesaj iptal edilemedi_");
     }
   }
 );

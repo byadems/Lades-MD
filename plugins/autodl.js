@@ -396,7 +396,7 @@ Module({ on: "text", fromMe }, async (message) => {
         let audioPath;
 
         try {
-          downloadMsg = await message.sendReply("_✨ Spotify bilgileri alınıyor..._");
+          downloadMsg = await message.sendReply("_⏳ Spotify bilgileri alınıyor..._");
           const spotifyInfo = await spotifyTrack(platformGroups["spotify"][0]);
           const { title, artist } = spotifyInfo;
 

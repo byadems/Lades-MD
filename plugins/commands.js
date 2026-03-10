@@ -43,11 +43,11 @@ Module(
     const commandDetails = retrieveCommandDetails(commandName);
     if (!commandDetails) {
       return await message.sendReply(
-        `_'${commandName}' komutu bulunamadı. Yazımı kontrol edin._`
+        `_❌ '${commandName}' komutu bulunamadı. Yazımı kontrol edin._`
       );
     }
 
-    let infoMessage = `*───「 Komut Detayları 」───*\n\n`;
+    let infoMessage = `*📋 ───「 Komut Detayları 」───*\n\n`;
     infoMessage += `• *Komut:* \`${commandDetails.name}\`\n`;
     infoMessage += `• *Açıklama:* ${commandDetails.desc || "Yok"}\n`;
     infoMessage += `• *Sahip Komutu:* ${
@@ -92,7 +92,7 @@ Module(
       }
     });
 
-    let responseMessage = `*Toplam Mevcut Komut: ${totalCommandCount}*\n\n`;
+    let responseMessage = `*📋 Toplam Mevcut Komut: ${totalCommandCount}*\n\n`;
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
 
     for (const category in categorizedCommands) {
@@ -126,7 +126,7 @@ function shuffleArray(array) {
 
 async function parseAlive(message, aliveMessage) {
   if (!aliveMessage) {
-    const defaultAliveMessage = "Çevrimiçiyim!";
+    const defaultAliveMessage = "🟢 Çevrimiçiyim!";
     return await message.sendReply(defaultAliveMessage);
   }
 
@@ -145,7 +145,7 @@ async function parseAlive(message, aliveMessage) {
 const manage = {
   setVar: async (key, value, message) => {
     await message.sendReply(
-      `_${key} değeri ${value} olarak ayarlanmaya çalışıldı. (Not: Bu bir demo ve değişiklikler kalıcı değildir)_`
+      `_ℹ️ ${key} değeri ${value} olarak ayarlanmaya çalışıldı. (Not: Bu bir demo ve değişiklikler kalıcı değildir)_`
     );
   },
 };
@@ -172,7 +172,7 @@ Module(
   },
   async (message, match) => {
     if (!match[1]) {
-      return await message.sendReply(`*Çevrimiçi Mesaj Ayarları*
+      return await message.sendReply(`*📝 Çevrimiçi Mesaj Ayarları*
 
 *Kullanım:*
 • \`.setalive <mesaj>\` - Çevrimiçi mesajı ayarla
@@ -193,7 +193,7 @@ _Kullanıcılar: $users_ $pp\`
     const input = match[1].toLowerCase();
 
     if (input === "help") {
-      const helpText = `*Çevrimiçi Mesaj Biçimlendirme Yardımı*
+      const helpText = `*📖 Çevrimiçi Mesaj Biçimlendirme Yardımı*
 
 *Kullanılabilir Yer Tutucular:*
 
@@ -259,7 +259,7 @@ _Merhaba $user!_
         );
       }
       return await message.sendReply(
-        `*Mevcut Çevrimiçi Mesaj:*\n\n${current}\n\n_İpucu: Mesajınızı test etmek için_ \`.testalive\` _kullanın!_`
+        `*📄 Mevcut Çevrimiçi Mesaj:*\n\n${current}\n\n_💡 İpucu: Mesajınızı test etmek için_ \`.testalive\` _kullanın!_`
       );
     }
 
@@ -277,7 +277,7 @@ _Merhaba $user!_
 
     await setVar("ALIVE", aliveMessage);
     return await message.sendReply(
-      `_Çevrimiçi mesaj başarıyla ayarlandı!_\n\n*Önizleme:*\n${aliveMessage}\n\n_İpucu: Mesajınızı test etmek için_ \`.testalive\` _kullanın!_`
+      `_✅ Çevrimiçi mesaj başarıyla ayarlandı!_\n\n*📋 Önizleme:*\n${aliveMessage}\n\n_💡 İpucu: Mesajınızı test etmek için_ \`.testalive\` _kullanın!_`
     );
   }
 );
@@ -394,10 +394,10 @@ Module(
       (cmd) => cmd.use === "game" && cmd.pattern
     );
     if (!gameCommands.length) {
-      return await message.sendReply("_✨ Yüklü oyun yok._");
+      return await message.sendReply("_🎮 Yüklü oyun yok._");
     }
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
-    let response = `*───「 Mevcut Oyunlar 」───*\n\n`;
+    let response = `*🎮 ───「 Mevcut Oyunlar 」───*\n\n`;
     gameCommands.forEach((cmd) => {
       const name = extractCommandName(cmd.pattern);
       if (name) {
@@ -421,7 +421,7 @@ Module(
     use: "settings",
   },
   async (message, match) => {
-    const infoText = `*───「 Bot Bilgi Yapılandırması 」───*
+    const infoText = `*⚙️ ───「 Bot Bilgi Yapılandırması 」───*
 
 _\`.setinfo\` yerine bu ayrı komutları kullanın:_
 
@@ -462,12 +462,12 @@ Module(
   async (message, match) => {
     const name = match[1]?.trim();
     if (!name)
-      return await message.sendReply("_✨ İsim verin: .setname Lades_");
+      return await message.sendReply("_💬 İsim verin: .setname Lades_");
     const parts = config.BOT_INFO.split(";");
     parts[0] = name;
     await setVar("BOT_INFO", parts.join(";"));
     return await message.sendReply(
-      `_Bot adı başarıyla güncellendi!_\n\n*Yeni Ad:* ${name}`
+      `_✅ Bot adı başarıyla güncellendi!_\n\n*📋 Yeni Ad:* ${name}`
     );
   }
 );
@@ -482,12 +482,12 @@ Module(
   async (message, match) => {
     const owner = match[1]?.trim();
     if (!owner)
-      return await message.sendReply("_✨ Sahip verin: .setowner SahipAdi_");
+      return await message.sendReply("_💬 Sahip verin: .setowner SahipAdi_");
     const parts = config.BOT_INFO.split(";");
     parts[1] = owner;
     await setVar("BOT_INFO", parts.join(";"));
     return await message.sendReply(
-      `_Bot sahibi başarıyla güncellendi!_\n\n*Yeni Sahip:* ${owner}`
+      `_✅ Bot sahibi başarıyla güncellendi!_\n\n*📋 Yeni Sahip:* ${owner}`
     );
   }
 );
@@ -501,7 +501,7 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.image) {
-      return await message.sendReply("_💬 Bir resmi .setimage ile yanıtlayın_");
+      return await message.sendReply("_🖼️ Bir resmi .setimage ile yanıtlayın_");
     }
 
     try {
@@ -524,7 +524,7 @@ Module(
       parts[2] = url;
       await setVar("BOT_INFO", parts.join(";"));
       return await message.sendReply(
-        `_Bot görseli başarıyla güncellendi!_\n\n*Yeni Görsel URL:* ${url}`
+        `_✅ Bot görseli başarıyla güncellendi!_\n\n*🖼️ Yeni Görsel URL:* ${url}`
       );
     } catch (error) {
       console.error("Error setting image:", error);

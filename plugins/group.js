@@ -196,7 +196,7 @@ Module(
         message.jid
       );
       if (!approvalList.length)
-        return await message.sendReply("_✨ Bekleyen istek yok!_");
+        return await message.sendReply("_📭 Bekleyen istek yok!_");
       let approvalJids = approvalList.map((x) => x.jid);
       if (match[1]) {
         match = match[1].toLowerCase();
@@ -276,7 +276,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Nereden çıkayım? Bu bir grup komutu dostum!_"
+      return await message.sendReply("_ℹ️ Nereden çıkayım? Bu bir grup komutu!_"
       );
     return await message.client.groupLeave(message.jid);
   }

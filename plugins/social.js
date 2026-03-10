@@ -168,7 +168,7 @@ Module(
     try {
       var accountInfo = await igStalk(encodeURIComponent(match[1]));
     } catch {
-      return await message.sendReply("_✨ Sunucu meşgul!_");
+      return await message.sendReply("_⚠️ Sunucu meşgul!_");
     }
 
     await message.sendMessage({ url: accountInfo.profile_pic }, "image", {

@@ -25,7 +25,7 @@ Module(
   async (message, match) => {
     if (!match[0].split(" ")[0]?.toLowerCase().endsWith("warn")) return;
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -40,7 +40,7 @@ Module(
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply(`_⚠️ Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_\n\n` +
+      return await message.sendReply(`_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_\n\n` +
           `*Kullanım:*\n` +
           `• \`${handler}warn @user reason\`\n` +
           `• \`${handler}warn reply reason\`\n` +
@@ -132,7 +132,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -203,7 +203,7 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
@@ -212,7 +212,7 @@ Module(
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply("_⚠️ Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
+      return await message.sendReply("_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
       );
     }
 
@@ -251,11 +251,11 @@ Module(
           mentions: [targetUser],
         });
       } else {
-        await message.sendReply("_⚠️ Uyarı kaldırılamadı!_");
+        await message.sendReply("_❌ Uyarı kaldırılamadı!_");
       }
     } catch (error) {
       console.error("Warning removal error:", error);
-      await message.sendReply("_⚠️ Uyarı kaldırılamadı!_");
+      await message.sendReply("_❌ Uyarı kaldırılamadı!_");
     }
   }
 );
@@ -270,19 +270,19 @@ Module(
   },
   async (message, match) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
-      return await message.sendReply("_⚠️ Uyarıları sıfırlamak için yönetici ayrıcalıklarına ihtiyacınız var!_"
+      return await message.sendReply("_🔒 Uyarıları sıfırlamak için yönetici ayrıcalıklarına ihtiyacınız var!_"
       );
     }
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply("_⚠️ Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
+      return await message.sendReply("_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
       );
     }
 
@@ -336,13 +336,13 @@ Module(
   },
   async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
-      return await message.sendReply("_⚠️ Uyarı listesini görüntülemek için yönetici yetkilerine ihtiyacınız var!_"
+      return await message.sendReply("_🔒 Uyarı listesini görüntülemek için yönetici yetkilerine ihtiyacınız var!_"
       );
     }
 
@@ -400,7 +400,7 @@ Module(
       });
     } catch (error) {
       console.error("Warning list error:", error);
-      await message.sendReply("_⚠️ Uyarı listesi alınamadı!_");
+      await message.sendReply("_❌ Uyarı listesi alınamadı!_");
     }
   }
 );
@@ -432,7 +432,7 @@ Module(
       );
     } catch (error) {
       console.error("Set warn limit error:", error);
-      await message.sendReply("_⚠️ Uyarı sınırı güncellenemedi!_");
+      await message.sendReply("_❌ Uyarı sınırı güncellenemedi!_");
     }
   }
 );
@@ -447,13 +447,13 @@ Module(
   },
   async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_✨ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
-      return await message.sendReply("_⚠️ Uyarı istatistiklerini görüntülemek için yönetici ayrıcalıklarına ihtiyacınız var!_"
+      return await message.sendReply("_🔒 Uyarı istatistiklerini görüntülemek için yönetici ayrıcalıklarına ihtiyacınız var!_"
       );
     }
 
@@ -491,7 +491,7 @@ Module(
       await message.sendReply(stats);
     } catch (error) {
       console.error("Warning stats error:", error);
-      await message.sendReply("_⚠️ Uyarı istatistikleri alınamadı!_");
+      await message.sendReply("_❌ Uyarı istatistikleri alınamadı!_");
     }
   }
 );

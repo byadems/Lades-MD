@@ -43,7 +43,7 @@ Module(
     }
 
     const command = match[1] ? match[1].toLowerCase() : "";
-    const processingMsg = await message.sendReply("_✨ Güncellemeler kontrol ediliyor..._");
+    const processingMsg = await message.sendReply("_⏳ Güncellemeler kontrol ediliyor..._");
 
     try {
       // fetch remote version & commits
@@ -56,7 +56,7 @@ Module(
         remoteVersion = await getRemoteVersion();
       } catch (error) {
         return await message.edit(
-          "_Uzak sürüm kontrol edilemedi. Lütfen daha sonra tekrar deneyin._",
+          "_❌ Uzak sürüm kontrol edilemedi. Lütfen daha sonra tekrar deneyin._",
           message.jid,
           processingMsg.key
         );
@@ -67,7 +67,7 @@ Module(
 
       if (!hasCommits && !versionChanged) {
         return await message.edit(
-          "_Bot güncel!_",
+          "_✅ Bot güncel!_",
           message.jid,
           processingMsg.key
         );
@@ -112,14 +112,14 @@ Module(
             );
           }
           return await message.edit(
-            "_Kararlı güncelleme mevcut değil!_",
+            "_ℹ️ Kararlı güncelleme mevcut değil!_",
             message.jid,
             processingMsg.key
           );
         }
 
         await message.edit(
-          "_Güncelleme başlatılıyor..._",
+          "_⏳ Güncelleme başlatılıyor..._",
           message.jid,
           processingMsg.key
         );
@@ -127,7 +127,7 @@ Module(
         if (process.env.RENDER_SERVICE_ID) {
           if (!config.RENDER_API_KEY) {
             return await message.edit(
-              "_Missing RENDER_API_KEY!_",
+              "_⚠️ RENDER_API_KEY eksik!_",
               message.jid,
               processingMsg.key
             );
@@ -138,7 +138,7 @@ Module(
             config.RENDER_API_KEY
           );
           return await message.edit(
-            "_Render dağıtımı başlatıldı!_",
+            "_✅ Render dağıtımı başlatıldı!_",
             message.jid,
             processingMsg.key
           );
@@ -178,7 +178,7 @@ Module(
         if (process.env.RENDER_SERVICE_ID) {
           if (!config.RENDER_API_KEY) {
             return await message.edit(
-              "_Missing RENDER_API_KEY!_",
+              "_⚠️ RENDER_API_KEY eksik!_",
               message.jid,
               processingMsg.key
             );

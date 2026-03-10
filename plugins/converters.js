@@ -44,14 +44,14 @@ Module(
     desc: "Google Görseller'de resim arar ve istenen sayıda sonucu gönderir.",
   },
   async (message, match) => {
-    if (!match[1]) return await message.send("*_Arama terimi gerekli!_*");
+    if (!match[1]) return await message.send("*_💬 Arama terimi gerekli!_*");
     let splitInput = match[1].split(",");
     let count = parseInt(splitInput[1] || 5);
-    await message.send(`*_${count} görsel aranıyor..._*`);
+    await message.send(`*_🔍 ${count} görsel aranıyor..._*`);
 
     const buffer = Math.ceil(count * 0.5);
     let results = await gis(splitInput[0], count + buffer);
-    if (results.length < 1) return await message.send("*_Sonuç bulunamadı!_*");
+    if (results.length < 1) return await message.send("*_📭 Sonuç bulunamadı!_*");
 
     // buffer and send with success tracking since many URLs have access issues
     let successCount = 0;
@@ -78,7 +78,7 @@ Module(
     }
 
     if (imagesToSend.length === 0) {
-      return await message.send("*_Hiçbir görsel indirilemedi_*");
+      return await message.send("*_❌ Hiçbir görsel indirilemedi_*");
     }
 
     try {
@@ -100,7 +100,7 @@ Module(
 
     if (successCount < count) {
       await message.send(
-        `*_Sadece ${successCount}/${count} görsel indirilebildi. Bazı URL'lerde erişim sorunu vardı._*`
+        `*_⚠️ Sadece ${successCount}/${count} görsel indirilebildi. Bazı URL'lerde erişim sorunu vardı._*`
       );
     }
   }
@@ -143,9 +143,9 @@ Module(
     if (message.reply_message.album) {
       const albumData = await message.reply_message.download();
       const allFiles = [...(albumData.images || []), ...(albumData.videos || [])];
-      if (allFiles.length === 0) return await message.send("_Albümde medya yok_");
+      if (allFiles.length === 0) return await message.send("_📭 Albümde medya yok_");
 
-      await message.send(`_${allFiles.length} çıkartma dönüştürülüyor..._`);
+      await message.send(`_⏳ ${allFiles.length} çıkartma dönüştürülüyor..._`);
       for (const file of allFiles) {
         try {
           const isVideo = albumData.videos?.includes(file);
@@ -203,10 +203,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_Albümde video dosyası yok. MP3 için video/ses dosyası gerekir._");
+        return await message.send("_📭 Albümde video dosyası yok. MP3 için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_${videoFiles.length} dosya mp3'e dönüştürülüyor..._`);
+      await message.send(`_⏳ ${videoFiles.length} dosya mp3'e dönüştürülüyor..._`);
       for (let i = 0; i < videoFiles.length; i++) {
         try {
           const file = videoFiles[i];
@@ -257,10 +257,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_Albümde video dosyası yok. Yavaşlatma için video/ses dosyası gerekir._");
+        return await message.send("_📭 Albümde video dosyası yok. Yavaşlatma için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_${videoFiles.length} dosya yavaşlatılıyor..._`);
+      await message.send(`_⏳ ${videoFiles.length} dosya yavaşlatılıyor..._`);
       for (let i = 0; i < videoFiles.length; i++) {
         try {
           const file = videoFiles[i];
@@ -322,10 +322,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_Albümde video dosyası yok. Hızlandırma için video/ses dosyası gerekir._");
+        return await message.send("_📭 Albümde video dosyası yok. Hızlandırma için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_${videoFiles.length} dosya hızlandırılıyor..._`);
+      await message.send(`_⏳ ${videoFiles.length} dosya hızlandırılıyor..._`);
       for (let i = 0; i < videoFiles.length; i++) {
         try {
           const file = videoFiles[i];
@@ -387,10 +387,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_Albümde video dosyası yok. Bas için video/ses dosyası gerekir._");
+        return await message.send("_📭 Albümde video dosyası yok. Bas için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_${videoFiles.length} dosyaya bas ekleniyor..._`);
+      await message.send(`_⏳ ${videoFiles.length} dosyaya bas ekleniyor..._`);
       for (const file of videoFiles) {
         try {
           bass(file, match[1], async function (audio) {
@@ -434,7 +434,7 @@ Module(
     desc: "Metinden hareketli çıkartmaya",
   },
   async (message, match) => {
-    if (match[1] == "") return await message.send("*Need text*");
+    if (match[1] == "") return await message.send("*_💬 Metin gerekli!_*");
     var result = await attp(match[1]);
     var exif = {
       author: STICKER_DATA.split(";")[1] || "",
@@ -530,7 +530,7 @@ Module(
   async (message, match) => {
     if (message.reply_message === false)
       return await message.send(
-        "_Bir medya dosyasına (görsel, video, ses, çıkartma veya belge) yanıt verin_"
+        "_💬 Bir medya dosyasına (görsel, video, ses, çıkartma veya belge) yanıt verin_"
       );
 
     if (
@@ -542,7 +542,7 @@ Module(
       !message.reply_message.album
     ) {
       return await message.send(
-        "_Bir medya dosyasına (görsel, video, ses, çıkartma veya belge) yanıt verin_"
+        "_💬 Bir medya dosyasına (görsel, video, ses, çıkartma veya belge) yanıt verin_"
       );
     }
 
@@ -550,9 +550,9 @@ Module(
     if (message.reply_message.album) {
       const albumData = await message.reply_message.download();
       const allFiles = [...(albumData.images || []), ...(albumData.videos || [])];
-      if (allFiles.length === 0) return await message.send("_Albümde medya yok_");
+      if (allFiles.length === 0) return await message.send("_📭 Albümde medya yok_");
 
-      await message.send(`_${allFiles.length} dosya belgeye dönüştürülüyor..._`);
+      await message.send(`_⏳ ${allFiles.length} dosya belgeye dönüştürülüyor..._`);
       for (let i = 0; i < allFiles.length; i++) {
         try {
           const filePath = allFiles[i];
@@ -570,7 +570,7 @@ Module(
             quoted: message.quoted,
             fileName: fileName,
             mimetype: mimetype,
-            caption: "_Belgeye dönüştürüldü_",
+            caption: "_✅ Belgeye dönüştürüldü_",
           });
         } catch (err) {
           console.error("Failed to convert album file to document:", err);
@@ -585,9 +585,9 @@ Module(
       const mediaInfo = mediaMessage[mediaType];
 
       if (mediaInfo.fileLength && mediaInfo.fileLength > 50 * 1024 * 1024) {
-        return await message.send("_Dosya çok büyük! Maksimum boyut 50MB_");
+        return await message.send("_⚠️ Dosya çok büyük! Maksimum boyut 50MB_");
       }
-      const processingMsg = await message.send("_Belgeye dönüştürülüyor..._");
+      const processingMsg = await message.send("_⏳ Belgeye dönüştürülüyor..._");
 
       const filePath = await message.reply_message.download();
       const stream = fs.createReadStream(filePath);
@@ -611,7 +611,7 @@ Module(
         quoted: message.quoted,
         fileName: fileName,
         mimetype: mimetype,
-        caption: match[1] ? "" : "_Belgeye dönüştürüldü_",
+        caption: match[1] ? "" : "_✅ Belgeye dönüştürüldü_",
       });
 
       try {
@@ -621,7 +621,7 @@ Module(
       }
 
       await message.edit(
-        "_Belge dönüşümü tamamlandı!_",
+        "_✅ Belge dönüşümü tamamlandı!_",
         message.jid,
         processingMsg.key
       );
@@ -629,15 +629,15 @@ Module(
       console.error("Doc conversion error:", error);
       if (error.message.includes("download")) {
         await message.send(
-          "_Medya indirilemedi. Dosya bozuk veya süresi dolmuş olabilir_"
+          "_❌ Medya indirilemedi. Dosya bozuk veya süresi dolmuş olabilir_"
         );
       } else if (
         error.message.includes("large") ||
         error.message.includes("memory")
       ) {
-        await message.send("_Dosya işlemek için çok büyük_");
+        await message.send("_⚠️ Dosya işlemek için çok büyük_");
       } else {
-        await message.send("_Medya belgeye dönüştürülemedi_");
+        await message.send("_❌ Medya belgeye dönüştürülemedi_");
       }
     }
   }
@@ -659,12 +659,12 @@ Module(
 
     if (!url || !url.startsWith("http")) {
       return await message.send(
-        "_Geçerli bir URL girin veya URL içeren bir mesaja yanıt verin_"
+        "_💬 Geçerli bir URL girin veya URL içeren bir mesaja yanıt verin_"
       );
     }
 
     try {
-      await message.send("_Dosya indiriliyor..._");
+      await message.send("_⏳ Dosya indiriliyor..._");
 
       const response = await axios.get(url, {
         responseType: "stream",
@@ -702,23 +702,23 @@ Module(
         quoted: message.quoted,
         fileName: fileName,
         mimetype: mimetype,
-        caption: `_İndirildi: ${url}_`,
+        caption: `_✅ İndirildi: ${url}_`,
       });
     } catch (error) {
       console.error("Upload error:", error);
       if (error.code === "ECONNABORTED") {
         await message.send(
-          "_İndirme zaman aşımı. Dosya çok büyük veya sunucu yavaş olabilir_"
+          "_⏱️ İndirme zaman aşımı. Dosya çok büyük veya sunucu yavaş olabilir_"
         );
       } else if (error.response && error.response.status === 404) {
-        await message.send("_Dosya bulunamadı (404). Lütfen URL'yi kontrol edin_");
+        await message.send("_❌ Dosya bulunamadı (404). Lütfen URL'yi kontrol edin_");
       } else if (error.response && error.response.status >= 400) {
         await message.send(
-          `_İndirme başarısız (durum: ${error.response.status})_`
+          `_❌ İndirme başarısız (durum: ${error.response.status})_`
         );
       } else {
         await message.send(
-          "_Dosya indirilemedi. Lütfen URL'yi kontrol edip tekrar deneyin_"
+          "_❌ Dosya indirilemedi. Lütfen URL'yi kontrol edip tekrar deneyin_"
         );
       }
     }
@@ -741,7 +741,7 @@ Module(
 
     try {
       const processingMsg = await message.send(
-        "_Medya kare formata işleniyor..._"
+        "_⏳ Medya kare formata işleniyor..._"
       );
 
       const savedFile = await message.reply_message.download();
@@ -774,12 +774,12 @@ Module(
             if (isVideo) {
               await message.sendMessage(fs.readFileSync(outputPath), "video", {
                 quoted: message.quoted,
-                caption: "_Kare formata kırpıldı_",
+                caption: "_✅ Kare formata kırpıldı_",
               });
             } else {
               await message.sendMessage(fs.readFileSync(outputPath), "image", {
                 quoted: message.quoted,
-                caption: "_Kare formata kırpıldı_",
+                caption: "_✅ Kare formata kırpıldı_",
               });
             }
 
@@ -787,18 +787,18 @@ Module(
             fs.unlinkSync(outputPath);
 
             await message.edit(
-              "_Kare kırpma tamamlandı ✅_",
+              "_✅ Kare kırpma tamamlandı_",
               message.jid,
               processingMsg.key
             );
           } catch (e) {
             console.error("Send error:", e);
-            await message.send("_İşlendi ancak gönderilemedi_");
+            await message.send("_⚠️ İşlendi ancak gönderilemedi_");
           }
         })
         .on("error", (err) => {
           console.error("FFmpeg error:", err);
-          message.send("_Medya işlenemedi. Lütfen tekrar deneyin_");
+          message.send("_❌ Medya işlenemedi. Lütfen tekrar deneyin_");
           try {
             fs.unlinkSync(savedFile);
             if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
@@ -806,7 +806,7 @@ Module(
         });
     } catch (error) {
       console.error("Square crop error:", error);
-      await message.send("_Medya kare kırpma için işlenemedi_");
+      await message.send("_❌ Medya kare kırpma için işlenemedi_");
     }
   }
 );
@@ -828,7 +828,7 @@ Module(
 
     if (!match[1]) {
       return await message.send(
-        "_En-boy oranı belirtin. Örnekler:_\n• `.resize 16:9` - Geniş ekran\n• `.resize 9:16` - Dikey/Hikaye\n• `.resize 4:3` - Klasik\n• `.resize 21:9` - Ultra geniş\n• `.resize 1:1` - Kare"
+        "_💬 En-boy oranı belirtin. Örnekler:_\n• `.resize 16:9` - Geniş ekran\n• `.resize 9:16` - Dikey/Hikaye\n• `.resize 4:3` - Klasik\n• `.resize 21:9` - Ultra geniş\n• `.resize 1:1` - Kare"
       );
     }
 
@@ -836,7 +836,7 @@ Module(
 
     if (!input.includes(":")) {
       return await message.send(
-        "_Geçersiz format! 16:9, 9:16, 4:3 gibi en-boy oranları kullanın._"
+        "_⚠️ Geçersiz format! 16:9, 9:16, 4:3 gibi en-boy oranları kullanın._"
       );
     }
 
@@ -851,13 +851,13 @@ Module(
       heightRatio <= 0
     ) {
       return await message.send(
-        "_Geçersiz en-boy oranı! 16:9, 9:16 gibi pozitif sayılar kullanın._"
+        "_⚠️ Geçersiz en-boy oranı! 16:9, 9:16 gibi pozitif sayılar kullanın._"
       );
     }
 
     try {
       const processingMsg = await message.send(
-        `_${input} en-boy oranına yeniden boyutlandırılıyor..._`
+        `_⏳ ${input} en-boy oranına yeniden boyutlandırılıyor..._`
       );
 
       const savedFile = await message.reply_message.download();
@@ -903,12 +903,12 @@ Module(
             if (isVideo) {
               await message.sendMessage(fs.readFileSync(outputPath), "video", {
                 quoted: message.quoted,
-                caption: `_${input} en-boy oranına boyutlandırıldı (${targetWidth}x${targetHeight})_`,
+                caption: `_✅ ${input} en-boy oranına boyutlandırıldı (${targetWidth}x${targetHeight})_`,
               });
             } else {
               await message.sendMessage(fs.readFileSync(outputPath), "image", {
                 quoted: message.quoted,
-                caption: `_${input} en-boy oranına boyutlandırıldı (${targetWidth}x${targetHeight})_`,
+                caption: `_✅ ${input} en-boy oranına boyutlandırıldı (${targetWidth}x${targetHeight})_`,
               });
             }
 
@@ -916,19 +916,19 @@ Module(
             fs.unlinkSync(outputPath);
 
             await message.edit(
-              `_${input} en-boy oranı değişikliği tamamlandı ✅_`,
+              `_✅ ${input} en-boy oranı değişikliği tamamlandı_`,
               message.jid,
               processingMsg.key
             );
           } catch (e) {
             console.error("Send error:", e);
-            await message.send("_İşlendi ancak gönderilemedi_");
+            await message.send("_⚠️ İşlendi ancak gönderilemedi_");
           }
         })
         .on("error", (err) => {
           console.error("FFmpeg resize error:", err);
           message.send(
-            "_Medya boyutu değiştirilemedi. En-boy oranını kontrol edip tekrar deneyin_"
+            "_❌ Medya boyutu değiştirilemedi. En-boy oranını kontrol edip tekrar deneyin_"
           );
           try {
             fs.unlinkSync(savedFile);
@@ -937,7 +937,7 @@ Module(
         });
     } catch (error) {
       console.error("Resize error:", error);
-      await message.send("_Medya boyutlandırma için işlenemedi_");
+      await message.send("_❌ Medya boyutlandırma için işlenemedi_");
     }
   }
 );
@@ -958,7 +958,7 @@ Module(
 
     if (!match[1]) {
       return await message.send(
-        "_Sıkıştırma yüzdesi belirtin. Örnekler:_\n• `.compress 50` - %50 sıkıştırma (orta)\n• `.compress 70` - %70 sıkıştırma (yüksek)\n• `.compress 80` - %80 sıkıştırma (çok yüksek)\n• `.compress 30` - %30 sıkıştırma (hafif)"
+        "_💬 Sıkıştırma yüzdesi belirtin. Örnekler:_\n• `.compress 50` - %50 sıkıştırma (orta)\n• `.compress 70` - %70 sıkıştırma (yüksek)\n• `.compress 80` - %80 sıkıştırma (çok yüksek)\n• `.compress 30` - %30 sıkıştırma (hafif)"
       );
     }
 
@@ -970,13 +970,13 @@ Module(
       compressionPercent > 95
     ) {
       return await message.send(
-        "_Geçersiz sıkıştırma yüzdesi! 10-95 arası değer kullanın._"
+        "_⚠️ Geçersiz sıkıştırma yüzdesi! 10-95 arası değer kullanın._"
       );
     }
 
     try {
       const processingMsg = await message.send(
-        `_%${compressionPercent} sıkıştırılıyor..._`
+        `_⏳ %${compressionPercent} sıkıştırılıyor..._`
       );
 
       const savedFile = await message.reply_message.download();
@@ -1034,14 +1034,14 @@ Module(
             if (isVideo) {
               await message.sendMessage(fs.readFileSync(outputPath), "video", {
                 quoted: message.quoted,
-                caption: `_%${actualReduction} sıkıştırıldı_\n_${formatSize(
+                caption: `_✅ %${actualReduction} sıkıştırıldı_\n_${formatSize(
                   originalSize
                 )} → ${formatSize(compressedSize)}_`,
               });
             } else {
               await message.sendMessage(fs.readFileSync(outputPath), "image", {
                 quoted: message.quoted,
-                caption: `_%${actualReduction} sıkıştırıldı_\n_${formatSize(
+                caption: `_✅ %${actualReduction} sıkıştırıldı_\n_${formatSize(
                   originalSize
                 )} → ${formatSize(compressedSize)}_`,
               });
@@ -1051,18 +1051,18 @@ Module(
             fs.unlinkSync(outputPath);
 
             await message.edit(
-              `_Sıkıştırma tamamlandı ✅ (%${actualReduction} azalma)_`,
+              `_✅ Sıkıştırma tamamlandı (%${actualReduction} azalma)_`,
               message.jid,
               processingMsg.key
             );
           } catch (e) {
             console.error("Send error:", e);
-            await message.send("_İşlendi ancak gönderilemedi_");
+            await message.send("_⚠️ İşlendi ancak gönderilemedi_");
           }
         })
         .on("error", (err) => {
           console.error("FFmpeg compress error:", err);
-          message.send("_Medya sıkıştırılamadı. Lütfen tekrar deneyin_");
+          message.send("_❌ Medya sıkıştırılamadı. Lütfen tekrar deneyin_");
           try {
             fs.unlinkSync(savedFile);
             if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
@@ -1070,7 +1070,7 @@ Module(
         });
     } catch (error) {
       console.error("Compress error:", error);
-      await message.send("_Medya sıkıştırma için işlenemedi_");
+      await message.send("_❌ Medya sıkıştırma için işlenemedi_");
     }
   }
 );

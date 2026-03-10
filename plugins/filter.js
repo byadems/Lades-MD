@@ -44,7 +44,7 @@ Module(
 
     const parts = input.split("|").map((p) => p.trim());
     if (parts.length < 2) {
-      return await message.sendReply("_✨ Format: tetikleyici | yanıt | kapsam(isteğe bağlı) | seçenekler(isteğe bağlı)_"
+      return await message.sendReply("_💬 Format: tetikleyici | yanıt | kapsam(isteğe bağlı) | seçenekler(isteğe bağlı)_"
       );
     }
 
@@ -100,7 +100,7 @@ Module(
       );
     } catch (error) {
       console.error("Filter creation error:", error);
-      await message.sendReply("_✨ Filtre oluşturulamadı!_");
+      await message.sendReply("_❌ Filtre oluşturulamadı!_");
     }
   }
 );
@@ -130,7 +130,7 @@ Module(
       }
 
       if (!filters || filters.length === 0) {
-        return await message.sendReply("_❌ Filtre bulunamadı!_");
+        return await message.sendReply("_📭 Filtre bulunamadı!_");
       }
 
       let msg = `*📝 Aktif Filtreler:*\n\n`;
@@ -159,7 +159,7 @@ Module(
       await message.sendReply(msg);
     } catch (error) {
       console.error("Filter listing error:", error);
-      await message.sendReply("_✨ Filtreler alınamadı!_");
+      await message.sendReply("_❌ Filtreler alınamadı!_");
     }
   }
 );
@@ -201,7 +201,7 @@ Module(
           `✅ _"${trigger}" filtresi başarıyla silindi!_`
         );
       } else {
-        await message.sendReply(`❌ _Filter "${trigger}" not found!_`);
+        await message.sendReply(`_❌ "${trigger}" filtresi bulunamadı!_`);
       }
     } catch (error) {
       console.error("Filter deletion error:", error);
@@ -226,7 +226,7 @@ Module(
 
     const input = match[1]?.trim();
     if (!input) {
-      return await message.sendReply("_✨ Değiştirilecek filtre tetikleyicisini belirtin!_\n_Kullanım: .togglefilter tetikleyici_"
+      return await message.sendReply("_💬 Değiştirilecek filtre tetikleyicisini belirtin!_\n_Kullanım: .togglefilter tetikleyici_"
       );
     }
 
@@ -264,7 +264,7 @@ Module(
       }
     } catch (error) {
       console.error("Filter toggle error:", error);
-      await message.sendReply("_✨ Filtre değiştirilemedi!_");
+      await message.sendReply("_❌ Filtre değiştirilemedi!_");
     }
   }
 );
@@ -285,7 +285,7 @@ Module(
 
     const testText = match[1]?.trim();
     if (!testText) {
-      return await message.sendReply("_✨ Filtrelere karşı test edilecek metni girin!_\n_Kullanım: .testfilter merhaba dünya_"
+      return await message.sendReply("_💬 Filtrelere karşı test edilecek metni girin!_\n_Kullanım: .testfilter merhaba dünya_"
       );
     }
 
@@ -310,7 +310,7 @@ Module(
       }
     } catch (error) {
       console.error("Filter test error:", error);
-      await message.sendReply("_✨ Filtre test edilemedi!_");
+      await message.sendReply("_❌ Filtre test edilemedi!_");
     }
   }
 );

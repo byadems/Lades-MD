@@ -62,7 +62,7 @@ Module(
         .map((fileName) => path.join(imageInputDirectory, fileName));
 
       if (!imageFilePaths.length) {
-        return await message.sendReply("_✨ Dosya girişi yapılmadı_");
+        return await message.sendReply("_💬 Dosya girişi yapılmadı_");
       }
 
       const pdfGenerationStream = imageToPdf(imageFilePaths, sizes.A4);

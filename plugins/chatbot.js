@@ -466,7 +466,7 @@ Module(
         return await message.sendReply(statusText);
 
       default:
-        return await message.sendReply(`_✨ Bilinmeyen komut: \`${command}\`_\n\n_Kullanmak için \`.chatbot\` mevcut komutları görmek için._`
+        return await message.sendReply(`_❌ Bilinmeyen komut: \`${command}\`_\n\n_💡 Mevcut komutları görmek için \`.chatbot\` kullanın._`
         );
     }
   }
