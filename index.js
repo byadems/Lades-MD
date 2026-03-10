@@ -8,7 +8,7 @@ const { suppressLibsignalLogs } = require("./core/helpers");
 
 suppressLibsignalLogs();
 
-const { initializeDatabase } = require("./core/database");
+const { initializeDatabase, BotVariable } = require("./core/database");
 const { BotManager } = require("./core/manager");
 const config = require("./config");
 const { SESSION, logger } = config;
@@ -38,6 +38,11 @@ async function main() {
     await initializeDatabase();
     console.log("- Database initialized");
     logger.info("Database initialized successfully.");
+    const dbRows = await BotVariable.findAll();
+    const dbValues = Object.fromEntries(dbRows.map((r) => [r.key, r.value]));
+    if (Object.keys(dbValues).length > 0) {
+      config.loadFromDB(dbValues);
+    }
   } catch (dbError) {
     console.error(
       "🚫 Veritabanı başlatılamadı veya yapılandırma yüklenemedi. Bot başlatılamıyor.",

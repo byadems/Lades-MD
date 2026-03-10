@@ -12,7 +12,8 @@ const { parseAliveMessage, sendAliveMessage } = require("./utils/alive-parser");
 const isPrivateMode = MODE === "private";
 
 const extractCommandName = (pattern) => {
-  const match = pattern?.toString().match(/(\W*)([A-Za-z1234567890 ]*)/);
+  // Türkçe karakterler dahil: ıİşŞğĞüÜöÖçÇ (Unicode)
+  const match = pattern?.toString().match(/(\W*)([A-Za-z0-9\u0130\u0131\u015E\u015F\u011E\u011F\u00FC\u00DC\u00F6\u00D6\u00E7\u00C7\s]*)/u);
   return match && match[2] ? match[2].trim() : "";
 };
 
@@ -336,9 +337,10 @@ Module(
     const botName = infoParts[0] || "Botum";
     const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = VERSION;
-    let botImageLink = infoParts[2] || "";
-    if (botImageLink === "default" || (botImageLink && !botImageLink.startsWith("http"))) {
-      botImageLink = path.join(__dirname, "utils", "images", "default.png");
+    let botImageLink = (infoParts[2] || "").trim();
+    const defaultImagePath = path.join(__dirname, "utils", "images", "default.png");
+    if (!botImageLink || botImageLink === "default" || !botImageLink.startsWith("http")) {
+      botImageLink = defaultImagePath;
     }
 
     const menu = `╭═══〘 \`${botName}\` 〙═══⊷❍
@@ -362,18 +364,18 @@ Module(
 
 ${cmdmenu}`;
     try {
-      if (
-        botImageLink === path.join(__dirname, "utils", "images", "default.png")
-      ) {
+      if (botImageLink === defaultImagePath && fs.existsSync(defaultImagePath)) {
         await message.client.sendMessage(message.jid, {
           image: fs.readFileSync(botImageLink),
           caption: menu,
         });
-      } else {
+      } else if (botImageLink.startsWith("http")) {
         await message.client.sendMessage(message.jid, {
           image: { url: botImageLink },
           caption: menu,
         });
+      } else {
+        await message.client.sendMessage(message.jid, { text: menu });
       }
     } catch (error) {
       console.error("Error sending menu:", error);
