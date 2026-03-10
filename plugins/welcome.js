@@ -142,7 +142,7 @@ Module(
 
         await message.sendReply(statusText);
       } catch (error) {
-        console.error("Error getting welcome status:", error);
+        console.error("Hoş geldin durumu alınamadı:", error);
         await message.sendReply("_❌ Karşılama/veda durumunu alırken hata oluştu!_");
       }
       return;

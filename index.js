@@ -22,10 +22,10 @@ const {
 
 async function main() {
   ensureTempDir();
-  logger.info(`Created temporary directory at ${TEMP_DIR}`);
+  logger.info(`Geçici dizin oluşturuldu: ${TEMP_DIR}`);
   console.log(`Lades v${require("./package.json").version}`);
-  console.log(`- Configured sessions: ${SESSION.join(", ")}`);
-  logger.info(`Configured sessions: ${SESSION.join(", ")}`);
+  console.log(`- Yapılandırılan oturumlar: ${SESSION.join(", ")}`);
+  logger.info(`Yapılandırılan oturumlar: ${SESSION.join(", ")}`);
   if (SESSION.length === 0) {
     const warnMsg =
       "⚠️ Oturum yapılandırılmadı. Lütfen SESSION ortam değişkenini ayarlayın.";
@@ -36,8 +36,8 @@ async function main() {
 
   try {
     await initializeDatabase();
-    console.log("- Database initialized");
-    logger.info("Database initialized successfully.");
+    console.log("- Veritabanı başlatıldı");
+    logger.info("Veritabanı başarıyla başlatıldı.");
     const dbRows = await BotVariable.findAll();
     const dbValues = Object.fromEntries(dbRows.map((r) => [r.key, r.value]));
     if (Object.keys(dbValues).length > 0) {
@@ -58,16 +58,16 @@ async function main() {
   const botManager = new BotManager();
 
   const shutdownHandler = async (signal) => {
-    console.log(`\nReceived ${signal}, shutting down...`);
-    logger.info(`Received ${signal}, shutting down...`);
+    console.log(`\n${signal} alındı, kapatılıyor...`);
+    logger.info(`${signal} alındı, kapatılıyor...`);
     cleanupKickBot();
     // Flush buffered DB queries before shutting down (from config.js buffer system)
     if (typeof config.sequelize?.__flushBufferedQueries === 'function') {
       try {
         await config.sequelize.__flushBufferedQueries();
-        console.log("- Buffered DB queries flushed.");
+        console.log("- Bekleyen veritabanı sorguları tamamlandı.");
       } catch (flushErr) {
-        logger.error({ err: flushErr }, "Failed to flush buffered queries during shutdown");
+        logger.error({ err: flushErr }, "Kapatma sırasında bekleyen sorgular tamamlanamadı");
       }
     }
     await botManager.shutdown();
@@ -78,8 +78,8 @@ async function main() {
   process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
 
   await botManager.initializeBots();
-  console.log("- Bot initialization complete.");
-  logger.info("Bot initialization complete");
+  console.log("- Bot başlatma tamamlandı.");
+  logger.info("Bot başlatma tamamlandı");
 
   initializeKickBot();
 
@@ -97,7 +97,7 @@ async function main() {
     });
 
     server.listen(PORT, () => {
-      logger.info(`Web server listening on port ${PORT}`);
+      logger.info(`Web sunucusu ${PORT} portunda dinleniyor`);
     });
   };
 
@@ -106,8 +106,8 @@ async function main() {
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error(`Fatal error in main execution: ${error.message}`, error);
-    logger.fatal({ err: error }, `Fatal error in main execution`);
+    console.error(`Ana çalıştırmada kritik hata: ${error.message}`, error);
+    logger.fatal({ err: error }, `Ana çalıştırmada kritik hata`);
     process.exit(1);
   });
 }

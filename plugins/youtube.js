@@ -75,7 +75,7 @@ Module(
 
       await message.edit(resultText, message.jid, searchMsg.key);
     } catch (error) {
-      console.error("Song search error:", error);
+      console.error("Şarkı arama hatası:", error);
       await message.sendReply("_❌ Arama başarısız oldu. Lütfen daha sonra tekrar deneyin._");
     }
   }
@@ -123,7 +123,7 @@ Module(
 
       await message.edit(resultText, message.jid, searchMsg.key);
     } catch (error) {
-      console.error("YTS search error:", error);
+      console.error("YouTube arama hatası:", error);
       await message.sendReply("_❌ Arama başarısız oldu. Lütfen daha sonra tekrar deneyin._");
     }
   }
@@ -247,7 +247,7 @@ Module(
 
       await message.edit(qualityText, message.jid, infoMsg.key);
     } catch (error) {
-      console.error("YTV info error:", error);
+      console.error("YouTube video bilgi hatası:", error);
       await message.sendReply("_⚠️ Video bilgisi alınamadı. Lütfen bağlantıyı kontrol edin._"
       );
     }
@@ -319,7 +319,7 @@ Module(
         fs.unlinkSync(videoPath);
       }
     } catch (error) {
-      console.error("Video download error:", error);
+      console.error("Video indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
@@ -389,7 +389,7 @@ Module(
         fs.unlinkSync(audioPath);
       }
     } catch (error) {
-      console.error("YTA download error:", error);
+      console.error("YouTube ses indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
@@ -523,7 +523,7 @@ Module(
         }
       }
     } catch (error) {
-      console.error("Play error:", error);
+      console.error("Çalma hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {
@@ -617,7 +617,7 @@ Module(
             fs.unlinkSync(audioPath);
           }
         } catch (error) {
-          console.error("Song download error:", error);
+          console.error("Şarkı indirme hatası:", error);
           if (downloadMsg) {
             await message.edit(
               "_❌ İndirme başarısız!_",
@@ -631,7 +631,7 @@ Module(
           }
         }
       } catch (error) {
-        console.error("Song selection error:", error);
+        console.error("Şarkı seçim hatası:", error);
         await message.sendReply("_❌ Seçiminiz işlenemedi._");
       }
     } else if (
@@ -677,7 +677,7 @@ Module(
           caption: caption,
         });
       } catch (error) {
-        console.error("YTS video info error:", error);
+        console.error("YouTube video bilgi hatası:", error);
         await message.sendReply("_🎬 Video bilgisi alınamadı._");
       }
     } else if (
@@ -733,7 +733,7 @@ Module(
               fs.unlinkSync(filePath);
             }
           } catch (error) {
-            console.error("YTS audio download error:", error);
+            console.error("YouTube ses indirme hatası:", error);
             if (downloadMsg) {
               await message.edit(
                 "_❌ İndirme başarısız!_",
@@ -790,7 +790,7 @@ Module(
               fs.unlinkSync(filePath);
             }
           } catch (error) {
-            console.error("YTS video download error:", error);
+            console.error("YouTube video indirme hatası:", error);
             if (downloadMsg) {
               await message.edit(
                 "_❌ İndirme başarısız!_",
@@ -805,7 +805,7 @@ Module(
           }
         }
       } catch (error) {
-        console.error("YTS download selection error:", error);
+        console.error("YouTube indirme seçim hatası:", error);
         await message.sendReply("_❌ İndirme işlemi başarısız oldu._");
       }
     } else if (
@@ -888,7 +888,7 @@ Module(
               fs.unlinkSync(audioPath);
             }
           } catch (error) {
-            console.error("YTV audio download error:", error);
+            console.error("YouTube video ses indirme hatası:", error);
             if (downloadMsg) {
               await message.edit(
                 "_İndirme başarısız!_",
@@ -955,7 +955,7 @@ Module(
               fs.unlinkSync(videoPath);
             }
           } catch (error) {
-            console.error("YTV video download error:", error);
+            console.error("YouTube video indirme hatası:", error);
             if (downloadMsg) {
               await message.edit(
                 "_İndirme başarısız!_",
@@ -970,7 +970,7 @@ Module(
           }
         }
       } catch (error) {
-        console.error("YTV quality selection error:", error);
+        console.error("YouTube kalite seçim hatası:", error);
         await message.sendReply("_❌ Kalite seçimi işlenemedi._");
       }
     }
@@ -1052,7 +1052,7 @@ Module(
         fs.unlinkSync(audioPath);
       }
     } catch (error) {
-      console.error("Spotify download error:", error);
+      console.error("Spotify indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
       } else {

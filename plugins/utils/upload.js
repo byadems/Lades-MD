@@ -21,7 +21,7 @@ const uploadToCatbox = async (filePath) => {
     });
     return { url: response.data.trim() };
   } catch (error) {
-    console.error("Error uploading file to Catbox:", error.message);
+    console.error("Dosya Catbox'a yüklenemedi:", error.message);
     return { url: "_Dosya Catbox'a yüklenirken hata oluştu._" };
   }
 };
@@ -38,7 +38,7 @@ const fetchAuthToken = async () => {
     }
     throw new Error("Auth token not found.");
   } catch (error) {
-    console.error("Error fetching auth token:", error.message);
+    console.error("Kimlik doğrulama anahtarı alınamadı:", error.message);
     throw error;
   }
 };
@@ -70,7 +70,7 @@ const uploadToImgbb = async (imagePath) => {
       return { error: "Yükleme başarısız, yanıt verisi yok." };
     }
   } catch (error) {
-    console.error("Error uploading file:", error.message);
+    console.error("Dosya yüklenemedi:", error.message);
     return { error: error.message };
   }
 };

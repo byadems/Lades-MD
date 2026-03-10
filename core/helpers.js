@@ -90,7 +90,7 @@ async function genThumb(url) {
     
     return await img.resize(w, h, jimp.RESIZE_NEAREST_NEIGHBOR).getBufferAsync("image/jpeg");
   } catch (error) {
-    console.error("Error generating thumbnail:", error);
+    console.error("Küçük resim oluşturulamadı:", error);
     return null;
   }
 }
@@ -131,7 +131,7 @@ async function initializeKickBot() {
   if (hostnames.length === 0) return;
 
   isKickBotInitialized = true;
-  console.log(`[Kick-Bot] Active for: ${hostnames[0]}`);
+  console.log(`[Kick-Bot] Etkin: ${hostnames[0]}`);
 
   await Promise.allSettled(hostnames.map(pingHostname));
 

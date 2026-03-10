@@ -106,7 +106,7 @@ Module(
       if (fs.existsSync(audioFile)) fs.unlinkSync(audioFile);
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
-      console.error("Black video creation error:", error);
+      console.error("Siyah video oluşturma hatası:", error);
       await message.send("_Siyah video oluşturulamadı. Lütfen tekrar deneyin._");
     }
   }

@@ -20,7 +20,7 @@ async function initAFKCache() {
       });
     }
   } catch (error) {
-    console.error("Error initializing AFK cache:", error);
+    console.error("AFK önbelleği başlatılamadı:", error);
 
     if (!config.AFK_DATA) {
       await setVar("AFK_DATA", "{}");
@@ -116,7 +116,7 @@ async function saveAFKData() {
     }
     await setVar("AFK_DATA", JSON.stringify(afkData));
   } catch (error) {
-    console.error("Error saving AFK data:", error);
+    console.error("AFK verisi kaydedilemedi:", error);
   }
 }
 
@@ -356,7 +356,7 @@ Module(
         }
       }
     } catch (error) {
-      console.error("Error in AFK auto-reply handler:", error);
+      console.error("AFK otomatik yanıt işleyicisinde hata:", error);
     }
   }
 );
@@ -374,7 +374,7 @@ Module(
         await updateLastSeen(senderJid);
       }
     } catch (error) {
-      console.error("Error updating AFK last seen:", error);
+      console.error("AFK son görülme güncellenemedi:", error);
     }
   }
 );

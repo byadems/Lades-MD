@@ -167,7 +167,7 @@ Module({ on: "text", fromMe }, async (message) => {
               }
             } catch (error) {
               if (config.DEBUG)
-                console.error("[AutoDL YT Audio]", error?.message || error);
+                console.error("[Otomatik İndirme YT Ses]", error?.message || error);
               if (downloadMsg) {
                 await message.edit(
                   "_Download failed!_",
@@ -268,7 +268,7 @@ Module({ on: "text", fromMe }, async (message) => {
           qualityText += "\n_Reply with a number to download_";
           await message.sendReply(qualityText);
         } catch (err) {
-          if (config.DEBUG) console.error("[AutoDL YT]", err?.message || err);
+          if (config.DEBUG) console.error("[Otomatik İndirme YT]", err?.message || err);
           await message.react("❌");
         }
         return;
@@ -288,7 +288,7 @@ Module({ on: "text", fromMe }, async (message) => {
               allMediaUrls.push(...downloadResult);
             }
           } catch (err) {
-            if (config.DEBUG) console.error("[AutoDL IG]", err?.message || err);
+            if (config.DEBUG) console.error("[Otomatik İndirme IG]", err?.message || err);
           }
         }
 
@@ -327,7 +327,7 @@ Module({ on: "text", fromMe }, async (message) => {
           await message.sendReply(downloadResult, "video");
         } catch (err) {
           if (config.DEBUG)
-            console.error("[AutoDL TikTok]", err?.message || err);
+            console.error("[Otomatik İndirme TikTok]", err?.message || err);
           await message.react("❌");
         }
         return;
@@ -352,7 +352,7 @@ Module({ on: "text", fromMe }, async (message) => {
             }
           } catch (err) {
             if (config.DEBUG)
-              console.error("[AutoDL Pinterest]", err?.message || err);
+              console.error("[Otomatik İndirme Pinterest]", err?.message || err);
           }
         }
 
@@ -384,7 +384,7 @@ Module({ on: "text", fromMe }, async (message) => {
           const result = await fb(platformGroups["facebook"][0]);
           await message.sendReply({ url: result.url }, "video");
         } catch (err) {
-          if (config.DEBUG) console.error("[AutoDL FB]", err?.message || err);
+          if (config.DEBUG) console.error("[Otomatik İndirme FB]", err?.message || err);
           await message.react("❌");
         }
         return;
@@ -449,7 +449,7 @@ Module({ on: "text", fromMe }, async (message) => {
           }
         } catch (err) {
           if (config.DEBUG)
-            console.error("[AutoDL Spotify]", err?.message || err);
+            console.error("[Otomatik İndirme Spotify]", err?.message || err);
           if (downloadMsg) {
             await message.edit("_Download failed!_", message.jid, downloadMsg.key);
           } else {
@@ -469,11 +469,11 @@ Module({ on: "text", fromMe }, async (message) => {
         return;
       }
     } catch (err) {
-      if (config.DEBUG) console.error("[AutoDL]", err?.message || err);
+      if (config.DEBUG) console.error("[Otomatik İndirme]", err?.message || err);
       await message.react("❌");
     }
   } catch (err) {
-    if (config.DEBUG) console.error("[AutoDL]", err?.message || err);
+    if (config.DEBUG) console.error("[Otomatik İndirme]", err?.message || err);
   }
 });
 

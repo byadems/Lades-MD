@@ -219,7 +219,7 @@ Module(
         );
       }
     } catch (error) {
-      console.error("Update error:", error);
+      console.error("Güncelleme hatası:", error);
       return await message.edit(
         "_Güncellemeler kontrol edilirken bir hata oluştu._",
         message.jid,

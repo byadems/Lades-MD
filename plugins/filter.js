@@ -99,7 +99,7 @@ Module(
           `*Kapsam:* ${scopeText}${optionsStr}`
       );
     } catch (error) {
-      console.error("Filter creation error:", error);
+      console.error("Filtre oluşturma hatası:", error);
       await message.sendReply("_❌ Filtre oluşturulamadı!_");
     }
   }
@@ -158,7 +158,7 @@ Module(
 
       await message.sendReply(msg);
     } catch (error) {
-      console.error("Filter listing error:", error);
+      console.error("Filtre listeleme hatası:", error);
       await message.sendReply("_❌ Filtreler alınamadı!_");
     }
   }
@@ -204,7 +204,7 @@ Module(
         await message.sendReply(`_❌ "${trigger}" filtresi bulunamadı!_`);
       }
     } catch (error) {
-      console.error("Filter deletion error:", error);
+      console.error("Filtre silme hatası:", error);
       await message.sendReply("_🗑️ Filtre silinemedi!_");
     }
   }
@@ -263,7 +263,7 @@ Module(
         await message.sendReply(`❌ _"${trigger}" filtresi değiştirilemedi!_`);
       }
     } catch (error) {
-      console.error("Filter toggle error:", error);
+      console.error("Filtre aç/kapa hatası:", error);
       await message.sendReply("_❌ Filtre değiştirilemedi!_");
     }
   }
@@ -309,7 +309,7 @@ Module(
         );
       }
     } catch (error) {
-      console.error("Filter test error:", error);
+      console.error("Filtre test hatası:", error);
       await message.sendReply("_❌ Filtre test edilemedi!_");
     }
   }

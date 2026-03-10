@@ -67,7 +67,7 @@ async function parseAliveMessage(template, messageObject) {
           profilePicBuffer = await getBuffer(ppUrl);
         }
       } catch (error) {
-        console.log("Error fetching profile picture:", error);
+        console.log("Profil resmi alınamadı:", error);
       }
       parsedMessage = parsedMessage.replace(/\$pp/g, "").trim();
     }
@@ -81,7 +81,7 @@ async function parseAliveMessage(template, messageObject) {
 
         isVideo = /\.(mp4|mov|avi|mkv|webm|gif)$/i.test(mediaUrl);
       } catch (error) {
-        console.log("Error fetching custom media:", error);
+        console.log("Özel medya alınamadı:", error);
       }
       parsedMessage = parsedMessage.replace(mediaRegex, "").trim();
     }
@@ -94,7 +94,7 @@ async function parseAliveMessage(template, messageObject) {
       mentions: messageObject.sender ? [messageObject.sender] : [],
     };
   } catch (error) {
-    console.error("Error parsing alive message:", error);
+    console.error("Çevrimiçi mesaj ayrıştırma hatası:", error);
     return null;
   }
 }
@@ -142,13 +142,13 @@ async function sendAliveMessage(messageObject, parsedMessage) {
       });
     }
   } catch (error) {
-    console.error("Error sending alive message:", error);
+    console.error("Çevrimiçi mesaj gönderme hatası:", error);
 
     if (parsedMessage.text) {
       try {
         await messageObject.sendReply(parsedMessage.text);
       } catch (fallbackError) {
-        console.error("Fallback send also failed:", fallbackError);
+        console.error("Yedek gönderim de başarısız:", fallbackError);
       }
     }
   }

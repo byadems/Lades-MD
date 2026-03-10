@@ -10,22 +10,22 @@ class BotManager {
     }
 
     async initializeBots() {
-        logger.info({ sessions: SESSION }, `Initializing all configured bots.`);
+        logger.info({ sessions: SESSION }, `Tüm yapılandırılmış botlar başlatılıyor.`);
         await CustomAuthState.deleteGarbageSessions(SESSION);        
         for (const sessionId of SESSION) {
             try {
-                logger.info({ session: sessionId }, `Attempting to initialize bot for session.`);
+                logger.info({ session: sessionId }, `Oturum için bot başlatılıyor.`);
                 const bot = new WhatsAppBot(sessionId);
                 await bot.initialize(); 
                 if (bot.sock) { 
                     this.bots.set(sessionId, bot);
-                    logger.info({ session: sessionId }, `Bot initialization scheduled. Connection status will follow.`);
+                    logger.info({ session: sessionId }, `Bot başlatma planlandı. Bağlantı durumu takip edilecek.`);
                 } else {
-                    logger.error({ session: sessionId }, `Bot object for session could not be initialized (sock is null).`);
+                    logger.error({ session: sessionId }, `Oturum için bot nesnesi başlatılamadı (sock null).`);
                 }
             } catch (error) {
 
-                logger.error({ session: sessionId, err: error }, `Overall failure to initialize bot in BotManager`);
+                logger.error({ session: sessionId, err: error }, `BotManager'da bot başlatma başarısız`);
             }
         }
     }
@@ -43,54 +43,54 @@ class BotManager {
     }
 
     async shutdown() {
-        logger.info('Shutting down all bots...');
+        logger.info('Tüm botlar kapatılıyor...');
 
     try {
       stopFlushTimer();
       await flushQueueOnShutdown();
     } catch (err) {
-      logger.error({ err }, "Failed to flush message queue during shutdown");
+      logger.error({ err }, "Kapatma sırasında mesaj kuyruğu boşaltılamadı");
     }
 
     try {
-      logger.info("Saving all session data before shutdown...");
+      logger.info("Kapatmadan önce tüm oturum verileri kaydediliyor...");
       await CustomAuthState.saveAllSessions();
-      logger.info("All session data saved successfully");
+      logger.info("Tüm oturum verileri başarıyla kaydedildi");
     } catch (error) {
-      logger.error({ err: error }, "Error saving sessions during shutdown");
+      logger.error({ err: error }, "Kapatma sırasında oturumlar kaydedilemedi");
     }
 
         for (const [sessionId, bot] of this.bots.entries()) {
             try {
                 await bot.disconnect(false); 
-                logger.info({ session: sessionId }, `Bot disconnected successfully.`);
+                logger.info({ session: sessionId }, `Bot başarıyla bağlantıyı kesti.`);
             } catch (error) {
-                logger.error({ session: sessionId, err: error }, `Error during bot disconnection.`);
+                logger.error({ session: sessionId, err: error }, `Bot bağlantısı kesilirken hata.`);
             }
         }
         this.bots.clear(); 
 
         try {
             CustomAuthState.stopPeriodicSave();
-            logger.info('Auth periodic save timer stopped');
+            logger.info('Kimlik doğrulama periyodik kayıt zamanlayıcısı durduruldu');
         } catch (error) {
-            logger.error({ err: error }, 'Error stopping periodic save timer');
+            logger.error({ err: error }, 'Periyodik kayıt zamanlayıcısı durdurulamadı');
         }
 
         try {
             const Schedule = require('./schedulers');
             await Schedule.cleanup();
-            logger.info('Scheduled tasks cleaned up');
+            logger.info('Zamanlanmış görevler temizlendi');
         } catch (error) {
-            logger.error({ err: error }, 'Error cleaning up scheduled tasks');
+            logger.error({ err: error }, 'Zamanlanmış görevler temizlenirken hata');
         }
 
         if (sequelize) {
             try {
                 await sequelize.close();
-                logger.info('Database connection closed.');
+                logger.info('Veritabanı bağlantısı kapatıldı.');
             } catch (error) {
-                logger.error({ err: error }, 'Error closing database connection.');
+                logger.error({ err: error }, 'Veritabanı bağlantısı kapatılamadı.');
             }
         }
     }

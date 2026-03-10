@@ -6,7 +6,7 @@ const baileysPromise = loadBaileys()
     ({ delay } = baileys);
   })
   .catch((err) => {
-    console.error("Failed to load baileys:", err.message);
+    console.error("Baileys yüklenemedi:", err.message);
     process.exit(1);
   });
 const { isAdmin, isNumeric, mentionjid } = require("./utils");
@@ -340,7 +340,7 @@ Module(
         );
       }
     } catch (error) {
-      console.error("Error in quoted command:", error);
+      console.error("Yanıtlanan komutta hata:", error);
       return await message.sendReply("_⬇️ Alıntılanan mesaj yüklenemedi!_");
     }
   }
@@ -826,9 +826,9 @@ Module(
     const command = args[0]?.toLowerCase();
     if (!command || (command !== "all" && command !== "recent")) {
       return await message.sendReply("*Kullanım:*\n" +
-          "• `.getjids all` - Show all group JIDs\n" +
-          "• `.getjids recent` - Show recent chat JIDs (default 10)\n" +
-          "• `.getjids recent 15` - Show 15 recent chat JIDs"
+          "• `.getjids all` - Tüm grup JID'lerini göster\n" +
+          "• `.getjids recent` - Son sohbet JID'lerini göster (varsayılan 10)\n" +
+          "• `.getjids recent 15` - Son 15 sohbet JID'sini göster"
       );
     }
     if (command === "all") {
@@ -844,11 +844,11 @@ Module(
       for (let msgIndex = 0; msgIndex < totalMessages; msgIndex++) {
         const startIdx = msgIndex * chunkSize;
         const endIdx = Math.min(startIdx + chunkSize, totalChats);
-        let _msg = `*All Chat JIDs*\n`;
+        let _msg = `*Tüm Sohbet JID'leri*\n`;
         if (totalMessages > 1) {
-          _msg += `Part ${msgIndex + 1}/${totalMessages}: Chats ${
+          _msg += `Bölüm ${msgIndex + 1}/${totalMessages}: Sohbetler ${
             startIdx + 1
-          }-${endIdx} of ${totalChats}\n\n`;
+          }-${endIdx} / ${totalChats}\n\n`;
         }
         while (
           chatIndex < gruplar.length &&
@@ -859,7 +859,7 @@ Module(
           const count = chatIndex + 1;
           const groupData = allGroups[jid];
           const groupName = groupData ? groupData.subject : "Bilinmeyen Grup";
-          _msg += `_*${count}. 👥 Group:*_ \`${groupName}\`\n_JID:_ \`${jid}\`\n\n`;
+          _msg += `_*${count}. 👥 Grup:*_ \`${groupName}\`\n_JID:_ \`${jid}\`\n\n`;
           chatIndex++;
           if (chatIndex >= startIdx + chunkSize) break;
         }
@@ -869,7 +869,7 @@ Module(
           const dm = dmChats[i];
           const count = chatIndex + 1;
           const dmName = dm.name || "Bilinmiyor";
-          _msg += `_*${count}. 💬 Private*_: \`${dmName}\`\n_JID:_ \`${dm.jid}\`\n\n`;
+          _msg += `_*${count}. 💬 Özel:*_ \`${dmName}\`\n_JID:_ \`${dm.jid}\`\n\n`;
           chatIndex++;
         }
         await message.sendReply(_msg);
@@ -890,7 +890,7 @@ Module(
       try {
         allGroups = await message.client.groupFetchAllParticipating();
       } catch (error) {
-        console.error("Error fetching group data:", error);
+        console.error("Grup verisi alınırken hata:", error);
       }
       let _msg = `*Recent Chat JIDs*\n_Showing ${recentChats.length} most recent chats_\n\n`;
       for (let i = 0; i < recentChats.length; i++) {

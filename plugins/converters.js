@@ -28,7 +28,7 @@ const getFileType = async (buffer) => {
 
     return await fileType(buffer);
   } catch (error) {
-    console.log("file-type detection failed:", error);
+    console.log("Dosya türü algılanamadı:", error);
     return null;
   }
 };
@@ -64,7 +64,7 @@ Module(
         imagesToSend.push({ image: imageBuffer });
         successCount++;
       } catch (e) {
-        console.log(`Failed to buffer image ${i + 1}:`, e.message);
+        console.log(`${i + 1}. görsel tampona alınamadı:`, e.message);
         if (i === results.length - 1 && successCount < count) {
           let moreResults = await gis(splitInput[0], buffer, {
             page: Math.floor(i / 10) + 1,
@@ -88,12 +88,12 @@ Module(
         message.data
       );
     } catch (e) {
-      console.log("Album send failed:", e.message);
+      console.log("Albüm gönderilemedi:", e.message);
       for (const img of imagesToSend) {
         try {
           await message.sendMessage(img, "image", { quoted: message.data });
         } catch (sendErr) {
-          console.log("Failed to send individual image:", sendErr.message);
+          console.log("Tekil görsel gönderilemedi:", sendErr.message);
         }
       }
     }
@@ -159,7 +159,7 @@ Module(
             quoted: message.quoted,
           });
         } catch (err) {
-          console.error("Failed to convert album sticker:", err);
+          console.error("Albüm çıkartmaya dönüştürülemedi:", err);
         }
       }
       return;
@@ -223,7 +223,7 @@ Module(
             { quoted: message.quoted }
           );
         } catch (err) {
-          console.error("Failed to convert album mp3:", err);
+          console.error("Albüm MP3'e dönüştürülemedi:", err);
         }
       }
       return;
@@ -279,7 +279,7 @@ Module(
             { quoted: message.quoted }
           );
         } catch (err) {
-          console.error("Failed to slow album audio:", err);
+          console.error("Albüm sesi yavaşlatılamadı:", err);
         }
       }
       return;
@@ -344,7 +344,7 @@ Module(
             { quoted: message.quoted }
           );
         } catch (err) {
-          console.error("Failed to speed album audio:", err);
+          console.error("Albüm sesi hızlandırılamadı:", err);
         }
       }
       return;
@@ -397,7 +397,7 @@ Module(
             await message.sendMessage(audio, "audio", { quoted: message.data });
           });
         } catch (err) {
-          console.error("Failed to add bass to album audio:", err);
+          console.error("Albüm sesine bas eklenemedi:", err);
         }
       }
       return;
@@ -505,7 +505,7 @@ Module(
           );
         }
       } catch (e) {
-        console.error("AI TTS failed, falling back to gtts:", e);
+        console.error("Yapay zeka TTS başarısız, gtts kullanılıyor:", e);
         try {
           audio = await gtts(ttsMessage.trim(), LANG);
         } catch {
@@ -573,7 +573,7 @@ Module(
             caption: "_✅ Belgeye dönüştürüldü_",
           });
         } catch (err) {
-          console.error("Failed to convert album file to document:", err);
+          console.error("Albüm dosyası belgeye dönüştürülemedi:", err);
         }
       }
       return;
@@ -617,7 +617,7 @@ Module(
       try {
         fs.unlinkSync(filePath);
       } catch (e) {
-        console.log("Failed to delete temp file:", filePath);
+        console.log("Geçici dosya silinemedi:", filePath);
       }
 
       await message.edit(
@@ -626,7 +626,7 @@ Module(
         processingMsg.key
       );
     } catch (error) {
-      console.error("Doc conversion error:", error);
+      console.error("Belge dönüşüm hatası:", error);
       if (error.message.includes("download")) {
         await message.send(
           "_❌ Medya indirilemedi. Dosya bozuk veya süresi dolmuş olabilir_"
@@ -705,7 +705,7 @@ Module(
         caption: `_✅ İndirildi: ${url}_`,
       });
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Yükleme hatası:", error);
       if (error.code === "ECONNABORTED") {
         await message.send(
           "_⏱️ İndirme zaman aşımı. Dosya çok büyük veya sunucu yavaş olabilir_"
@@ -792,12 +792,12 @@ Module(
               processingMsg.key
             );
           } catch (e) {
-            console.error("Send error:", e);
+            console.error("Gönderim hatası:", e);
             await message.send("_⚠️ İşlendi ancak gönderilemedi_");
           }
         })
         .on("error", (err) => {
-          console.error("FFmpeg error:", err);
+          console.error("FFmpeg hatası:", err);
           message.send("_❌ Medya işlenemedi. Lütfen tekrar deneyin_");
           try {
             fs.unlinkSync(savedFile);
@@ -805,7 +805,7 @@ Module(
           } catch (e) {}
         });
     } catch (error) {
-      console.error("Square crop error:", error);
+      console.error("Kare kırpma hatası:", error);
       await message.send("_❌ Medya kare kırpma için işlenemedi_");
     }
   }
@@ -921,12 +921,12 @@ Module(
               processingMsg.key
             );
           } catch (e) {
-            console.error("Send error:", e);
+            console.error("Gönderim hatası:", e);
             await message.send("_⚠️ İşlendi ancak gönderilemedi_");
           }
         })
         .on("error", (err) => {
-          console.error("FFmpeg resize error:", err);
+          console.error("FFmpeg boyutlandırma hatası:", err);
           message.send(
             "_❌ Medya boyutu değiştirilemedi. En-boy oranını kontrol edip tekrar deneyin_"
           );
@@ -936,7 +936,7 @@ Module(
           } catch (e) {}
         });
     } catch (error) {
-      console.error("Resize error:", error);
+      console.error("Boyutlandırma hatası:", error);
       await message.send("_❌ Medya boyutlandırma için işlenemedi_");
     }
   }
@@ -1056,12 +1056,12 @@ Module(
               processingMsg.key
             );
           } catch (e) {
-            console.error("Send error:", e);
+            console.error("Gönderim hatası:", e);
             await message.send("_⚠️ İşlendi ancak gönderilemedi_");
           }
         })
         .on("error", (err) => {
-          console.error("FFmpeg compress error:", err);
+          console.error("FFmpeg sıkıştırma hatası:", err);
           message.send("_❌ Medya sıkıştırılamadı. Lütfen tekrar deneyin_");
           try {
             fs.unlinkSync(savedFile);
@@ -1069,7 +1069,7 @@ Module(
           } catch (e) {}
         });
     } catch (error) {
-      console.error("Compress error:", error);
+      console.error("Sıkıştırma hatası:", error);
       await message.send("_❌ Medya sıkıştırma için işlenemedi_");
     }
   }

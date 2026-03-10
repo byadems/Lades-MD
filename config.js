@@ -52,7 +52,7 @@ function applySQLiteResilience(sequelizeInstance) {
         });
       }
     } catch (error) {
-      logger.warn({ err: error }, "failed to apply sqlite pragmas");
+      logger.warn({ err: error }, "SQLite pragma ayarları uygulanamadı");
     }
   });
 
@@ -64,7 +64,7 @@ function applySQLiteResilience(sequelizeInstance) {
   // Ensure periodic flush of buffered message queries (every 1 hour)
   const _bufferFlushInterval = setInterval(async () => {
     if (bufferedMessageQueries.length > 0) {
-      logger.info(`Periodically flushing ${bufferedMessageQueries.length} buffered message queries to DB...`);
+      logger.info(`Periyodik: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
       const pending = [...bufferedMessageQueries];
       bufferedMessageQueries.length = 0;
       writeQueue.push(...pending);
@@ -88,7 +88,7 @@ function applySQLiteResilience(sequelizeInstance) {
         if (!isBuffered) { // only reject if it's an active awaiter
            if (reject) reject(error);
         } else {
-           logger.error({ err: error }, "Failed to execute buffered DB write query");
+           logger.error({ err: error }, "Bekleyen veritabanı yazma sorgusu çalıştırılamadı");
         }
       }
     }
@@ -99,7 +99,7 @@ function applySQLiteResilience(sequelizeInstance) {
   // Expose a flush function so that index.js can call it during shutdown
   sequelizeInstance.__flushBufferedQueries = async () => {
     if (bufferedMessageQueries.length > 0) {
-      logger.info(`Shutdown: Flushing ${bufferedMessageQueries.length} buffered message queries to DB...`);
+      logger.info(`Kapatma: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
       const pending = [...bufferedMessageQueries];
       bufferedMessageQueries.length = 0;
       writeQueue.push(...pending);
@@ -146,7 +146,7 @@ function applySQLiteResilience(sequelizeInstance) {
         
         // If buffer gets too huge, flush it before 1 hour
         if (bufferedMessageQueries.length > 200) {
-            logger.info(`Buffer reached 200 items, flushing early...`);
+            logger.info(`Tampon 200 öğeye ulaştı, erken yazma yapılıyor...`);
             const pending = [...bufferedMessageQueries];
             bufferedMessageQueries.length = 0;
             writeQueue.push(...pending);
@@ -459,7 +459,7 @@ Object.defineProperty(config, "loadFromDB", {
       }
     }
 
-    console.log(`- Loaded ${loadedCount} vars`);
+    console.log(`- Yüklenen değişken: ${loadedCount}`);
     return this;
   },
   writable: false,
@@ -501,7 +501,7 @@ Object.defineProperty(config, "debug", {
       dynamic: Array.from(dynamicValues.keys()),
       values: { ...baseConfig, ...Object.fromEntries(dynamicValues) },
     };
-    console.log("Config Debug Info:", result);
+    console.log("Yapılandırma hata ayıklama bilgisi:", result);
     return result;
   },
   writable: false,

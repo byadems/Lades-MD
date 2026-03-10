@@ -38,7 +38,7 @@ async function initChatbotData() {
       globalSystemPrompt = systemPrompt;
     }
   } catch (error) {
-    console.error("Error initializing chatbot data:", error);
+    console.error("Sohbet botu verisi başlatılamadı:", error);
   }
 }
 
@@ -52,7 +52,7 @@ async function saveChatbotData() {
     }
     await setVar("CHATBOT", enabledChats.join(","));
   } catch (error) {
-    console.error("Error saving chatbot data:", error);
+    console.error("Sohbet botu verisi kaydedilemedi:", error);
   }
 }
 
@@ -61,7 +61,7 @@ async function saveSystemPrompt(prompt) {
     globalSystemPrompt = prompt;
     await setVar("CHATBOT_SYSTEM_PROMPT", prompt);
   } catch (error) {
-    console.error("Error saving system prompt:", error);
+    console.error("Sistem istemi kaydedilemedi:", error);
   }
 }
 
@@ -76,7 +76,7 @@ async function imageToGenerativePart(imageBuffer) {
       },
     };
   } catch (error) {
-    console.error("Error processing image:", error.message);
+    console.error("Görsel işlenirken hata:", error.message);
     return null;
   }
 }
@@ -168,14 +168,14 @@ async function getAIResponse(message, chatJid, imageBuffer = null) {
       return "_❌ YZ'den beklenmeyen bir yanıt alındı. Lütfen tekrar deneyin._";
     }
   } catch (error) {
-    console.error("Error getting AI response:", error.message);
+    console.error("Yapay zeka yanıtı alınamadı:", error.message);
 
     if (error.response && error.response.status === 429) {
       const nextModelIndex = currentModelIndex + 1;
       if (nextModelIndex < models.length) {
         modelStates.set(chatJid, nextModelIndex);
         console.log(
-          `Switching to model: ${models[nextModelIndex]} for chat: ${chatJid}`
+          `Sohbet ${chatJid} için modele geçiliyor: ${models[nextModelIndex]}`
         );
         return "_⚠️ Oran sınırına ulaşıldı. Yedek modele geçildi. Lütfen tekrar deneyin._";
       } else {
@@ -184,7 +184,7 @@ async function getAIResponse(message, chatJid, imageBuffer = null) {
     }
 
     if (error.response) {
-      return `_❌ API Error: ${
+      return `_❌ API hatası: ${
         error.response.data?.error?.message || "Bilinmeyen hata"
       }_`;
     }
@@ -534,7 +534,7 @@ Module(
             responseText = "Bu görselde ne görüyorsun?";
           }
         } catch (error) {
-          console.error("Error downloading image:", error);
+          console.error("Görsel indirilemedi:", error);
           return await message.sendReply("_❌ Görsel indirilemedi. Lütfen tekrar deneyin._"
           );
         }
@@ -569,7 +569,7 @@ Module(
         await message.sendReply(aiResponse);
       }
     } catch (error) {
-      console.error("Error in message handler:", error);
+      console.error("Mesaj işleyicide hata:", error);
     }
   }
 );
@@ -592,7 +592,7 @@ Module(
           const imagePart = await imageToGenerativePart(buffer);
           if (imagePart) imageParts.push(imagePart);
         } catch (error) {
-          console.error("Error downloading image:", error);
+          console.error("Görsel indirilemedi:", error);
           return await message.sendReply("❌ Görsel indirilemedi.");
         }
         if (!prompt) prompt = "Bu görselde ne görüyorsun?";
@@ -607,7 +607,7 @@ Module(
               const imagePart = await imageToGenerativePart(buffer);
               if (imagePart) imageParts.push(imagePart);
             } catch (err) {
-              console.error("Error processing album image:", err);
+              console.error("Albüm görseli işlenirken hata:", err);
             }
           }
 
@@ -616,7 +616,7 @@ Module(
           }
           if (!prompt) prompt = "Bu görselleri benim için analiz et.";
         } catch (error) {
-          console.error("Error downloading album:", error);
+          console.error("Albüm indirilemedi:", error);
           return await message.sendReply("❌ Albüm indirilemedi.");
         }
       }
@@ -641,7 +641,7 @@ Module(
 
       await message.edit(fullText, message.jid, sent_msg.key);
     } catch (error) {
-      console.error("AI command error:", error.message);
+      console.error("Yapay zeka komut hatası:", error.message);
       if (sent_msg) {
         await message.edit("❌ AI API'si ile ilgili bir hata oluştu.", message.jid, sent_msg.key);
       } else {

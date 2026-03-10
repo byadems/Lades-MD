@@ -15,7 +15,7 @@ const WhatsappSession = sequelize.define('WhatsappSession', {
             try {
                 return rawValue ? JSON.parse(rawValue) : null;
             } catch (e) {
-                logger.error({ session: this.getDataValue('sessionId'), err: e }, `Error parsing sessionData from DB`);
+                logger.error({ session: this.getDataValue('sessionId'), err: e }, `Oturum verisi veritabanından ayrıştırılamadı`);
                 return null;
             }
         },
@@ -23,7 +23,7 @@ const WhatsappSession = sequelize.define('WhatsappSession', {
             try {
                 this.setDataValue('sessionData', value ? JSON.stringify(value) : null);
             } catch (e) {
-                logger.error({ session: this.getDataValue('sessionId') || (value && value.sessionIdFromPayload), err: e }, `Error stringifying sessionData for DB`);
+                logger.error({ session: this.getDataValue('sessionId') || (value && value.sessionIdFromPayload), err: e }, `Oturum verisi veritabanı için dizgeleştirilemedi`);
                 this.setDataValue('sessionData', null);
             }
         }
@@ -52,15 +52,15 @@ const BotVariable = sequelize.define('BotVariable', {
 async function initializeDatabase() {
     try {
         await sequelize.authenticate();
-        logger.info('Database connection established.');
+        logger.info('Veritabanı bağlantısı kuruldu.');
         await WhatsappSession.sync();
-        logger.info('WhatsappSession table synced.');
+        logger.info('WhatsappSession tablosu eşlendi.');
 
         await BotVariable.sync();
-        logger.info('BotVariable table synced.');
+        logger.info('BotVariable tablosu eşlendi.');
 
     } catch (error) {
-        logger.error('DB initialization error:', error);
+        logger.error('Veritabanı başlatma hatası:', error);
         throw error;
     }
 }
@@ -73,7 +73,7 @@ async function migrateSudoToLID(client) {
             const phoneNumbers = config.SUDO.split(',').map(n => n.trim()).filter(n => n);
             const lids = [];
             
-            logger.info(`Migrating ${phoneNumbers.length} SUDO phone numbers to LIDs...`);
+            logger.info(`${phoneNumbers.length} SUDO telefon numarası LID’lere taşınıyor...`);
             
             for (const phone of phoneNumbers) {
                 try {
@@ -82,12 +82,12 @@ async function migrateSudoToLID(client) {
                     
                     if (lid) {
                         lids.push(lid);
-                        logger.info(`Migrated ${phone} -> ${lid}`);
+                        logger.info(`Taşındı: ${phone} -> ${lid}`);
                     } else {
-                        logger.warn(`Could not get LID for ${phone}, skipping`);
+                        logger.warn(`${phone} için LID alınamadı, atlanıyor`);
                     }
                 } catch (e) {
-                    logger.error(`Error migrating ${phone}:`, e.message);
+                    logger.error(`${phone} taşınırken hata:`, e.message);
                 }
             }
             
@@ -98,10 +98,10 @@ async function migrateSudoToLID(client) {
                 });
 
                 config.SUDO_MAP = JSON.stringify(lids);
-                logger.info(`Successfully migrated ${lids.length} SUDO entries to SUDO_MAP`);
+                logger.info(`${lids.length} SUDO kaydı SUDO_MAP'e taşındı`);
             }
         } catch (error) {
-            logger.error('SUDO migration error:', error);
+            logger.error('SUDO taşıma hatası:', error);
         }
     }
 }

@@ -160,7 +160,7 @@ Module(
         `✅ *Mesaj başarıyla zamanlandı!*\n\n📅 *Zaman:* ${formattedTime}\n⏰ *Şu andan itibaren:* ${timeFromNow}\n📱 *Hedef:* ${jid}`
       );
     } catch (error) {
-      console.error("Schedule error:", error);
+      console.error("Zamanlama hatası:", error);
       await m.sendReply("_❌ Mesaj zamanlanamadı. Lütfen tekrar deneyin._");
     }
   }
@@ -198,7 +198,7 @@ Module(
       response += '_Zamanlanmış mesajı iptal etmek için "cancel <id>" kullanın_';
       await m.sendReply(response);
     } catch (error) {
-      console.error("List scheduled error:", error);
+      console.error("Zamanlanmış listeleme hatası:", error);
       await m.sendReply("_❌ Zamanlanmış mesajlar alınamadı_");
     }
   }
@@ -228,7 +228,7 @@ Module(
         await m.sendReply("❌ *Mesaj bulunamadı veya zaten gönderildi*");
       }
     } catch (error) {
-      console.error("Cancel scheduled error:", error);
+      console.error("Zamanlanmış iptal hatası:", error);
       await m.sendReply("_❌ Zamanlanmış mesaj iptal edilemedi_");
     }
   }

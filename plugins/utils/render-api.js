@@ -2,12 +2,12 @@ const axios = require("axios");
 
 async function deployLatestCommit(serviceId, apiKey) {
   if (!serviceId) {
-    console.error("Error: RENDER_SERVICE_ID is not set.");
+    console.error("Hata: RENDER_SERVICE_ID ayarlanmamış.");
     return;
   }
 
   if (!apiKey) {
-    console.error("Error: RENDER_API_KEY is not set.");
+    console.error("Hata: RENDER_API_KEY ayarlanmamış.");
     return;
   }
 
@@ -20,10 +20,10 @@ async function deployLatestCommit(serviceId, apiKey) {
         Authorization: `Bearer ${apiKey}`,
       },
     });
-    console.log("Autoscaling disabled:", disableRes.data || "No content");
+    console.log("Otomatik ölçeklendirme kapatıldı:", disableRes.data || "İçerik yok");
   } catch (err) {
     console.error(
-      "Error disabling autoscaling:",
+      "Otomatik ölçeklendirme kapatılamadı:",
       err.response?.data || err.message
     );
     return;
@@ -48,20 +48,20 @@ async function deployLatestCommit(serviceId, apiKey) {
 
     const deployInfo = response.data;
 
-    console.log("\nDeployment initiated successfully!");
-    console.log(`Deploy ID: ${deployInfo.id}`);
-    console.log(`Status: ${deployInfo.status}`);
-    console.log(`Triggered by: ${deployInfo.trigger}`);
-    if (deployInfo.commit) {
-      console.log(`Commit SHA: ${deployInfo.commit.id}`);
-      console.log(`Commit Message: ${deployInfo.commit.message}`);
-    }
-    console.log(
-      `Render Dashboard Link: https://dashboard.render.com/web/${serviceId}/deploys/${deployInfo.id}`
-    );
+console.log("\nDağıtım başarıyla başlatıldı!");
+   console.log(`Dağıtım ID: ${deployInfo.id}`);
+   console.log(`Durum: ${deployInfo.status}`);
+   console.log(`Tetikleyen: ${deployInfo.trigger}`);
+   if (deployInfo.commit) {
+     console.log(`Commit SHA: ${deployInfo.commit.id}`);
+     console.log(`Commit Mesajı: ${deployInfo.commit.message}`);
+   }
+   console.log(
+     `Render Panel: https://dashboard.render.com/web/${serviceId}/deploys/${deployInfo.id}`
+   );
   } catch (err) {
     console.error(
-      "Error during deployment:",
+      "Dağıtım sırasında hata:",
       err.response?.data || err.message
     );
   }

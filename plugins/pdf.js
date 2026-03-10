@@ -19,7 +19,7 @@ const getFileType = async (buffer) => {
 
     return await fileType(buffer);
   } catch (error) {
-    console.log("file-type detection failed:", error);
+    console.log("Dosya türü algılanamadı:", error);
     return null;
   }
 };
@@ -92,7 +92,7 @@ Module(
       });
 
       pdfWriteStream.on("error", async (error) => {
-        await message.sendReply(`_PDF conversion failed: ${error.message}_`);
+        await message.sendReply(`_PDF dönüşümü başarısız: ${error.message}_`);
       });
     } else if (message.reply_message && message.reply_message.album) {
       // handle album
@@ -121,7 +121,7 @@ Module(
             fs.copyFileSync(file, newImagePath);
           }
         } catch (err) {
-          console.error("Failed to add album image to PDF:", err);
+          console.error("Albüm görseli PDF'e eklenemedi:", err);
         }
       }
 

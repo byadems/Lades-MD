@@ -17,7 +17,7 @@ const baileysPromise = loadBaileys()
     } = baileys);
   })
   .catch((err) => {
-    console.error("Failed to load baileys:", err.message);
+    console.error("Baileys yüklenemedi:", err.message);
     process.exit(1);
   });
 const Base = require("./base");
@@ -218,7 +218,7 @@ class Message extends Base {
               oggBuffer = await convertToOgg(inputBuffer);
             } catch (e) {
               console.error(
-                "PTT conversion failed, falling back to original content:",
+                "Sesli mesaj dönüşümü başarısız, orijinal içerik kullanılıyor:",
                 e
               );
             }
@@ -247,7 +247,7 @@ class Message extends Base {
             realOptions
           );
         } catch (err) {
-          console.error("Error preparing ptt audio:", err);
+          console.error("Sesli mesaj hazırlama hatası:", err);
           return await this.client.sendMessage(
             this.jid,
             { audio: content, mimetype: "audio/ogg", ...messageOptions },

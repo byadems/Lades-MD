@@ -239,16 +239,16 @@ Module(
         );
       }
 
-      let responseMsg = `_Inactive members (${durationStr}+):_ *${inactiveMembers.length}*\n\n`;
+      let responseMsg = `_Aktif olmayan üyeler (${durationStr}+):_ *${inactiveMembers.length}*\n\n`;
 
       if (dataWarning) {
-        responseMsg += `⚠️ _Warning: Database only has data from ${timeSince(
+        responseMsg += `⚠️ _Uyarı: Veritabanında sadece ${timeSince(
           oldestMessageDate
-        )}. Members who were active before this time may appear as inactive._\n\n`;
+        )} tarihinden itibaren veri var. Bu tarihten önce aktif olan üyeler pasif görünebilir._\n\n`;
       }
 
       if (shouldKick) {
-        responseMsg += `_❗❗ Kicking ${inactiveMembers.length} inactive members. This action cannot be undone! ❗❗_\n\n`;
+        responseMsg += `_❗❗ ${inactiveMembers.length} pasif üye gruptan atılıyor. Bu işlem geri alınamaz! ❗❗_\n\n`;
 
         for (let i = 0; i < Math.min(inactiveMembers.length, 10); i++) {
           const member = inactiveMembers[i];
@@ -258,7 +258,7 @@ Module(
         }
 
         if (inactiveMembers.length > 10) {
-          responseMsg += `... ve ${inactiveMembers.length - 10} more\n`;
+          responseMsg += `... ve ${inactiveMembers.length - 10} kişi daha\n`;
         }
 
         responseMsg += `\n_5 saniye içinde atma işlemi başlayacak..._`;
@@ -287,7 +287,7 @@ Module(
               );
             }
           } catch (error) {
-            console.error(`Failed to kick ${member.jid}:`, error);
+            console.error(`${member.jid} gruptan atılamadı:`, error);
           }
         }
 
@@ -413,7 +413,7 @@ Module(
           mentions: mentions,
         });
       } catch (error) {
-        console.error("Error in users command:", error);
+        console.error("Kullanıcılar komutunda hata:", error);
         return await message.sendReply("_⚠️ Kullanıcı verisi alınamadı. Lütfen tekrar deneyin._"
         );
       }

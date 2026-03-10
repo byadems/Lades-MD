@@ -431,7 +431,7 @@ Module(
             await sendWelcomeMessage(message, parsedMessage);
           }
         } catch (error) {
-          console.error("Error sending welcome message:", error);
+          console.error("Hoş geldin mesajı gönderilirken hata:", error);
         }
       }
     }
@@ -449,7 +449,7 @@ Module(
             await sendWelcomeMessage(message, parsedMessage);
           }
         } catch (error) {
-          console.error("Error sending goodbye message:", error);
+          console.error("Hoşça kal mesajı gönderilirken hata:", error);
         }
       }
     }

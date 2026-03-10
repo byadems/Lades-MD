@@ -112,7 +112,7 @@ Module(
       try {
         var result = await webp2mp4(q, __dirname + "/temp/output.mp4");
       } catch (e) {
-        console.log(e);
+        console.log("Take hatası:", e);
         return await m.sendReply("*❌ Başarısız*");
       }
       await m.client.sendMessage(

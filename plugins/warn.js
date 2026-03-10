@@ -116,7 +116,7 @@ Module(
         });
       }
     } catch (error) {
-      console.error("Warning error:", error);
+      console.error("Uyarı hatası:", error);
       await message.sendReply("_⚠️ Uyarı eklenemedi! Lütfen tekrar deneyin._");
     }
   }
@@ -187,7 +187,7 @@ Module(
         mentions: [targetUser, ...uyarı.slice(0, 5).map((w) => w.warnedBy)],
       });
     } catch (error) {
-      console.error("Warning check error:", error);
+      console.error("Uyarı kontrol hatası:", error);
       await message.sendReply("_⚠️ Uyarılar alınamadı!_");
     }
   }
@@ -254,7 +254,7 @@ Module(
         await message.sendReply("_❌ Uyarı kaldırılamadı!_");
       }
     } catch (error) {
-      console.error("Warning removal error:", error);
+      console.error("Uyarı kaldırma hatası:", error);
       await message.sendReply("_❌ Uyarı kaldırılamadı!_");
     }
   }
@@ -320,7 +320,7 @@ Module(
         await message.sendReply("_⚠️ Uyarılar sıfırlanamadı!_");
       }
     } catch (error) {
-      console.error("Warning reset error:", error);
+      console.error("Uyarı sıfırlama hatası:", error);
       await message.sendReply("_⚠️ Uyarılar sıfırlanamadı!_");
     }
   }
@@ -399,7 +399,7 @@ Module(
         mentions,
       });
     } catch (error) {
-      console.error("Warning list error:", error);
+      console.error("Uyarı listeleme hatası:", error);
       await message.sendReply("_❌ Uyarı listesi alınamadı!_");
     }
   }
@@ -431,7 +431,7 @@ Module(
           `_Kullanıcılar artık ${newLimit} uyarı sonrasında atılacak._`
       );
     } catch (error) {
-      console.error("Set warn limit error:", error);
+      console.error("Uyarı limiti ayarlama hatası:", error);
       await message.sendReply("_❌ Uyarı sınırı güncellenemedi!_");
     }
   }
@@ -490,7 +490,7 @@ Module(
 
       await message.sendReply(stats);
     } catch (error) {
-      console.error("Warning stats error:", error);
+      console.error("Uyarı istatistik hatası:", error);
       await message.sendReply("_❌ Uyarı istatistikleri alınamadı!_");
     }
   }

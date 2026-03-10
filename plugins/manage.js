@@ -414,7 +414,7 @@ Module(
         mentions: [targetLid],
       });
     } catch (error) {
-      console.error("setsudo error:", error);
+      console.error("Yetkili ekleme hatası:", error);
       await m.sendReply(`_Yetkili ayarlama hatası: ${error.message}_`);
     }
   }
@@ -508,7 +508,7 @@ Module(
         mentions: [targetLid],
       });
     } catch (error) {
-      console.error("delsudo error:", error);
+      console.error("Yetkili kaldırma hatası:", error);
       await m.sendReply(`_Yetkili kaldırma hatası: ${error.message}_`);
     }
   }
@@ -1021,7 +1021,7 @@ Module(
           );
       }
     } catch (error) {
-      console.error("Antilink error:", error);
+      console.error("Antilink hatası:", error);
       return await message.sendReply("_❌ Antilink ayarları güncellenirken bir hata oluştu._"
       );
     }
@@ -1498,7 +1498,7 @@ Module(
                 );
               }
             } catch (error) {
-              console.error("Antilink warn error:", error);
+              console.error("Antilink uyarı hatası:", error);
               await message.sendMessage(customMessage, "text", {
                 mentions: [usr],
               });
@@ -1593,7 +1593,7 @@ Module(
         const readMore = String.fromCharCode(8206).repeat(4001);
         if (e)
           await message.sendMessage(
-            `_ ❌ Error:_\n${readMore}` + util.format(e),
+            `_❌ Hata:_\n${readMore}` + util.format(e),
             "text"
           );
       }

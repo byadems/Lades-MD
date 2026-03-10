@@ -78,7 +78,7 @@ Module(
             allMediaUrls.push(...downloadResult);
           }
         } catch (err) {
-          console.error("Error downloading from:", url, err?.message);
+          console.error("İndirme hatası:", url, err?.message);
         }
       }
 
@@ -112,7 +112,7 @@ Module(
         message.data
       );
     } catch (err) {
-      console.error("Insta command error:", err?.message || err);
+      console.error("Instagram komut hatası:", err?.message || err);
       return await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
       );
     }
@@ -140,7 +140,7 @@ Module(
       const { url } = await fb(videoLink);
       return await message.sendReply({ url }, "video");
     } catch (e) {
-      console.error("Facebook download error:", e.message);
+      console.error("Facebook indirme hatası:", e.message);
       return await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
       );
     }
@@ -172,13 +172,13 @@ Module(
     }
 
     await message.sendMessage({ url: accountInfo.profile_pic }, "image", {
-      caption: `_*Name:*_ ${accountInfo.full_name}\n_*Followers:*_ ${
+      caption: `_*İsim:*_ ${accountInfo.full_name}\n_*Takipçi:*_ ${
         accountInfo.followers
-      }\n_*Following:*_ ${accountInfo.following}\n_*Bio:*_ ${
+      }\n_*Takip:*_ ${accountInfo.following}\n_*Biyografi:*_ ${
         accountInfo.bio
-      }\n_*Private account:*_ ${
+      }\n_*Gizli hesap:*_ ${
         accountInfo.is_private ? "Evet" : "Hayır"
-      } \n_*Posts:*_ ${accountInfo.posts}`,
+      }\n_*Gönderi:*_ ${accountInfo.posts}`,
       quoted: message.data,
     });
   }
@@ -230,7 +230,7 @@ Module(
         ? { image: storyMediaUrl }
         : { video: storyMediaUrl };
     });
-    albumObject[0].caption = `_Stories from ${userIdentifier}_`;
+    albumObject[0].caption = `_${userIdentifier} hikayeleri_`;
     return await message.client.albumMessage(
       message.jid,
       albumObject,
@@ -259,7 +259,7 @@ Module(
       try {
         pinterestResult = await pinterestDl(userQuery);
       } catch (err) {
-        console.error("pinterestDl error:", err?.message || err);
+        console.error("Pinterest indirme hatası:", err?.message || err);
         return await message.sendReply("_❌ Sunucu hatası_");
       }
 
@@ -287,7 +287,7 @@ Module(
         }
         searchResults = res.result;
       } catch (err) {
-        console.error("pinterestSearch error:", err?.message || err);
+        console.error("Pinterest arama hatası:", err?.message || err);
         return await message.sendReply("_❌ Pinterest'te arama yaparken sunucu hatası_"
         );
       }
@@ -300,7 +300,7 @@ Module(
       const imagesToSend = searchResults
         .slice(0, toDownload)
         .map((url) => ({ image: url }));
-      imagesToSend[0].caption = `_Pinterest results for ${searchQuery}_`;
+      imagesToSend[0].caption = `_Pinterest: ${searchQuery} sonuçları_`;
       try {
         await message.client.albumMessage(
           message.jid,
@@ -309,7 +309,7 @@ Module(
         );
       } catch (error) {
         console.log(
-          "Album send failed, falling back to individual sends:",
+          "Albüm gönderilemedi, tekil gönderim deneniyor:",
           error
         );
         for (const url of searchResults) {
@@ -317,7 +317,7 @@ Module(
             await message.sendMessage({ url }, "image");
           } catch (error) {
             console.error(
-              "Error downloading pinterest item:",
+              "Pinterest öğesi indirilemedi:",
               error?.message || error
             );
           }

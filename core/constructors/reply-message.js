@@ -7,7 +7,7 @@ const baileysPromise = loadBaileys()
     ({ downloadMediaMessage } = baileys);
   })
   .catch((err) => {
-    console.error("Failed to load baileys:", err.message);
+    console.error("Baileys yüklenemedi:", err.message);
     process.exit(1);
   });
 const fs = require("fs");
@@ -145,7 +145,7 @@ class ReplyMessage extends Base {
             result.images.push(filename);
           }
         } catch (err) {
-          console.error("Failed to download album image:", err);
+          console.error("Albüm görseli indirilemedi:", err);
         }
       }
 
@@ -172,7 +172,7 @@ class ReplyMessage extends Base {
             result.videos.push(filename);
           }
         } catch (err) {
-          console.error("Failed to download album video:", err);
+          console.error("Albüm videosu indirilemedi:", err);
         }
       }
 

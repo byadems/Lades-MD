@@ -14,7 +14,7 @@ function getMentionReply() {
   try {
     return config.MENTION_REPLY ? JSON.parse(config.MENTION_REPLY) : null;
   } catch (error) {
-    console.error("Error parsing mention reply:", error);
+    console.error("Etiket yanıtı ayrıştırma hatası:", error);
     return null;
   }
 }
@@ -23,7 +23,7 @@ async function setMentionReply(data) {
   try {
     return await setVar("MENTION_REPLY", JSON.stringify(data));
   } catch (error) {
-    console.error("Error setting mention reply:", error);
+    console.error("Etiket yanıtı ayarlama hatası:", error);
     return false;
   }
 }
@@ -32,7 +32,7 @@ async function deleteMentionReply() {
   try {
     return await delVar("MENTION_REPLY");
   } catch (error) {
-    console.error("Error deleting mention reply:", error);
+    console.error("Etiket yanıtı silme hatası:", error);
     return false;
   }
 }
@@ -160,7 +160,7 @@ Module(
               return await message.sendReply("⚙️ Bahsetme yanıtı ayarlanamadı!");
             }
           } catch (error) {
-            console.error("Error setting mention reply:", error);
+            console.error("Etiket yanıtı ayarlama hatası:", error);
             return await message.sendReply("❌ Bahsetme yanıtı ayarlanırken hata oluştu! Lütfen tekrar deneyin."
             );
           }
@@ -319,7 +319,7 @@ Module(
           break;
       }
     } catch (error) {
-      console.error("Error in auto mention reply:", error);
+      console.error("Otomatik etiket yanıtında hata:", error);
     }
   }
 );

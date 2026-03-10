@@ -41,19 +41,19 @@ async function parseWelcomeMessage(template, messageObject, participants = []) {
           profilePicBuffer = await getBuffer(ppUrl);
         }
       } catch (error) {
-        console.log("Error fetching profile picture:", error);
+        console.log("Profil resmi alınamadı:", error);
         try {
-          console.log("Attempting fallback to group picture...");
+          console.log("Grup resmine yedek geçiliyor...");
           const gppUrl = await messageObject.client.profilePictureUrl(
             messageObject.jid,
             "image"
           );
           if (gppUrl) {
             profilePicBuffer = await getBuffer(gppUrl);
-            console.log("Successfully used group picture as fallback");
+            console.log("Grup resmi yedek olarak kullanıldı");
           }
         } catch (fallbackError) {
-          console.log("Fallback to group picture also failed:", fallbackError);
+          console.log("Grup resmine yedek geçiş de başarısız:", fallbackError);
         }
       }
       parsedMessage = parsedMessage.replace(/\$pp/g, "").trim();
@@ -68,7 +68,7 @@ async function parseWelcomeMessage(template, messageObject, participants = []) {
           groupPicBuffer = await getBuffer(gppUrl);
         }
       } catch (error) {
-        console.log("Error fetching group picture:", error);
+        console.log("Grup resmi alınamadı:", error);
       }
       parsedMessage = parsedMessage.replace(/\$gpp/g, "").trim();
     }
@@ -79,7 +79,7 @@ async function parseWelcomeMessage(template, messageObject, participants = []) {
       groupPic: groupPicBuffer,
     };
   } catch (error) {
-    console.error("Error parsing welcome message:", error);
+    console.error("Hoş geldin mesajı ayrıştırma hatası:", error);
     return null;
   }
 }
@@ -114,7 +114,7 @@ async function sendWelcomeMessage(messageObject, parsedMessage) {
       });
     }
   } catch (error) {
-    console.error("Error sending welcome message:", error);
+    console.error("Hoş geldin mesajı gönderme hatası:", error);
   }
 }
 module.exports = {
