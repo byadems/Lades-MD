@@ -1,6 +1,7 @@
 const { Module } = require("../main");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 const {
   downloadVideo,
   downloadAudio,
@@ -405,16 +406,16 @@ Module(
 
 Module(
   {
-    pattern: "play ?(.*)",
+    pattern: "şarkı ?(.*)",
     fromMe: fromMe,
-    desc: "YouTube araması veya bağlantısı üzerinden ses oynat",
-    usage: ".play <şarkı adı veya bağlantı>",
+    desc: "YouTube araması veya bağlantısı üzerinden ses oynat (yedek yöntem otomatik)",
+    usage: ".şarkı <şarkı adı veya bağlantı>",
     use: "download",
   },
   async (message, match) => {
-    let input = match[1] || message.reply_message?.text;
+    let input = (match[1] || message.reply_message?.text || "").trim();
     if (!input) {
-      return await message.sendReply("_⚠️ Lütfen şarkı adını veya bağlantısını verin!_\n_Örnek: .play sezen aksu_"
+      return await message.sendReply("_⚠️ Lütfen şarkı adını veya bağlantısını verin!_\n_Örnek: .şarkı sezen aksu_"
       );
     }
 
@@ -431,7 +432,6 @@ Module(
             urlMatch[0].includes("youtu.be"))
         ) {
           url = urlMatch[0];
-          // Convert YouTube Shorts URL to regular watch URL if needed
           if (url.includes("youtube.com/shorts/")) {
             const shortId = url.match(
               /youtube\.com\/shorts\/([A-Za-z0-9_-]+)/
@@ -523,15 +523,62 @@ Module(
         }
       }
     } catch (error) {
-      console.error("Çalma hatası:", error);
-      if (downloadMsg) {
-        await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
-      } else {
-        await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
+      console.error("Çalma hatası, yedek yöntem deneniyor:", error.message);
+      if (audioPath && fs.existsSync(audioPath)) {
+        try {
+          fs.unlinkSync(audioPath);
+        } catch (_) {}
       }
 
-      if (audioPath && fs.existsSync(audioPath)) {
-        fs.unlinkSync(audioPath);
+      try {
+        if (!downloadMsg) {
+          downloadMsg = await message.sendReply("_🔍 Yedek yöntem deneniyor..._");
+        } else {
+          await message.edit("_🔍 Yedek yöntem deneniyor..._", message.jid, downloadMsg.key);
+        }
+
+        let query = input.trim();
+        const urlMatch = input.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]+)/);
+        if (urlMatch) {
+          query = `https://www.youtube.com/watch?v=${urlMatch[1]}`;
+        }
+
+        const apiUrl = `https://api.nexray.web.id/downloader/ytplay?q=${encodeURIComponent(query)}`;
+        const { data } = await axios.get(apiUrl, { timeout: 60000 });
+
+        if (!data?.status || !data?.result?.download_url) {
+          return await message.edit(
+            "_❌ Sonuç bulunamadı!_",
+            message.jid,
+            downloadMsg.key
+          );
+        }
+
+        const { title, duration, download_url } = data.result;
+        await message.edit(
+          `_📤 *${title}* gönderiliyor..._`,
+          message.jid,
+          downloadMsg.key
+        );
+
+        await message.client.sendMessage(message.jid, {
+          audio: { url: download_url },
+          mimetype: "audio/mpeg",
+          fileName: `${title}.mp3`,
+        }, { quoted: message.data });
+
+        await message.edit(
+          `_✅ *${title}* hazır!_`,
+          message.jid,
+          downloadMsg.key
+        );
+      } catch (fallbackError) {
+        console.error("Yedek yöntem hatası:", fallbackError.message);
+        if (downloadMsg) {
+          await message.edit("_❌ İndirme başarısız! Farklı şekilde deneyin._", message.jid, downloadMsg.key);
+        } else {
+          await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
+        }
       }
     }
   }
