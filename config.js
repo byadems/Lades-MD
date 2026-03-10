@@ -269,6 +269,7 @@ const SESSION = SESSION_STRING
 
 const settingsMenu = [
   { title: "DM anti-spam engelleyici", env_var: "PM_ANTISPAM" },
+  { title: "Komutları paralel çalıştır (bloklama yok)", env_var: "PARALLEL_COMMANDS" },
   //{ title: "Komutlara otomatik tepki (emoji) ver", env_var: "CMD_REACTION" },
   { title: "Tüm mesajları otomatik okundu olarak işaretle", env_var: "READ_MESSAGES" },
   { title: "Komut mesajlarını otomatik okundu olarak işaretle", env_var: "READ_COMMAND" },
@@ -349,6 +350,8 @@ const baseConfig = {
       : process.env.AUDIO_DATA,
   TAKE_KEY: process.env.TAKE_KEY || "",
   CMD_REACTION: convertToBool(process.env.CMD_REACTION) || true,
+  /** Komutları paralel çalıştır (bir işlem bitmeden diğerine geçebilir) */
+  PARALLEL_COMMANDS: convertToBool(process.env.PARALLEL_COMMANDS) || true,
   MODE: process.env.MODE || "private",
   WARN: process.env.WARN || "3",
   ANTILINK_WARN: process.env.ANTILINK_WARN || "",

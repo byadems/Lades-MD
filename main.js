@@ -51,6 +51,14 @@ function Module(info, func) {
     "start",
   ];
 
+  const wrappedFunc = config.PARALLEL_COMMANDS
+    ? async (...args) => {
+        Promise.resolve(func(...args)).catch((e) =>
+          console.error("Komut hatası:", e?.message || e)
+        );
+      }
+    : func;
+
   const commandInfo = {
     fromMe: info.fromMe ?? config.isPrivate,
     desc: info.desc ?? "",
@@ -59,7 +67,7 @@ function Module(info, func) {
     dontAddCommandList: info.dontAddCommandList ?? false,
     warn: info.warn ?? "",
     use: info.use ?? "",
-    function: func,
+    function: wrappedFunc,
   };
 
   if (info.on === undefined && info.pattern === undefined) {
