@@ -343,22 +343,21 @@ Module(
     const botName = infoParts[0] || "Botum";
     const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = VERSION;
-    // Görsel URL: 4 parçalı (ad;sahip;telefon;url) veya 3 parçalı (ad;sahip;url) format desteklenir
+    // Görsel: Sadece Northflank/env'de HTTP URL ayarlıysa dış kaynak kullanılır. Aksi halde repo içi varsayılan dosya.
     const imagePart = infoParts.find((p) => (p || "").trim().startsWith("http"));
-    let botImageLink = (imagePart || infoParts[2] || "").trim();
-    const isVarsayilan =
-      !botImageLink ||
-      botImageLink === "default" ||
-      botImageLink === "varsayılan" ||
-      !botImageLink.startsWith("http");
-    const defaultLogoPath = path.join(__dirname, "utils", "images", "default.png");
+    const botImageUrl = (imagePart || "").trim();
+    const imagesDir = path.join(__dirname, "utils", "images");
+    const localCandidates = ["varsayılan.jpg", "varsayılan.png", "default.png"];
     let imagePayload;
-    if (isVarsayilan && fs.existsSync(defaultLogoPath)) {
-      imagePayload = fs.readFileSync(defaultLogoPath);
-    } else if (isVarsayilan) {
-      imagePayload = { url: "https://i.ibb.co/0Rb3CrkM/Lades-Bot-Logo.png" };
+    if (botImageUrl && botImageUrl.startsWith("http")) {
+      imagePayload = { url: botImageUrl };
     } else {
-      imagePayload = { url: botImageLink };
+      const localPath = localCandidates.find((f) =>
+        fs.existsSync(path.join(imagesDir, f))
+      );
+      imagePayload = localPath
+        ? fs.readFileSync(path.join(imagesDir, localPath))
+        : null;
     }
 
     const menu = `╭═══〘 \`${botName}\` 〙═══⊷❍
@@ -382,15 +381,17 @@ Module(
 
 ${cmdmenu}`;
     try {
-      await message.client.sendMessage(message.jid, {
-        image: imagePayload,
-        caption: menu,
-      });
+      if (imagePayload) {
+        await message.client.sendMessage(message.jid, {
+          image: imagePayload,
+          caption: menu,
+        });
+      } else {
+        await message.client.sendMessage(message.jid, { text: menu });
+      }
     } catch (error) {
       console.error("Menü görseli gönderilirken hata:", error);
-      await message.client.sendMessage(message.jid, {
-        text: menu,
-      });
+      await message.client.sendMessage(message.jid, { text: menu });
     }
   }
 );
