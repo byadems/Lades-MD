@@ -56,7 +56,7 @@ Module(
         remoteVersion = await getRemoteVersion();
       } catch (error) {
         return await message.edit(
-          "_Failed to check remote version. Please try again later._",
+          "_Uzak sürüm kontrol edilemedi. Lütfen daha sonra tekrar deneyin._",
           message.jid,
           processingMsg.key
         );
@@ -67,7 +67,7 @@ Module(
 
       if (!hasCommits && !versionChanged) {
         return await message.edit(
-          "_Bot is up to date!_",
+          "_Bot güncel!_",
           message.jid,
           processingMsg.key
         );
@@ -80,23 +80,23 @@ Module(
         let updateInfo = "";
 
         if (isStableUpdate) {
-          updateInfo = `*_UPDATE AVAILABLE_*\n\n`;
-          updateInfo += `📦 Current version: *${localVersion}*\n`;
-          updateInfo += `📦 New version: *${remoteVersion}*\n\n`;
-          updateInfo += `*_CHANGELOG:_*\n\n`;
+          updateInfo = `*_GÜNCELLEME MEVCUT_*\n\n`;
+          updateInfo += `📦 Mevcut sürüm: *${localVersion}*\n`;
+          updateInfo += `📦 Yeni sürüm: *${remoteVersion}*\n\n`;
+          updateInfo += `*_DEĞİŞİKLİK GÜNLÜĞÜ:_*\n\n`;
           for (let i in commits.all) {
             updateInfo += `${parseInt(i) + 1}• *${commits.all[i].message}*\n`;
           }
-          updateInfo += `\n_Kullanmak için "${handler}update start" to apply the update_`;
+          updateInfo += `\n_Güncellemeyi uygulamak için "${handler}update start" kullanın_`;
         } else if (isBetaUpdate) {
-          updateInfo = `*_BETA UPDATE AVAILABLE_*\n\n`;
-          updateInfo += `📦 Current version: *${localVersion}*\n`;
-          updateInfo += `⚠️ New commits available (version unchanged)\n\n`;
-          updateInfo += `*_CHANGELOG:_*\n\n`;
+          updateInfo = `*_BETA GÜNCELLEMESİ MEVCUT_*\n\n`;
+          updateInfo += `📦 Mevcut sürüm: *${localVersion}*\n`;
+          updateInfo += `⚠️ Yeni commitler mevcut (sürüm değişmedi)\n\n`;
+          updateInfo += `*_DEĞİŞİKLİK GÜNLÜĞÜ:_*\n\n`;
           for (let i in commits.all) {
             updateInfo += `${parseInt(i) + 1}• *${commits.all[i].message}*\n`;
           }
-          updateInfo += `\n_Kullanmak için "${handler}update beta" to apply beta updates_`;
+          updateInfo += `\n_Beta güncellemelerini uygulamak için "${handler}update beta" kullanın_`;
         }
 
         return await message.edit(updateInfo, message.jid, processingMsg.key);
@@ -106,20 +106,20 @@ Module(
         if (!isStableUpdate) {
           if (isBetaUpdate) {
             return await message.edit(
-              `_Only beta updates available. Use "${handler}update beta" to apply them._`,
+              `_Sadece beta güncellemeleri mevcut. Uygulamak için "${handler}update beta" kullanın._`,
               message.jid,
               processingMsg.key
             );
           }
           return await message.edit(
-            "_No stable updates available!_",
+            "_Kararlı güncelleme mevcut değil!_",
             message.jid,
             processingMsg.key
           );
         }
 
         await message.edit(
-          "_Starting update..._",
+          "_Güncelleme başlatılıyor..._",
           message.jid,
           processingMsg.key
         );
@@ -138,7 +138,7 @@ Module(
             config.RENDER_API_KEY
           );
           return await message.edit(
-            "_Render deploy started!_",
+            "_Render dağıtımı başlatıldı!_",
             message.jid,
             processingMsg.key
           );
@@ -148,14 +148,14 @@ Module(
           await git.reset("hard", ["HEAD"]);
           await git.pull();
           await message.edit(
-            `_Successfully updated to version ${remoteVersion}. Please manually update npm modules if applicable!_`,
+            `_Sürüm ${remoteVersion}'e başarıyla güncellendi! Gerekirse npm modüllerini manuel güncelleyin._`,
             message.jid,
             processingMsg.key
           );
           process.exit(0);
         } else {
           return await message.edit(
-            "_Please visit the hosted platform and hit deploy to update._",
+            "_Güncellemek için barındırma platformunu ziyaret edip dağıtımı başlatın._",
             message.jid,
             processingMsg.key
           );
@@ -163,14 +163,14 @@ Module(
       } else if (command === "beta") {
         if (!hasCommits) {
           return await message.edit(
-            "_No beta updates available!_",
+            "_Beta güncellemesi mevcut değil!_",
             message.jid,
             processingMsg.key
           );
         }
 
         await message.edit(
-          "_Starting beta update..._",
+          "_Beta güncellemesi başlatılıyor..._",
           message.jid,
           processingMsg.key
         );
@@ -189,7 +189,7 @@ Module(
             config.RENDER_API_KEY
           );
           return await message.edit(
-            "_Render deploy started for beta update!_",
+            "_Beta güncellemesi için Render dağıtımı başlatıldı!_",
             message.jid,
             processingMsg.key
           );
@@ -199,23 +199,21 @@ Module(
           await git.reset("hard", ["HEAD"]);
           await git.pull();
           await message.edit(
-            `_Successfully applied beta update (${commits.total} commit${
-              commits.total > 1 ? "s" : ""
-            }). Please manually update npm modules if applicable!_`,
+            `_Beta güncellemesi başarıyla uygulandı (${commits.total} commit). Gerekirse npm modüllerini manuel güncelleyin!_`,
             message.jid,
             processingMsg.key
           );
           process.exit(0);
         } else {
           return await message.edit(
-            "_Please visit the hosted platform and hit deploy to update._",
+            "_Güncellemek için barındırma platformunu ziyaret edip dağıtımı başlatın._",
             message.jid,
             processingMsg.key
           );
         }
       } else {
         return await message.edit(
-          `_Invalid command. Use "${handler}update" to check updates, "${handler}update start" for stable updates, or "${handler}update beta" for beta updates._`,
+          `_Geçersiz komut. Güncellemeleri kontrol için "${handler}update", kararlı güncelleme için "${handler}update start", beta güncelleme için "${handler}update beta" kullanın._`,
           message.jid,
           processingMsg.key
         );
@@ -223,7 +221,7 @@ Module(
     } catch (error) {
       console.error("Update error:", error);
       return await message.edit(
-        "_An error occurred while checking for updates._",
+        "_Güncellemeler kontrol edilirken bir hata oluştu._",
         message.jid,
         processingMsg.key
       );

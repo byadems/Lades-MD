@@ -8,29 +8,29 @@ const {
 } = require("../core/store");
 
 function timeSince(date) {
-  if (!date) return "Never";
+  if (!date) return "Hiç";
   var seconds = Math.floor((new Date() - new Date(date)) / 1000);
   var interval = seconds / 31536000;
   if (interval > 1) {
-    return Math.floor(interval) + " years ago";
+    return Math.floor(interval) + " yıl önce";
   }
   interval = seconds / 2592000;
   if (interval > 1) {
-    return Math.floor(interval) + " months ago";
+    return Math.floor(interval) + " ay önce";
   }
   interval = seconds / 86400;
   if (interval > 1) {
-    return Math.floor(interval) + " days ago";
+    return Math.floor(interval) + " gün önce";
   }
   interval = seconds / 3600;
   if (interval > 1) {
-    return Math.floor(interval) + " hours ago";
+    return Math.floor(interval) + " saat önce";
   }
   interval = seconds / 60;
   if (interval > 1) {
-    return Math.floor(interval) + " minutes ago";
+    return Math.floor(interval) + " dakika önce";
   }
-  return Math.floor(seconds) + " seconds ago";
+  return Math.floor(seconds) + " saniye önce";
 }
 
 function parseDuration(duration) {
@@ -139,7 +139,7 @@ Module(
     fromMe: true,
     desc: "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
     usage:
-      ".inactive 30d (members inactive for 30+ days)\n.inactive 10d kick (kick members inactive for 10+ days)\n\nSupported units: d (days), w (weeks), m (months), y (years)",
+      ".inactive 30d (30+ gündür pasif üyeler)\n.inactive 10d kick (10+ gündür pasif üyeleri at)\n\nDesteklenen birimler: d (gün), w (hafta), m (ay), y (yıl)",
     use: "group",
   },
   async (message, match) => {
@@ -152,11 +152,11 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1]) {
         return await message.sendReply("_Kullanım:_\n" +
-            "• `.inactive 30d` - Show members inactive for 30+ days\n" +
-            "• `.inactive 10d kick` - Kick members inactive for 10+ days\n" +
-            "• `.inactive 2w` - Show members inactive for 2+ weeks\n" +
-            "• `.inactive 3m kick` - Kick members inactive for 3+ months\n\n" +
-            "_Supported units:_ d (days), w (weeks), m (months), y (years)"
+            "• `.inactive 30d` - 30+ gündür pasif üyeleri göster\n" +
+            "• `.inactive 10d kick` - 10+ gündür pasif üyeleri at\n" +
+            "• `.inactive 2w` - 2+ haftadır pasif üyeleri göster\n" +
+            "• `.inactive 3m kick` - 3+ aydır pasif üyeleri at\n\n" +
+            "_Desteklenen birimler:_ d (gün), w (hafta), m (ay), y (yıl)"
         );
       }
 
@@ -204,8 +204,8 @@ Module(
         if (!userStat || !userStat.lastMessageAt) {
           inactiveMembers.push({
             jid: user,
-            name: userStat?.User?.name?.replace(/[\r\n]+/gm, "") || "Unknown",
-            lastMessage: "Never",
+            name: userStat?.User?.name?.replace(/[\r\n]+/gm, "") || "Bilinmeyen",
+            lastMessage: "Hiç",
             totalMessages: userStat?.totalMessages || 0,
           });
         } else {
@@ -213,7 +213,7 @@ Module(
           if (lastMessageDate < cutoffDate) {
             inactiveMembers.push({
               jid: user,
-              name: userStat.User?.name?.replace(/[\r\n]+/gm, "") || "Unknown",
+              name: userStat.User?.name?.replace(/[\r\n]+/gm, "") || "Bilinmeyen",
               lastMessage: timeSince(userStat.lastMessageAt),
               totalMessages: userStat.totalMessages,
             });
@@ -235,7 +235,7 @@ Module(
 
       if (inactiveMembers.length === 0) {
         return await message.sendReply(
-          `_No inactive members found for the specified duration (${durationStr})._`
+          `_Belirtilen süre için pasif üye bulunamadı (${durationStr})._`
         );
       }
 
@@ -261,7 +261,7 @@ Module(
           responseMsg += `... ve ${inactiveMembers.length - 10} more\n`;
         }
 
-        responseMsg += `\n_Starting kick process in 5 seconds..._`;
+        responseMsg += `\n_5 saniye içinde atma işlemi başlayacak..._`;
 
         await message.client.sendMessage(message.jid, {
           text: responseMsg,
@@ -380,7 +380,7 @@ Module(
 
         if (topUsers.length === 0) {
           return await message.sendReply(
-            `_No user data found in the database for ${scopeText} stats._`
+            `_${scopeText} istatistikleri için veritabanında kullanıcı verisi bulunamadı._`
           );
         }
 

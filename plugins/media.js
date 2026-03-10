@@ -99,7 +99,7 @@ Module(
       const videoBuffer = fs.readFileSync(outputPath);
       await message.send(videoBuffer, "video");
       await message.edit(
-        "_Black video created successfully!_",
+        "_Siyah video başarıyla oluşturuldu!_",
         message.jid,
         processingMsg.key
       );
@@ -107,7 +107,7 @@ Module(
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
       console.error("Black video creation error:", error);
-      await message.send("_Failed to create black video. Please try again._");
+      await message.send("_Siyah video oluşturulamadı. Lütfen tekrar deneyin._");
     }
   }
 );
@@ -317,7 +317,7 @@ Module(
       return await message.sendReply("_💬 Bir müziği yanıtlayın_");
     if (message.reply_message.duration > 60)
       return await message.send(
-        "_Audio too large! Use .trim command and cut the audio to < 60 secs_"
+        "_Ses çok büyük! .trim komutuyla sesi 60 saniyenin altına kısaltın_"
       );
     var audio = await message.reply_message.download("buffer");
     var data = await findMusic(audio);

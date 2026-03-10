@@ -22,23 +22,23 @@ Module(
     const input = match[1]?.trim();
     if (!input) {
       return await message.sendReply(`*📝 Filtre Komutları:*\n\n` +
-          `• \`${handler}filter trigger | response\` - Create chat filter\n` +
-          `• \`${handler}filter trigger | response | global\` - Create global filter\n` +
-          `• \`${handler}filter trigger | response | group\` - Create group-only filter\n` +
-          `• \`${handler}filter trigger | response | dm\` - Create DM-only filter\n` +
-          `• \`${handler}filter trigger | response | chat | exact\` - Exact match only\n` +
-          `• \`${handler}filter trigger | response | chat | case\` - Case sensitive\n` +
-          `• \`${handler}filters\` - List all filters\n` +
-          `• \`${handler}delfilter trigger\` - Delete filter\n` +
-          `• \`${handler}togglefilter trigger\` - Enable/disable filter\n\n` +
-          `*Scopes:*\n` +
-          `• \`chat\` - Current chat only (default)\n` +
-          `• \`global\` - All chats\n` +
-          `• \`group\` - All gruplar\n` +
-          `• \`dm\` - All DMs\n\n` +
-          `*Options:*\n` +
-          `• \`exact\` - Exact word match only\n` +
-          `• \`case\` - Case sensitive matching`
+          `• \`${handler}filter tetikleyici | yanıt\` - Sohbet filtresi oluştur\n` +
+          `• \`${handler}filter tetikleyici | yanıt | global\` - Genel filtre oluştur\n` +
+          `• \`${handler}filter tetikleyici | yanıt | group\` - Sadece grup filtresi\n` +
+          `• \`${handler}filter tetikleyici | yanıt | dm\` - Sadece DM filtresi\n` +
+          `• \`${handler}filter tetikleyici | yanıt | chat | exact\` - Sadece tam eşleşme\n` +
+          `• \`${handler}filter tetikleyici | yanıt | chat | case\` - Büyük/küçük harf duyarlı\n` +
+          `• \`${handler}filters\` - Tüm filtreleri listele\n` +
+          `• \`${handler}delfilter tetikleyici\` - Filtreyi sil\n` +
+          `• \`${handler}togglefilter tetikleyici\` - Filtreyi aç/kapat\n\n` +
+          `*Kapsamlar:*\n` +
+          `• \`chat\` - Sadece mevcut sohbet (varsayılan)\n` +
+          `• \`global\` - Tüm sohbetler\n` +
+          `• \`group\` - Tüm gruplar\n` +
+          `• \`dm\` - Tüm DM'ler\n\n` +
+          `*Seçenekler:*\n` +
+          `• \`exact\` - Sadece tam kelime eşleşmesi\n` +
+          `• \`case\` - Büyük/küçük harf duyarlı eşleşme`
       );
     }
 
@@ -80,21 +80,23 @@ Module(
 
       const scopeText =
         scope === "chat"
-          ? "this chat"
+          ? "bu sohbet"
           : scope === "global"
-          ? "all chats"
-          : `all ${scope}s`;
+          ? "tüm sohbetler"
+          : scope === "group"
+          ? "tüm gruplar"
+          : "tüm DM'ler";
       const optionsText = [];
-      if (filterOptions.exactMatch) optionsText.push("exact match");
-      if (filterOptions.caseSensitive) optionsText.push("case sensitive");
+      if (filterOptions.exactMatch) optionsText.push("tam eşleşme");
+      if (filterOptions.caseSensitive) optionsText.push("büyük/küçük harf duyarlı");
       const optionsStr = optionsText.length
         ? ` (${optionsText.join(", ")})`
         : "";
 
       await message.sendReply(`✅ *Filtre Oluşturuldu!*\n\n` +
-          `*Trigger:* ${trigger}\n` +
-          `*Response:* ${response}\n` +
-          `*Scope:* ${scopeText}${optionsStr}`
+          `*Tetikleyici:* ${trigger}\n` +
+          `*Yanıt:* ${response}\n` +
+          `*Kapsam:* ${scopeText}${optionsStr}`
       );
     } catch (error) {
       console.error("Filter creation error:", error);
@@ -131,7 +133,7 @@ Module(
         return await message.sendReply("_❌ Filtre bulunamadı!_");
       }
 
-      let msg = `*📝 Active Filters:*\n\n`;
+      let msg = `*📝 Aktif Filtreler:*\n\n`;
 
       filters.forEach((f, index) => {
         const scopeEmoji =
@@ -151,7 +153,7 @@ Module(
         msg += `   ↳ _${f.response.substring(0, 50)}${
           f.response.length > 50 ? "..." : ""
         }_\n`;
-        msg += `   _Scope: ${f.scope}${f.enabled ? "" : " (disabled)"}_\n\n`;
+        msg += `   _Kapsam: ${f.scope}${f.enabled ? "" : " (devre dışı)"}_\n\n`;
       });
 
       await message.sendReply(msg);
@@ -196,7 +198,7 @@ Module(
 
       if (deleted > 0) {
         await message.sendReply(
-          `✅ _Filter "${trigger}" deleted successfully!_`
+          `✅ _"${trigger}" filtresi başarıyla silindi!_`
         );
       } else {
         await message.sendReply(`❌ _Filter "${trigger}" not found!_`);
@@ -240,7 +242,7 @@ Module(
     try {
       const currentFilter = await filter.get(message.jid, trigger);
       if (!currentFilter) {
-        return await message.sendReply(`❌ _Filter "${trigger}" not found!_`);
+        return await message.sendReply(`❌ _"${trigger}" filtresi bulunamadı!_`);
       }
 
       const newStatus = !currentFilter.enabled;
@@ -253,12 +255,12 @@ Module(
 
       if (toggled) {
         await message.sendReply(
-          `✅ _Filter "${trigger}" ${
-            newStatus ? "enabled" : "disabled"
-          } successfully!_`
+          `✅ _"${trigger}" filtresi ${
+            newStatus ? "açıldı" : "kapatıldı"
+          }!_`
         );
       } else {
-        await message.sendReply(`❌ _Failed to toggle filter "${trigger}"!_`);
+        await message.sendReply(`❌ _"${trigger}" filtresi değiştirilemedi!_`);
       }
     } catch (error) {
       console.error("Filter toggle error:", error);
@@ -292,18 +294,18 @@ Module(
 
       if (matchedFilter) {
         await message.sendReply(`✅ *Filtre Eşleşmesi Bulundu!*\n\n` +
-            `*Trigger:* ${matchedFilter.trigger}\n` +
-            `*Response:* ${matchedFilter.response}\n` +
-            `*Scope:* ${matchedFilter.scope}\n` +
-            `*Options:* ${matchedFilter.exactMatch ? "exact " : ""}${
+            `*Tetikleyici:* ${matchedFilter.trigger}\n` +
+            `*Yanıt:* ${matchedFilter.response}\n` +
+            `*Kapsam:* ${matchedFilter.scope}\n` +
+            `*Seçenekler:* ${matchedFilter.exactMatch ? "tam eşleşme " : ""}${
               matchedFilter.caseSensitive
-                ? "case-sensitive"
-                : "case-insensitive"
+                ? "büyük/küçük harf duyarlı"
+                : "büyük/küçük harf duyarsız"
             }`
         );
       } else {
         await message.sendReply(
-          `❌ _No filters would be triggered by: "${testText}"_`
+          `❌ _"${testText}" hiçbir filtreyi tetiklemez_`
         );
       }
     } catch (error) {
@@ -322,36 +324,36 @@ Module(
   },
   async (message) => {
     const helpText =
-      `*🔧 Filter System Help*\n\n` +
-      `*What are filters?*\n` +
-      `Filters are auto-reply triggers that respond to specific words or phrases automatically.\n\n` +
-      `*📝 Creating Filters:*\n` +
-      `\`${handler}filter hello | Hi there!\`\n` +
-      `• Creates a chat-specific filter\n` +
-      `• When someone says "hello", bot replies "Hi there!"\n\n` +
-      `*🌍 Filter Scopes:*\n` +
-      `• \`chat\` - Only works in current chat\n` +
-      `• \`global\` - Works in all chats\n` +
-      `• \`group\` - Works in all gruplar only\n` +
-      `• \`dm\` - Works in all DMs only\n\n` +
-      `*⚙️ Filter Options:*\n` +
-      `• \`exact\` - Only exact word matches\n` +
-      `• \`case\` - Case sensitive matching\n\n` +
-      `*📋 Examples:*\n` +
-      `\`${handler}filter bot | I'm here! | chat\`\n` +
-      `\`${handler}filter help | Contact admin | global\`\n` +
-      `\`${handler}filter Hello | Hi! | group | exact\`\n` +
-      `\`${handler}filter PASSWORD | Shh! | dm | case\`\n\n` +
-      `*🔧 Management:*\n` +
-      `• \`${handler}filters\` - List all filters\n` +
-      `• \`${handler}delfilter trigger\` - Delete filter\n` +
-      `• \`${handler}togglefilter trigger\` - Enable/disable\n` +
-      `• \`${handler}testfilter text\` - Test matching\n\n` +
-      `*💡 Tips:*\n` +
-      `• Filters are checked for every message\n` +
-      `• Global filters work everywhere\n` +
-      `• Use exact match for precise triggers\n` +
-      `• Case sensitive is useful for passwords/codes`;
+      `*🔧 Filtre Sistemi Yardımı*\n\n` +
+      `*Filtreler nedir?*\n` +
+      `Filtreler, belirli kelime veya ifadelere otomatik yanıt veren tetikleyicilerdir.\n\n` +
+      `*📝 Filtre Oluşturma:*\n` +
+      `\`${handler}filter merhaba | Merhaba! Nasılsın?\`\n` +
+      `• Sohbete özel filtre oluşturur\n` +
+      `• Birisi "merhaba" yazdığında bot "Merhaba! Nasılsın?" yanıtını verir\n\n` +
+      `*🌍 Filtre Kapsamları:*\n` +
+      `• \`chat\` - Sadece mevcut sohbette çalışır\n` +
+      `• \`global\` - Tüm sohbetlerde çalışır\n` +
+      `• \`group\` - Sadece tüm gruplarda çalışır\n` +
+      `• \`dm\` - Sadece tüm DM'lerde çalışır\n\n` +
+      `*⚙️ Filtre Seçenekleri:*\n` +
+      `• \`exact\` - Sadece tam kelime eşleşmesi\n` +
+      `• \`case\` - Büyük/küçük harf duyarlı eşleşme\n\n` +
+      `*📋 Örnekler:*\n` +
+      `\`${handler}filter bot | Buradayım! | chat\`\n` +
+      `\`${handler}filter yardım | Yöneticiyle iletişime geçin | global\`\n` +
+      `\`${handler}filter Merhaba | Selam! | group | exact\`\n` +
+      `\`${handler}filter ŞİFRE | Şş! | dm | case\`\n\n` +
+      `*🔧 Yönetim:*\n` +
+      `• \`${handler}filters\` - Tüm filtreleri listele\n` +
+      `• \`${handler}delfilter tetikleyici\` - Filtreyi sil\n` +
+      `• \`${handler}togglefilter tetikleyici\` - Aç/kapat\n` +
+      `• \`${handler}testfilter metin\` - Eşleşmeyi test et\n\n` +
+      `*💡 İpuçları:*\n` +
+      `• Her mesaj için filtreler kontrol edilir\n` +
+      `• Genel filtreler her yerde çalışır\n` +
+      `• Kesin tetikleyiciler için tam eşleşme kullanın\n` +
+      `• Şifre/kodlar için büyük/küçük harf duyarlı kullanışlıdır`;
 
     await message.sendReply(helpText);
   }

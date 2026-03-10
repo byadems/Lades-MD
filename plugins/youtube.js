@@ -30,7 +30,7 @@ function formatViews(views) {
   } else if (views >= 1000) {
     return (views / 1000).toFixed(1) + "K";
   }
-  return views?.toString() || "N/A";
+  return views?.toString() || "Belirtilmedi";
 }
 
 Module(
@@ -891,7 +891,7 @@ Module(
             console.error("YTV audio download error:", error);
             if (downloadMsg) {
               await message.edit(
-                "_Download failed!_",
+                "_İndirme başarısız!_",
                 message.jid,
                 downloadMsg.key
               );
@@ -958,7 +958,7 @@ Module(
             console.error("YTV video download error:", error);
             if (downloadMsg) {
               await message.edit(
-                "_Download failed!_",
+                "_İndirme başarısız!_",
                 message.jid,
                 downloadMsg.key
               );

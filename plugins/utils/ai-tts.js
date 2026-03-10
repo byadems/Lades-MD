@@ -20,7 +20,7 @@ function getVoice(voice) {
 }
 
 async function aiTTS(text, voice = "coral", speed = "1.00") {
-  if (!text) return { error: "No text provided" };
+  if (!text) return { error: "Metin sağlanmadı" };
   const selectedVoice = getVoice(voice);
   const formData = new FormData();
   formData.append("msg", text);
@@ -34,12 +34,12 @@ async function aiTTS(text, voice = "coral", speed = "1.00") {
       { headers: formData.getHeaders() }
     );
     if (data?.Error === "Usage Limit exceeded") {
-      return { error: "TTS API usage limit exceeded", response: data };
+      return { error: "TTS API kullanım limiti aşıldı", response: data };
     }
     if (data?.Error === 0 && data?.URL) {
       return { url: data.URL };
     }
-    return { error: "TTS generation failed", response: data };
+    return { error: "TTS oluşturma başarısız", response: data };
   } catch (error) {
     return { error: error.message };
   }

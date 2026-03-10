@@ -142,7 +142,7 @@ Module({ on: "text", fromMe }, async (message) => {
               audioPath = mp3Path;
 
               await message.edit(
-                "_Sending audio..._",
+                "_Ses gönderiliyor..._",
                 message.jid,
                 downloadMsg.key
               );
@@ -156,7 +156,7 @@ Module({ on: "text", fromMe }, async (message) => {
               stream.destroy();
 
               await message.edit(
-                "_Download complete!_",
+                "_İndirme tamamlandı!_",
                 message.jid,
                 downloadMsg.key
               );
@@ -411,7 +411,7 @@ Module({ on: "text", fromMe }, async (message) => {
 
           if (!results || results.length === 0) {
             await message.edit(
-              "_No matching songs found on YouTube!_",
+              "_YouTube'da eşleşen şarkı bulunamadı!_",
               message.jid,
               downloadMsg.key
             );
@@ -426,7 +426,7 @@ Module({ on: "text", fromMe }, async (message) => {
           audioPath = mp3Path;
 
           await message.edit(
-            "_Sending audio..._",
+            "_Ses gönderiliyor..._",
             message.jid,
             downloadMsg.key
           );
@@ -438,7 +438,7 @@ Module({ on: "text", fromMe }, async (message) => {
           stream.destroy();
 
           await message.edit(
-            "_Download complete!_",
+            "_İndirme tamamlandı!_",
             message.jid,
             downloadMsg.key
           );
@@ -508,18 +508,18 @@ Module(
       const globalDMs = config.AUTODL_ALL_DMS === "true";
 
       return await message.sendReply(`*_✨ ⬇️ Otomatik İndirme Yöneticisi_*\n\n` +
-          `- _Current chat:_ ${chatJid.includes("@g.us") ? "Grup" : "DM"}\n` +
+          `- _Mevcut sohbet:_ ${chatJid.includes("@g.us") ? "Grup" : "DM"}\n` +
           `- _Durum:_ ${enabled ? "Açık ✅" : "Kapalı ❌"}\n` +
           `- _Genel Gruplar:_ ${
             globalGroups ? "Açık ✅" : "Kapalı ❌"
           }\n` +
           `- _Genel DM'ler:_ ${globalDMs ? "Açık ✅" : "Kapalı ❌"}\n\n` +
-          `_Commands:_\n` +
-          `- \`${HANDLER_PREFIX}autodl on/off\` - Sets in current chat\n` +
-          `- \`${HANDLER_PREFIX}autodl on/off gruplar\` - Sets in all gruplar\n` +
-          `- \`${HANDLER_PREFIX}autodl on dms\` - Sets in all DMs\n` +
-          `- \`${HANDLER_PREFIX}autodl off dms\` - Sets in all DMs\n` +
-          `- \`${HANDLER_PREFIX}autodl status\` - Show detailed status`
+          `_Komutlar:_\n` +
+          `- \`${HANDLER_PREFIX}autodl on/off\` - Mevcut sohbette ayarla\n` +
+          `- \`${HANDLER_PREFIX}autodl on/off gruplar\` - Tüm gruplarda ayarla\n` +
+          `- \`${HANDLER_PREFIX}autodl on dms\` - Tüm DM'lerde ayarla\n` +
+          `- \`${HANDLER_PREFIX}autodl off dms\` - Tüm DM'lerde kapat\n` +
+          `- \`${HANDLER_PREFIX}autodl status\` - Detaylı durumu göster`
       );
     }
 
@@ -567,8 +567,8 @@ Module(
       const globalGroups = config.AUTODL_ALL_GROUPS === "true";
       const globalDMs = config.AUTODL_ALL_DMS === "true";
       return await message.sendReply(`*_✨ Otomatik İndirme Durumu_*\n\n` +
-          `• _Enabled chats:_ ${
-            enabledList.length > 0 ? enabledList.join(", ") : "None"
+          `• _Aktif sohbetler:_ ${
+            enabledList.length > 0 ? enabledList.join(", ") : "Yok"
           }\n` +
           `• _Genel Gruplar:_ ${
             globalGroups ? "Açık ✅" : "Kapalı ❌"
@@ -577,6 +577,6 @@ Module(
       );
     }
 
-    return await message.sendReply(`_Unknown option: ${cmd}_`);
+    return await message.sendReply(`_Bilinmeyen seçenek: ${cmd}_`);
   }
 );

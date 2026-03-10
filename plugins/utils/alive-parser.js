@@ -17,11 +17,11 @@ async function parseAliveMessage(template, messageObject) {
     const total = bytesToSize(os.totalmem());
     const totalUsers = await getTotalUserCount();
     const infoParts = config.BOT_INFO.split(";");
-    const botName = infoParts[0] || "My Bot";
-    const botOwner = infoParts[1] || "N/A";
+    const botName = infoParts[0] || "Botum";
+    const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = config.VERSION || "1.0.0";
     const mode = config.MODE || "private";
-    const serverOS = os.platform() === "linux" ? "Linux" : "Unknown OS";
+    const serverOS = os.platform() === "linux" ? "Linux" : "Bilinmeyen İşletim Sistemi";
     const uptime = formatUptime(process.uptime());
 
     let senderName = "";
@@ -155,8 +155,8 @@ async function sendAliveMessage(messageObject, parsedMessage) {
 }
 
 function bytesToSize(bytes) {
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Byte";
+  const sizes = ["Bayt", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Bayt";
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
   return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
 }

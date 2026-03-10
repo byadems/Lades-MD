@@ -24,8 +24,8 @@ async function parseWelcomeMessage(template, messageObject, participants = []) {
     let parsedMessage = template
       .replace(/\$mention/g, `@${participantNumber}`)
       .replace(/\$user/g, participantName)
-      .replace(/\$group/g, groupMetadata.subject || "Unknown Group")
-      .replace(/\$desc/g, groupMetadata.desc || "No description")
+.replace(/\$group/g, groupMetadata.subject || "Bilinmeyen Grup")
+        .replace(/\$desc/g, groupMetadata.desc || "Açıklama yok")
       .replace(/\$count/g, participantCount.toString())
       .replace(/\$date/g, new Date().toLocaleDateString())
       .replace(/\$time/g, new Date().toLocaleTimeString());
