@@ -146,9 +146,9 @@ Module(
 
         await fileSystem.writeFile(newImagePath, repliedMessageBuffer);
         return await message.sendReply(
-          `*_Successfully saved image_*\n_*Total saved images: ${
+          `*_Görsel başarıyla kaydedildi_*\n_*Toplam kaydedilen görsel: ${
             nextImageIndex + 1
-          }*_\n*_After saving all images, use '.pdf get' to get the result. Images will be deleted after conversion!_*`
+          }*_\n*_Tüm görselleri kaydettikten sonra sonucu almak için '.pdf get' kullanın. Dönüşümden sonra görseller silinecektir!_*`
         );
       } else {
         return await message.sendReply("_💬 PDF dönüşümüne eklemek için bir resmi yanıtlayın!_"

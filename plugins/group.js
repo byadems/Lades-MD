@@ -858,7 +858,7 @@ Module(
           if (!jid) break;
           const count = chatIndex + 1;
           const groupData = allGroups[jid];
-          const groupName = groupData ? groupData.subject : "Unknown Group";
+          const groupName = groupData ? groupData.subject : "Bilinmeyen Grup";
           _msg += `_*${count}. 👥 Group:*_ \`${groupName}\`\n_JID:_ \`${jid}\`\n\n`;
           chatIndex++;
           if (chatIndex >= startIdx + chunkSize) break;
@@ -900,7 +900,7 @@ Module(
         let chatName = chat.name || "Bilinmiyor";
         if (chat.type === "group" && allGroups[chat.jid]) {
           chatName =
-            allGroups[chat.jid].subject || chat.name || "Unknown Group";
+            allGroups[chat.jid].subject || chat.name || "Bilinmeyen Grup";
         }
         const lastMessageTime = new Date(chat.lastMessageTime).toLocaleString();
         _msg += `_*${count}. ${chatType}:*_ \`${chatName}\`\n`;
@@ -918,7 +918,7 @@ Module(
           let chatName = chat.name || "Bilinmiyor";
           if (chat.type === "group" && allGroups[chat.jid]) {
             chatName =
-              allGroups[chat.jid].subject || chat.name || "Unknown Group";
+              allGroups[chat.jid].subject || chat.name || "Bilinmeyen Grup";
           }
           const lastMessageTime = new Date(
             chat.lastMessageTime

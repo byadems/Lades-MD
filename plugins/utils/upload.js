@@ -11,7 +11,7 @@ const uploadToCatbox = async (filePath) => {
   try {
     const fileStats = await fs.promises.stat(filePath);
     if (fileStats.size > CATBOX_LIMIT) {
-      return { url: "_File size exceeds 200MB limit._" };
+      return { url: "_Dosya boyutu 200MB sınırını aşıyor._" };
     }
     const form = new FormData();
     form.append("reqtype", "fileupload");
@@ -22,7 +22,7 @@ const uploadToCatbox = async (filePath) => {
     return { url: response.data.trim() };
   } catch (error) {
     console.error("Error uploading file to Catbox:", error.message);
-    return { url: "_Error uploading file to Catbox._" };
+    return { url: "_Dosya Catbox'a yüklenirken hata oluştu._" };
   }
 };
 
@@ -48,7 +48,7 @@ const uploadToImgbb = async (imagePath) => {
     const fileStats = await fs.promises.stat(imagePath);
 
     if (fileStats.size > IMGBB_LIMIT) {
-      return { url: "_File size exceeds 32MB limit._" };
+      return { url: "_Dosya boyutu 32MB sınırını aşıyor._" };
     }
 
     const authToken = await fetchAuthToken();
@@ -67,7 +67,7 @@ const uploadToImgbb = async (imagePath) => {
     if (response.data) {
       return response.data.image;
     } else {
-      return { error: "Upload failed, no response data." };
+      return { error: "Yükleme başarısız, yanıt verisi yok." };
     }
   } catch (error) {
     console.error("Error uploading file:", error.message);

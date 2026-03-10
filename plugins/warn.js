@@ -87,7 +87,7 @@ Module(
               `- Sebep: \`${reason}\`\n` +
               `- Uyarılar: \`${currentWarns}/${warnLimit} (SINIR AŞILDI)\`\n` +
               `- İşlem: \`Gruptan çıkarıldı\`\n\n` +
-              `_Kullanmak içinr has been kicked for exceeding the warning limit._`,
+              `_Kullanıcı uyarı sınırını aştığı için atıldı._`,
             mentions: [targetUser],
           });
         } catch (kickError) {
@@ -177,7 +177,7 @@ Module(
       }
 
       if (kalan <= 0) {
-        uyarıList += `⚠ _Kullanmak içinr has exceeded the warning limit!_`;
+        uyarıList += `⚠ _Kullanıcı uyarı sınırını aştı!_`;
       } else if (kalan === 1) {
         uyarıList += `⚠ _Sonraki uyarı atılmayla sonuçlanacak!_`;
       }
@@ -377,8 +377,8 @@ Module(
             : `✓ ${kalan} kalan`;
 
         warnList += `*${index + 1}.* @${userNumericId}\n`;
-        warnList += `   _Warnings: \`${warnCount}/${warnLimit}\`_\n`;
-        warnList += `   _Status: \`${status}\`_\n`;
+        warnList += `   _Uyarılar: \`${warnCount}/${warnLimit}\`_\n`;
+        warnList += `   _Durum: \`${status}\`_\n`;
 
         if (userWarnings.length > 0) {
           const latestWarning = userWarnings[0];
@@ -392,7 +392,7 @@ Module(
       });
 
       warnList += `_Toplam uyarılan kullanıcı: ${sortedUsers.length}_\n`;
-      warnList += `_Kullanmak için ${handler}uyarı @user için detaylı geçmişi görebilirsiniz_`;
+      warnList += `_Detaylı geçmiş için ${handler}uyarı @user kullanın_`;
 
       await message.client.sendMessage(message.jid, {
         text: warnList,
@@ -428,7 +428,7 @@ Module(
       await message.sendReply(`✓ *Uyarı Sınırı Güncellendi!*\n\n` +
           `- Yeni sınır: \`${newLimit} uyarı\`\n` +
           `- Önceki sınır: \`${warnLimit}\`\n\n` +
-          `_Kullanmak içinrs will now be kicked after ${newLimit} uyarı._`
+          `_Kullanıcılar artık ${newLimit} uyarı sonrasında atılacak._`
       );
     } catch (error) {
       console.error("Set warn limit error:", error);
@@ -486,7 +486,7 @@ Module(
         `- ⚠ Sınırda: \`${atLimit}\`\n` +
         `- ⚠ Sınıra Yakın: \`${nearLimit}\`\n` +
         `- ✓ Güvende: \`${safe}\`\n\n` +
-        `_Kullanmak için ${handler}warnlist detaylı listeyi görmek için_`;
+        `_Detaylı liste için ${handler}warnlist kullanın_`;
 
       await message.sendReply(stats);
     } catch (error) {

@@ -43,21 +43,21 @@ Module(
     const commandDetails = retrieveCommandDetails(commandName);
     if (!commandDetails) {
       return await message.sendReply(
-        `_Command '${commandName}' not found. Please check the spelling._`
+        `_'${commandName}' komutu bulunamadı. Yazımı kontrol edin._`
       );
     }
 
-    let infoMessage = `*───「 Command Details 」───*\n\n`;
-    infoMessage += `• *Command:* \`${commandDetails.name}\`\n`;
-    infoMessage += `• *Description:* ${commandDetails.desc || "N/A"}\n`;
-    infoMessage += `• *Owner Command:* ${
-      commandDetails.fromMe ? "Yes" : "No"
+    let infoMessage = `*───「 Komut Detayları 」───*\n\n`;
+    infoMessage += `• *Komut:* \`${commandDetails.name}\`\n`;
+    infoMessage += `• *Açıklama:* ${commandDetails.desc || "Yok"}\n`;
+    infoMessage += `• *Sahip Komutu:* ${
+      commandDetails.fromMe ? "Evet" : "Hayır"
     }\n`;
     if (commandDetails.use) infoMessage += `• *Tür:* ${commandDetails.use}\n`;
     if (commandDetails.usage)
       infoMessage += `• *Kullanım:* ${commandDetails.name} ${commandDetails.usage}\n`;
     if (commandDetails.warn)
-      infoMessage += `• *Warning:* ${commandDetails.warn}\n`;
+      infoMessage += `• *Uyarı:* ${commandDetails.warn}\n`;
 
     await message.sendReply(infoMessage);
   }
@@ -77,7 +77,7 @@ Module(
 
     const categorizedCommands = {};
     availableCommands.forEach((cmd) => {
-      const category = cmd.use || "General";
+      const category = cmd.use || "Genel";
       if (!categorizedCommands[category]) {
         categorizedCommands[category] = [];
       }
@@ -92,16 +92,16 @@ Module(
       }
     });
 
-    let responseMessage = `*Total Available Commands: ${totalCommandCount}*\n\n`;
+    let responseMessage = `*Toplam Mevcut Komut: ${totalCommandCount}*\n\n`;
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
 
     for (const category in categorizedCommands) {
       responseMessage += `*───「 ${category.toUpperCase()} 」───*\n\n`;
       categorizedCommands[category].forEach((cmd) => {
         responseMessage += `• \`${handlerPrefix}${cmd.name}\`\n`;
-        if (cmd.desc) responseMessage += `  _Description:_ ${cmd.desc}\n`;
+        if (cmd.desc) responseMessage += `  _Açıklama:_ ${cmd.desc}\n`;
         if (cmd.usage) responseMessage += `  _Kullanım:_ ${cmd.usage}\n`;
-        if (cmd.warn) responseMessage += `  _Warning:_ ${cmd.warn}\n`;
+        if (cmd.warn) responseMessage += `  _Uyarı:_ ${cmd.warn}\n`;
         responseMessage += "\n";
       });
     }
@@ -110,8 +110,8 @@ Module(
 );
 
 function bytesToSize(bytes) {
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Byte";
+  const sizes = ["Bayt", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Bayt";
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
   return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
 }
@@ -126,7 +126,7 @@ function shuffleArray(array) {
 
 async function parseAlive(message, aliveMessage) {
   if (!aliveMessage) {
-    const defaultAliveMessage = "I'm alive!";
+    const defaultAliveMessage = "Çevrimiçiyim!";
     return await message.sendReply(defaultAliveMessage);
   }
 
@@ -145,7 +145,7 @@ async function parseAlive(message, aliveMessage) {
 const manage = {
   setVar: async (key, value, message) => {
     await message.sendReply(
-      `_Attempted to set ${key} to ${value}. (Note: This is a placeholder and doesn't persist changes in this demo)_`
+      `_${key} değeri ${value} olarak ayarlanmaya çalışıldı. (Not: Bu bir demo ve değişiklikler kalıcı değildir)_`
     );
   },
 };
@@ -172,82 +172,82 @@ Module(
   },
   async (message, match) => {
     if (!match[1]) {
-      return await message.sendReply(`*Alive Message Setup*
+      return await message.sendReply(`*Çevrimiçi Mesaj Ayarları*
 
 *Kullanım:*
-• \`.setalive <message>\` - Set alive message
-• \`.setalive help\` - Show detailed formatting help
-• \`.setalive get\` - View current alive message
-• \`.setalive del\` - Delete custom alive message
-• \`.testalive\` - Test current alive message
+• \`.setalive <mesaj>\` - Çevrimiçi mesajı ayarla
+• \`.setalive help\` - Biçimlendirme yardımını göster
+• \`.setalive get\` - Mevcut çevrimiçi mesajı görüntüle
+• \`.setalive del\` - Özel çevrimiçi mesajı sil
+• \`.testalive\` - Mevcut çevrimiçi mesajı test et
 
-*Quick Example:*
-\`.setalive Hey $user! $botname is online!
-_Version: $version_
-_Uptime: $uptime_
-_Kullanmak içinrs: $users_ $pp\`
+*Hızlı Örnek:*
+\`.setalive Merhaba $user! $botname çevrimiçi!
+_Sürüm: $version_
+_Çalışma süresi: $uptime_
+_Kullanıcılar: $users_ $pp\`
 
-*Use \`.setalive help\` for all available placeholders.*`);
+*Tüm yer tutucular için \`.setalive help\` kullanın.*`);
     }
 
     const input = match[1].toLowerCase();
 
     if (input === "help") {
-      const helpText = `*Alive Message Formatting Help*
+      const helpText = `*Çevrimiçi Mesaj Biçimlendirme Yardımı*
 
-*Available Placeholders:*
+*Kullanılabilir Yer Tutucular:*
 
-*Bot Stats:*
-• \`$botname\` - Bot's display name
-• \`$owner\` - Bot owner name
-• \`$version\` - Bot version
-• \`$mode\` - Bot mode (private/public)
-• \`$server\` - Server OS
-• \`$uptime\` - Bot uptime
+*Bot Bilgileri:*
+• \`$botname\` - Botun görünen adı
+• \`$owner\` - Bot sahibi adı
+• \`$version\` - Bot sürümü
+• \`$mode\` - Bot modu (özel/genel)
+• \`$server\` - Sunucu işletim sistemi
+• \`$uptime\` - Bot çalışma süresi
 
-*System Stats:*
-• \`$ram\` - Available RAM
-• \`$totalram\` - Total RAM
-• \`$users\` - Total users in database
+*Sistem Bilgileri:*
+• \`$ram\` - Kullanılabilir RAM
+• \`$totalram\` - Toplam RAM
+• \`$users\` - Veritabanındaki toplam kullanıcı
 
-*User Info:*
-• \`$user\` - Sender's name
-• \`$number\` - Sender's number
-• \`$date\` - Current date
-• \`$time\` - Current time
+*Kullanıcı Bilgileri:*
+• \`$user\` - Gönderenin adı
+• \`$number\` - Gönderenin numarası
+• \`$date\` - Güncel tarih
+• \`$time\` - Güncel saat
 
-*Media Options:*
-• \`$pp\` - Sender's profile picture
-• \`$media:url\` - Custom image/video URL
+*Medya Seçenekleri:*
+• \`$pp\` - Gönderenin profil fotoğrafı
+• \`$media:url\` - Özel görsel/video URL'si
 
-*Example Messages:*
+*Örnek Mesajlar:*
 
-*Simple:*
-\`Hey $user! $botname is alive!\`
+*Basit:*
+\`Merhaba $user! $botname çevrimiçi!\`
 
-*Detailed:*
-\`*$botname Status*
-_Hi $user!_
-*Stats:*
-• _Version: $version_
-• _Mode: $mode_
-• _Uptime: $uptime_
-• _Kullanmak içinrs: $users_
+*Detaylı:*
+\`*$botname Durumu*
+_Merhaba $user!_
+*İstatistikler:*
+• _Sürüm: $version_
+• _Mod: $mode_
+• _Çalışma süresi: $uptime_
+• _Kullanıcılar: $users_
 • _RAM: $ram/$totalram_
-*Date:* _$date at $time_ $pp\`
+*Tarih:* _$date saat $time_ $pp\`
 
-*With Custom Media:*
-\`$botname is online! $media:https://example.com/image.jpg\`
+*Özel Medya ile:*
+\`$botname çevrimiçi! $media:https://example.com/image.jpg\`
 
-*With Video (auto gif playback):*
-\`Bot status: Active! $media:https://example.com/video.mp4\`
+*Video ile (otomatik gif oynatma):*
+\`Bot durumu: Aktif! $media:https://example.com/video.mp4\`
 
-*Notes:*
-• Messages limited to 2000 characters
-• Videos auto-play as GIFs
-• \`$pp\` includes sender's profile picture
-• URLs in \`$media:\` must be direct links
-• Use quotes for multi-word messages`;
+*Notlar:*
+• Mesajlar 2000 karakterle sınırlıdır
+• Videolar otomatik GIF olarak oynar
+• \`$pp\` gönderenin profil fotoğrafını içerir
+• \`$media:\` içindeki URL'ler doğrudan bağlantı olmalıdır
+• Çok kelimeli mesajlar için tırnak kullanın`;
 
       return await message.sendReply(helpText);
     }
@@ -259,7 +259,7 @@ _Hi $user!_
         );
       }
       return await message.sendReply(
-        `*Current Alive Message:*\n\n${current}\n\n_Tip: Use_ \`.testalive\` _to test your message!_`
+        `*Mevcut Çevrimiçi Mesaj:*\n\n${current}\n\n_İpucu: Mesajınızı test etmek için_ \`.testalive\` _kullanın!_`
       );
     }
 
@@ -277,7 +277,7 @@ _Hi $user!_
 
     await setVar("ALIVE", aliveMessage);
     return await message.sendReply(
-      `_Alive message set successfully!_\n\n*Preview:*\n${aliveMessage}\n\n_Tip: Use_ \`.testalive\` _to test your message!_`
+      `_Çevrimiçi mesaj başarıyla ayarlandı!_\n\n*Önizleme:*\n${aliveMessage}\n\n_İpucu: Mesajınızı test etmek için_ \`.testalive\` _kullanın!_`
     );
   }
 );
@@ -295,17 +295,17 @@ Module(
 
     let use_ = commands.map((e) => e.use);
     const others = (use) => {
-      return use === "" ? "others" : use;
+      return use === "" ? "diğer" : use;
     };
     let types = [
       ...new Set(
-        commands.filter((e) => e.pattern).map((e) => e.use || "General")
+        commands.filter((e) => e.pattern).map((e) => e.use || "Genel")
       ),
     ];
 
     let cmd_obj = {};
     for (const command of commands) {
-      let type_det = command.use || "General";
+      let type_det = command.use || "Genel";
       if (!cmd_obj[type_det]?.length) cmd_obj[type_det] = [];
       let cmd_name = extractCommandName(command.pattern);
       if (cmd_name) cmd_obj[type_det].push(cmd_name);
@@ -333,8 +333,8 @@ Module(
     const total = bytesToSize(os.totalmem());
     const totalUsers = await getTotalUserCount();
     const infoParts = config.BOT_INFO.split(";");
-    const botName = infoParts[0] || "My Bot";
-    const botOwner = infoParts[1] || "N/A";
+    const botName = infoParts[0] || "Botum";
+    const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = VERSION;
     let botImageLink = infoParts[2] || "";
     if (botImageLink === "default" || (botImageLink && !botImageLink.startsWith("http"))) {
@@ -347,7 +347,7 @@ Module(
 ┃${star}│ _*\`Geliştiricim\`*_ : ${botOwner}
 ┃${star}│ _*\`Üye\`*_ : ${message.senderName.replace(/[\r\n]+/gm, "")}
 ┃${star}│ _*\`Mod\`*_ : ${MODE}
-┃${star}│ _*\`Sunucu\`*_ : ${os.platform() === "linux" ? "Linux" : "Unknown OS"}
+┃${star}│ _*\`Sunucu\`*_ : ${os.platform() === "linux" ? "Linux" : "Bilinmeyen İşletim Sistemi"}
 ┃${star}│ _*\`Kullanılabilir RAM\`*_ : ${used} of ${total}
 ┃${star}│ _*\`Toplam Kullanıcı\`*_ : ${totalUsers}
 ┃${star}│ _*\`Versiyon\`*_ : ${botVersion}
@@ -397,15 +397,15 @@ Module(
       return await message.sendReply("_✨ Yüklü oyun yok._");
     }
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
-    let response = `*───「 Available Games 」───*\n\n`;
+    let response = `*───「 Mevcut Oyunlar 」───*\n\n`;
     gameCommands.forEach((cmd) => {
       const name = extractCommandName(cmd.pattern);
       if (name) {
-        response += `• *Command:* \`${handlerPrefix}${name}\`\n`;
-        response += `• *Description:* ${cmd.desc || "N/A"}\n`;
+        response += `• *Komut:* \`${handlerPrefix}${name}\`\n`;
+        response += `• *Açıklama:* ${cmd.desc || "Yok"}\n`;
         if (cmd.use) response += `• *Tür:* ${cmd.use}\n`;
         if (cmd.usage) response += `• *Kullanım:* ${cmd.usage}\n`;
-        if (cmd.warn) response += `• *Warning:* ${cmd.warn}\n`;
+        if (cmd.warn) response += `• *Uyarı:* ${cmd.warn}\n`;
         response += "\n";
       }
     });
@@ -421,32 +421,32 @@ Module(
     use: "settings",
   },
   async (message, match) => {
-    const infoText = `*───「 Bot Info Configuration 」───*
+    const infoText = `*───「 Bot Bilgi Yapılandırması 」───*
 
-_Instead of using \`.setinfo\`, use these individual commands:_
+_\`.setinfo\` yerine bu ayrı komutları kullanın:_
 
-*Bot Name:*
-- Command: \`.setname <name>\`
-- Example: \`.setname Lades\`
-- Description: _Sets the bot's display name_
+*Bot Adı:*
+- Komut: \`.setname <ad>\`
+- Örnek: \`.setname Lades\`
+- Açıklama: _Botun görünen adını ayarlar_
 
-*Bot Owner:*
-- Command: \`.setowner <owner>\`
-- Example: \`.setowner John\`
-- Description: _Sets the bot owner name_
+*Bot Sahibi:*
+- Komut: \`.setowner <sahip>\`
+- Örnek: \`.setowner Ahmet\`
+- Açıklama: _Bot sahibi adını ayarlar_
 
-*Bot Image:*
-- Command: \`.setimage\`
-- Usage: _Reply to an image with \`.setimage\`_
-- Description: _Sets the bot's profile image_
+*Bot Görseli:*
+- Komut: \`.setimage\`
+- Kullanım: _\`.setimage\` ile bir görsele yanıt verin_
+- Açıklama: _Botun profil görselini ayarlar_
 
-*Current Format:*
-_Bot info is stored as: \`name;owner;imagelink\`_
+*Mevcut Format:*
+_Bot bilgisi şu şekilde saklanır: \`ad;sahip;görselbağlantısı\`_
 
-*Tips:*
-- _Kullanmak için \`default\` as image to use local default image_
-- _Changes are saved automatically_
-- _Kullanmak için \`.menu\` to see the updated info_`;
+*İpuçları:*
+- _Yerel varsayılan görsel için \`default\` kullanın_
+- _Değişiklikler otomatik kaydedilir_
+- _Güncel bilgiyi görmek için \`.menu\` kullanın_`;
 
     return await message.sendReply(infoText);
   }
@@ -467,7 +467,7 @@ Module(
     parts[0] = name;
     await setVar("BOT_INFO", parts.join(";"));
     return await message.sendReply(
-      `_Bot name updated successfully!_\n\n*New Name:* ${name}`
+      `_Bot adı başarıyla güncellendi!_\n\n*Yeni Ad:* ${name}`
     );
   }
 );
@@ -487,7 +487,7 @@ Module(
     parts[1] = owner;
     await setVar("BOT_INFO", parts.join(";"));
     return await message.sendReply(
-      `_Bot owner updated successfully!_\n\n*New Owner:* ${owner}`
+      `_Bot sahibi başarıyla güncellendi!_\n\n*Yeni Sahip:* ${owner}`
     );
   }
 );
@@ -524,7 +524,7 @@ Module(
       parts[2] = url;
       await setVar("BOT_INFO", parts.join(";"));
       return await message.sendReply(
-        `_Bot image updated successfully!_\n\n*New Image URL:* ${url}`
+        `_Bot görseli başarıyla güncellendi!_\n\n*Yeni Görsel URL:* ${url}`
       );
     } catch (error) {
       console.error("Error setting image:", error);

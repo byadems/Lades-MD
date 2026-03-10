@@ -2,7 +2,7 @@ const P = require("pino");
 const fs = require("fs");
 const { Sequelize } = require("sequelize");
 
-// Suppress node-cron "missed execution" warnings — these are triggered when the
+// Suppress node-cron "missed execution" uyarı — these are triggered when the
 // event loop is delayed by >1 second (common under DB load on Koyeb/Heroku).
 // They are purely cosmetic log noise and do not affect scheduling correctness.
 const _originalWarn = console.warn.bind(console);
@@ -286,7 +286,7 @@ const baseConfig = {
   VERSION,
   ALIVE:
     process.env.ALIVE ||
-    "_I am alive! (use .setalive help for custom alive msg)_",
+    "_Çevrimiçiyim! (özel çevrimiçi mesaj için .setalive help kullanın)_",
   BLOCK_CHAT: process.env.BLOCK_CHAT || "",
   PM_ANTISPAM: convertToBool(process.env.PM_ANTISPAM) || "",
   ALWAYS_ONLINE: convertToBool(process.env.ALWAYS_ONLINE) || false,
@@ -298,13 +298,13 @@ const baseConfig = {
       ? "Railway"
       : isKoyeb
         ? "Koyeb"
-        : "Other server",
+        : "Diğer sunucu",
   isHeroku,
   isKoyeb,
   isVPS,
   isRailway,
   AUTOMUTE_MSG:
-    process.env.AUTOMUTE_MSG || "_Group automuted!_\n_(edit AUTOMUTE_MSG)_",
+    process.env.AUTOMUTE_MSG || "_Grup otomatik susturuldu!_\n_(AUTOMUTE_MSG düzenleyin)_",
   ANTIWORD_WARN: process.env.ANTIWORD_WARN || "",
   ANTI_SPAM: process.env.ANTI_SPAM || "919074309534-1632403322@g.us",
   MULTI_HANDLERS: convertToBool(process.env.MULTI_HANDLERS) || false,
@@ -319,7 +319,7 @@ const baseConfig = {
   ANTISPAM_COUNT: process.env.ANTISPAM_COUNT || "6/10",
   AUTOUNMUTE_MSG:
     process.env.AUTOUNMUTE_MSG ||
-    "_Group auto unmuted!_\n_(edit AUTOUNMUTE_MSG)_",
+    "_Grup otomatik susturma kaldırıldı!_\n_(AUTOUNMUTE_MSG düzenleyin)_",
   AUTO_READ_STATUS: convertToBool(process.env.AUTO_READ_STATUS) || true,
   READ_MESSAGES: convertToBool(process.env.READ_MESSAGES) || false,
   PMB_VAR: convertToBool(process.env.PMB_VAR) || false,
@@ -327,7 +327,7 @@ const baseConfig = {
   REJECT_CALLS: convertToBool(process.env.REJECT_CALLS) || false,
   ALLOWED_CALLS: process.env.ALLOWED_CALLS || "",
   CALL_REJECT_MESSAGE: process.env.CALL_REJECT_MESSAGE || "",
-  PMB: process.env.PMB || "_Personal messages not allowed, BLOCKED!_",
+  PMB: process.env.PMB || "_Kişisel mesajlara izin verilmiyor, ENGELLENDİ!_",
   READ_COMMAND: convertToBool(process.env.READ_COMMAND) || true,
   IMGBB_KEY: [
     "76a050f031972d9f27e329d767dd988f",

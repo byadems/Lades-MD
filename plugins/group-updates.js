@@ -101,7 +101,7 @@ Module(
           return await message.sendReply("_❌ Böyle bir çıkartma/komut bulunamadı!_");
       }
       if (!deleted && !match[1])
-        return await message.send("_No such sticker found!_");
+        return await message.send("_Böyle bir çıkartma bulunamadı!_");
     } else if (match[1] && !message.reply_message) {
       let deleted = await stickcmd.delete(match[1], "command");
       if (deleted)
@@ -235,7 +235,7 @@ Module(
             (await message.client.groupMetadata(mute[e].chat)).subject
           }
 *➥ Mute:* ${tConvert(mute[e].time)}
-*➥ Unmute:* ${tConvert(mute[e].unmute || "Not set")}` + "\n\n";
+*➥ Sessizlik Açılış:* ${tConvert(mute[e].unmute || "Ayarlanmadı")}` + "\n\n";
       }
       if (!msg) return await message.sendReply("_❌ Susturma/Açma kaydı bulunamadı!_");
       message.sendReply("*⏰ Zamanlanmış Susturmalar/Açmalar*\n\n" + msg);

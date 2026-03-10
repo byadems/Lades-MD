@@ -157,7 +157,7 @@ Module(
         .add(1, "minute")
         .format("DD/MM/YYYY HH:mm");
       await m.sendReply(
-        `✅ *Message scheduled successfully!*\n\n📅 *Time:* ${formattedTime}\n⏰ *From now:* ${timeFromNow}\n📱 *Target:* ${jid}`
+        `✅ *Mesaj başarıyla zamanlandı!*\n\n📅 *Zaman:* ${formattedTime}\n⏰ *Şu andan itibaren:* ${timeFromNow}\n📱 *Hedef:* ${jid}`
       );
     } catch (error) {
       console.error("Schedule error:", error);
@@ -177,7 +177,7 @@ Module(
       if (pending.length === 0) {
         return await m.sendReply("📭 _Bekleyen zamanlanmış mesaj yok_");
       }
-      let response = "📋 *Scheduled Messages*\n\n";
+      let response = "📋 *Zamanlanmış Mesajlar*\n\n";
       pending.sort(
         (a, b) => a.scheduleTime.getTime() - b.scheduleTime.getTime()
       );
@@ -187,15 +187,15 @@ Module(
           .add(1, "minute")
           .format("DD/MM/YYYY HH:mm");
         const preview = JSON.parse(msg.message);
-        let content = preview.text || preview.caption || "Media message";
+        let content = preview.text || preview.caption || "Medya mesajı";
         if (content.length > 30) content = content.substring(0, 30) + "...";
         response += `${index + 1}. *ID:* ${msg.id}\n`;
-        response += `   *To:* ${msg.jid}\n`;
-        response += `   *Time:* ${formattedTime}\n`;
-        response += `   *In:* ${timeFromNow}\n`;
+        response += `   *Alıcı:* ${msg.jid}\n`;
+        response += `   *Zaman:* ${formattedTime}\n`;
+        response += `   *Kalan:* ${timeFromNow}\n`;
         response += `   *İçerik:* ${content}\n\n`;
       });
-      response += '_Kullanmak için "cancel <id>" to cancel a scheduled message_';
+      response += '_Zamanlanmış mesajı iptal etmek için "cancel <id>" kullanın_';
       await m.sendReply(response);
     } catch (error) {
       console.error("List scheduled error:", error);
@@ -222,7 +222,7 @@ Module(
       const success = await scheduledMessages.delete(messageId);
       if (success) {
         await m.sendReply(
-          `✅ *Scheduled message ${messageId} cancelled successfully*`
+          `✅ *Zamanlanmış mesaj ${messageId} başarıyla iptal edildi*`
         );
       } else {
         await m.sendReply("❌ *Mesaj bulunamadı veya zaten gönderildi*");

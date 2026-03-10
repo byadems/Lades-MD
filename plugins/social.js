@@ -105,7 +105,7 @@ Module(
           ? { image: mediaUrl }
           : { video: mediaUrl };
       });
-      albumObject[0].caption = `_Download complete! (${allMediaUrls.length} items)_`;
+      albumObject[0].caption = `_İndirme tamamlandı! (${allMediaUrls.length} öğe)_`;
       return await message.client.albumMessage(
         message.jid,
         albumObject,

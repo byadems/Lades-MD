@@ -28,7 +28,7 @@ async function main() {
   logger.info(`Configured sessions: ${SESSION.join(", ")}`);
   if (SESSION.length === 0) {
     const warnMsg =
-      "⚠️ No sessions configured. Please set SESSION environment variable.";
+      "⚠️ Oturum yapılandırılmadı. Lütfen SESSION ortam değişkenini ayarlayın.";
     console.warn(warnMsg);
     logger.warn(warnMsg);
     return;
@@ -40,11 +40,11 @@ async function main() {
     logger.info("Database initialized successfully.");
   } catch (dbError) {
     console.error(
-      "🚫 Failed to initialize database or load configuration. Bot cannot start.",
+      "🚫 Veritabanı başlatılamadı veya yapılandırma yüklenemedi. Bot başlatılamıyor.",
       dbError
     );
     logger.fatal(
-      "🚫 Failed to initialize database or load configuration. Bot cannot start.",
+      "🚫 Veritabanı başlatılamadı veya yapılandırma yüklenemedi. Bot başlatılamıyor.",
       dbError
     );
     process.exit(1);
@@ -87,7 +87,7 @@ async function main() {
         res.end("OK");
       } else {
         res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end("Lades Bot is running!");
+        res.end("Lades Bot çalışıyor!");
       }
     });
 

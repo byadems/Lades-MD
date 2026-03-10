@@ -1463,8 +1463,8 @@ Module(
                   );
                   await message.sendMessage(
                     `${customMessage}\n\n` +
-                      `*Action:* User kicked for exceeding warning limit\n` +
-                      `*Warnings:* ${currentWarns}/${warnLimit}`,
+                      `*İşlem:* Uyarı sınırını aştığı için kullanıcı atıldı\n` +
+                      `*Uyarılar:* ${currentWarns}/${warnLimit}`,
                     "text",
                     {
                       mentions: [usr],
@@ -1473,8 +1473,8 @@ Module(
                 } catch (kickError) {
                   await message.sendMessage(
                     `${customMessage}\n\n` +
-                      `*Warnings:* ${currentWarns}/${warnLimit}\n` +
-                      `*Error:* Kullanıcı atılamadı`,
+                      `*Uyarılar:* ${currentWarns}/${warnLimit}\n` +
+                      `*Hata:* Kullanıcı atılamadı`,
                     "text",
                     {
                       mentions: [usr],
@@ -1484,11 +1484,11 @@ Module(
               } else {
                 await message.sendMessage(
                   `${customMessage}\n\n` +
-                    `*Warnings:* ${currentWarns}/${warnLimit}\n` +
-                    `*Remaining:* ${kalan}\n\n` +
+                    `*Uyarılar:* ${currentWarns}/${warnLimit}\n` +
+                    `*Kalan:* ${kalan}\n\n` +
                     `${
                       kalan === 1
-                        ? "_Next violation will result in a kick!_"
+                        ? "_Sonraki ihlal atılmayla sonuçlanacak!_"
                         : `_${kalan} uyarı daha kaldı._`
                     }`,
                   "text",
@@ -1511,7 +1511,7 @@ Module(
                 "remove"
               );
               await message.sendMessage(
-                `${customMessage}\n\n*Action:* User kicked for sending unauthorized link`,
+                `${customMessage}\n\n*İşlem:* İzinsiz bağlantı gönderdiği için kullanıcı atıldı`,
                 "text",
                 {
                   mentions: [usr],
@@ -1519,7 +1519,7 @@ Module(
               );
             } catch (kickError) {
               await message.sendMessage(
-                `${customMessage}\n\n*Error:* Kullanıcı atılamadı`,
+                `${customMessage}\n\n*Hata:* Kullanıcı atılamadı`,
                 "text",
                 {
                   mentions: [usr],

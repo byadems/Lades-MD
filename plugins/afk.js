@@ -31,7 +31,7 @@ async function initAFKCache() {
 initAFKCache();
 
 function timeSince(date) {
-  if (!date) return "Never";
+  if (!date) return "Hiç";
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
   let interval = seconds / 31536000;
   if (interval > 1) {

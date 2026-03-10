@@ -253,7 +253,7 @@ Module(
     fromMe: true,
     desc: "Gemini API ile YZ Sohbet Botu yönetimi - metin ve resim analizi destekler",
     usage:
-      ".chatbot - _Yardım menüsünü göster_\n.chatbot on/off - _Bu sohbette aç/kapat_\n.chatbot on/off groups - _Tüm gruplarda aç/kapat_\n.chatbot on/off dms - _Tüm DM'lerde aç/kapat_\n.chatbot set \"prompt\" - _Sistem komutunu ayarla_\n.chatbot clear - _AI geçmişini temizle_\n_Görsellere yanıt vererek YZ görsel analizi yapın_",
+      ".chatbot - _Yardım menüsünü göster_\n.chatbot on/off - _Bu sohbette aç/kapat_\n.chatbot on/off gruplar - _Tüm gruplarda aç/kapat_\n.chatbot on/off dms - _Tüm DM'lerde aç/kapat_\n.chatbot set \"prompt\" - _Sistem komutunu ayarla_\n.chatbot clear - _AI geçmişini temizle_\n_Görsellere yanıt vererek YZ görsel analizi yapın_",
   },
   async (message, match) => {
     const input = match[1]?.trim();
@@ -429,7 +429,7 @@ Module(
         if (isEnabledIndividually) {
           enabledReason = "Bireysel ayar";
         } else if (isGroup && globalGroups) {
-          enabledReason = "Global gruplar setting";
+          enabledReason = "Küresel grup ayarı";
         } else if (!isGroup && globalDMs) {
           enabledReason = "Küresel DM ayarı";
         }
