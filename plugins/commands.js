@@ -338,9 +338,9 @@ Module(
     const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = VERSION;
     let botImageLink = (infoParts[2] || "").trim();
-    const defaultImagePath = path.join(__dirname, "utils", "images", "default.png");
+    const DEFAULT_MENU_IMAGE_URL = "https://i.ibb.co/0Rb3CrkM/Lades-Bot-Logo.png";
     if (!botImageLink || botImageLink === "default" || !botImageLink.startsWith("http")) {
-      botImageLink = defaultImagePath;
+      botImageLink = DEFAULT_MENU_IMAGE_URL;
     }
 
     const menu = `╭═══〘 \`${botName}\` 〙═══⊷❍
@@ -364,19 +364,10 @@ Module(
 
 ${cmdmenu}`;
     try {
-      if (botImageLink === defaultImagePath && fs.existsSync(defaultImagePath)) {
-        await message.client.sendMessage(message.jid, {
-          image: fs.readFileSync(botImageLink),
-          caption: menu,
-        });
-      } else if (botImageLink.startsWith("http")) {
-        await message.client.sendMessage(message.jid, {
-          image: { url: botImageLink },
-          caption: menu,
-        });
-      } else {
-        await message.client.sendMessage(message.jid, { text: menu });
-      }
+      await message.client.sendMessage(message.jid, {
+        image: { url: botImageLink },
+        caption: menu,
+      });
     } catch (error) {
       console.error("Error sending menu:", error);
       await message.client.sendMessage(message.jid, {
