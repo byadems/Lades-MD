@@ -41,10 +41,12 @@ async function getWarn(jid = null, user = null, cnt) {
   const currentWarns = uyarı.length;
   const kalan = count - currentWarns;
 
+  const kalanVal = kalan > 0 ? kalan : 0;
   return {
     current: currentWarns,
     limit: count,
-    kalan: kalan > 0 ? kalan : 0,
+    kalan: kalanVal,
+    remaining: kalanVal,
     exceeded: kalan <= 0,
     uyarı: uyarı,
   };
