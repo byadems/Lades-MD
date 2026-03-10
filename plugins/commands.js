@@ -338,6 +338,7 @@ Module(
     const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = VERSION;
     let botImageLink = (infoParts[2] || "").trim();
+    // Config'te görsel belirlenmemişse (boş/default/http değil) varsayılan logo kullanılır
     const DEFAULT_MENU_IMAGE_URL = "https://i.ibb.co/0Rb3CrkM/Lades-Bot-Logo.png";
     if (!botImageLink || botImageLink === "default" || !botImageLink.startsWith("http")) {
       botImageLink = DEFAULT_MENU_IMAGE_URL;
