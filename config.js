@@ -304,7 +304,7 @@ const baseConfig = {
   isVPS,
   isRailway,
   AUTOMUTE_MSG:
-    process.env.AUTOMUTE_MSG || "_Grup otomatik susturuldu!_\n_(AUTOMUTE_MSG düzenleyin)_",
+    process.env.AUTOMUTE_MSG || "_Grup otomatikman susturuldu!_\n_(AUTOMUTE_MSG düzenleyin)_",
   ANTIWORD_WARN: process.env.ANTIWORD_WARN || "",
   ANTI_SPAM: process.env.ANTI_SPAM || "919074309534-1632403322@g.us",
   MULTI_HANDLERS: convertToBool(process.env.MULTI_HANDLERS) || false,
@@ -316,7 +316,7 @@ const baseConfig = {
       ? process.env.DISABLED_COMMANDS.split(",")
       : undefined) || [],
   ANTI_BOT: process.env.ANTI_BOT || "",
-  ANTISPAM_COUNT: process.env.ANTISPAM_COUNT || "6/10",
+  ANTISPAM_COUNT: process.env.ANTISPAM_COUNT || "10/10",
   AUTOUNMUTE_MSG:
     process.env.AUTOUNMUTE_MSG ||
     "_Grup otomatik susturma kaldırıldı!_\n_(AUTOUNMUTE_MSG düzenleyin)_",
@@ -324,7 +324,7 @@ const baseConfig = {
   READ_MESSAGES: convertToBool(process.env.READ_MESSAGES) || false,
   PMB_VAR: convertToBool(process.env.PMB_VAR) || false,
   DIS_PM: convertToBool(process.env.DIS_PM) || true,
-  REJECT_CALLS: convertToBool(process.env.REJECT_CALLS) || false,
+  REJECT_CALLS: convertToBool(process.env.REJECT_CALLS) || true,
   ALLOWED_CALLS: process.env.ALLOWED_CALLS || "",
   CALL_REJECT_MESSAGE: process.env.CALL_REJECT_MESSAGE || "",
   PMB: process.env.PMB || "_Kişisel mesajlara izin verilmiyor, ENGELLENDİ!_",
@@ -335,20 +335,20 @@ const baseConfig = {
     "78c84c62b32a88e86daf87dd509a657a",
   ],
   RG: process.env.RG || "919074309534-1632403322@g.us,120363116963909366@g.us",
-BOT_INFO: process.env.BOT_INFO || "Lades;Bot;default",
+  BOT_INFO: process.env.BOT_INFO || "LADES-Bot;LADES-Bot;varsayılan",
   RBG_KEY: process.env.RBG_KEY || "",
   ALLOWED: process.env.ALLOWED || "90",
-  NOT_ALLOWED: process.env.NOT_ALLOWED || "852",
+  NOT_ALLOWED: process.env.NOT_ALLOWED || "",
   CHATBOT: process.env.CHATBOT || "off",
   HANDLERS: process.env.HANDLERS || ".,",
-  STICKER_DATA: process.env.STICKER_DATA || "Lades",
+  STICKER_DATA: process.env.STICKER_DATA || "LADES-Bot;LADES-Bot",
   BOT_NAME: process.env.BOT_NAME || "Lades",
   AUDIO_DATA:
     process.env.AUDIO_DATA === undefined || process.env.AUDIO_DATA === "private"
       ? "default"
       : process.env.AUDIO_DATA,
   TAKE_KEY: process.env.TAKE_KEY || "",
-  CMD_REACTION: convertToBool(process.env.CMD_REACTION) || false,
+  CMD_REACTION: convertToBool(process.env.CMD_REACTION) || true,
   MODE: process.env.MODE || "private",
   WARN: process.env.WARN || "3",
   ANTILINK_WARN: process.env.ANTILINK_WARN || "",
