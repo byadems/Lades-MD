@@ -1415,8 +1415,21 @@ Module(
 
       if (antilinkConf && antilinkConf.enabled) {
         let linkBlocked = false;
+        const whatsappInviteMatch = /chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})/i;
+        let currentGroupCode = null;
+        if (message.isGroup) {
+          try {
+            currentGroupCode = await message.client.groupInviteCode(message.jid);
+          } catch (_) {
+            /* Bot yönetici değilse kod alınamaz */
+          }
+        }
 
         for (const link of foundLinks) {
+          const inviteMatch = (link || "").match(whatsappInviteMatch);
+          if (inviteMatch && currentGroupCode && inviteMatch[1] === currentGroupCode) {
+            continue;
+          }
           if (!antilinkConfig.checkAllowed(link, antilinkConf)) {
             linkBlocked = true;
             break;
