@@ -11,10 +11,27 @@ const { parseAliveMessage, sendAliveMessage } = require("./utils/alive-parser");
 
 const isPrivateMode = MODE === "private";
 
+const CATEGORY_TR = {
+  system: "Sistem",
+  download: "İndirme",
+  whatsapp: "WhatsApp",
+  utility: "Yardımcı",
+  misc: "Çeşitli",
+  group: "Grup",
+  edit: "Düzenleme",
+  search: "Arama",
+  settings: "Ayarlar",
+  owner: "Sahip",
+  converters: "Dönüştürücü",
+  game: "Oyun",
+  Genel: "Genel",
+};
+
 const extractCommandName = (pattern) => {
-  // Türkçe karakterler dahil: ıİşŞğĞüÜöÖçÇ (Unicode)
-  const match = pattern?.toString().match(/(\W*)([A-Za-z0-9\u0130\u0131\u015E\u015F\u011E\u011F\u00FC\u00DC\u00F6\u00D6\u00E7\u00C7\s]*)/u);
-  return match && match[2] ? match[2].trim() : "";
+  // \\W ş,ğ,ü gibi Türkçe karakterleri eşleştirmez; \\p{L} kullanıyoruz
+  const str = pattern?.toString() || "";
+  const match = str.match(/[^\p{L}\p{N}]*([\p{L}\p{N}\s]+?)(?=\s*\?|\s*\(|$)/u);
+  return match && match[1] ? match[1].trim() : "";
 };
 
 const retrieveCommandDetails = (commandName) => {
@@ -97,7 +114,8 @@ Module(
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
 
     for (const category in categorizedCommands) {
-      responseMessage += `*───「 ${category.toUpperCase()} 」───*\n\n`;
+      const catLabel = CATEGORY_TR[category] || category.charAt(0).toUpperCase() + category.slice(1);
+      responseMessage += `*───「 ${catLabel} 」───*\n\n`;
       categorizedCommands[category].forEach((cmd) => {
         responseMessage += `• \`${handlerPrefix}${cmd.name}\`\n`;
         if (cmd.desc) responseMessage += `  _Açıklama:_ ${cmd.desc}\n`;
@@ -324,7 +342,7 @@ Module(
     for (const n of types) {
       for (const x of cmd_obj[n]) {
         i = i + 1;
-        const newn = n.charAt(0).toUpperCase() + n.slice(1);
+        const newn = CATEGORY_TR[n] || n.charAt(0).toUpperCase() + n.slice(1);
         final += `${
           final.includes(newn) ? "" : "\n\n╭════〘 *_`" + newn + "`_* 〙════⊷❍"
         }\n┃${star}│ _\`${i}.\` ${handlerPrefix}${x.trim()}_${
