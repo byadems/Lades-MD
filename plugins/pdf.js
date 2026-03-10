@@ -126,7 +126,7 @@ Module(
       }
 
       await message.sendReply(
-        `_*Successfully saved ${allImages.length} album images*_\n_*Total images ready. Use '.pdf get' to generate PDF!*_`
+        `_*✅ ${allImages.length} albüm görseli kaydedildi*_\n_*Toplam görsel hazır. PDF oluşturmak için '.pdf get' kullanın!*_`
       );
     } else if (message.reply_message) {
       const repliedMessageBuffer = await message.reply_message.download(

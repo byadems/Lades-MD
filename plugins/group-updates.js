@@ -46,7 +46,7 @@ Module(
     fromMe: true,
     desc: "Komutları çıkartmalara yapıştırır. Çıkartma gönderilirse komut gibi çalışır!",
     usage: ".stickcmd .kick",
-    warn: "Only works on stickers",
+    warn: "Sadece çıkartmalarda çalışır",
     use: "utility",
   },
   async (message, match) => {
@@ -95,23 +95,23 @@ Module(
         var delete_again = await stickcmd.delete(match[1], "command");
         if (delete_again)
           return await message.sendReply(
-            `_Removed ${match[1]} from sticked commands!_`
+            `_🗑️ ${match[1]} sabit komutlardan kaldırıldı!_`
           );
         if (!delete_again)
           return await message.sendReply("_❌ Böyle bir çıkartma/komut bulunamadı!_");
       }
       if (!deleted && !match[1])
-        return await message.send("_Böyle bir çıkartma bulunamadı!_");
+        return await message.send("_❌ Böyle bir çıkartma bulunamadı!_");
     } else if (match[1] && !message.reply_message) {
       let deleted = await stickcmd.delete(match[1], "command");
       if (deleted)
         return await message.sendReply(
-          `_Successfully removed ${match[1]} from sticked commands!_`
+          `_✅ ${match[1]} sabit komutlardan başarıyla kaldırıldı!_`
         );
       if (!deleted)
         return await message.sendReply("_❌ Böyle bir komut bulunamadı!_");
     } else
-      return await message.sendReply("_💬 Sticker yanıtlanmalı veya komut girilmeli!_\n_Ör: *.unstick kick*_"
+      return await message.sendReply("_💬 Çıkartmaya yanıt verin veya komut girin!_\n_Ör: *.unstick kick*_"
       );
   }
 );
@@ -135,7 +135,7 @@ Module(
   {
     pattern: "automute ?(.*)",
     fromMe: false,
-    warn: "This works according to IST (Indian standard time)",
+    warn: "Hindistan standart saatine (IST) göre çalışır",
     use: "group",
   },
   async (message, match) => {
@@ -176,7 +176,7 @@ Module(
   {
     pattern: "autounmute ?(.*)",
     fromMe: false,
-    warn: "This works according to IST (Indian standard time)",
+    warn: "Hindistan standart saatine (IST) göre çalışır",
     use: "group",
   },
   async (message, match) => {
@@ -386,7 +386,7 @@ Module(
         return;
       if (message.participant[0].id.split("@")[0] == message.myjid) {
         return await message.client.sendMessage(message.jid, {
-          text: `_*Bot number was demoted, I'm unable to execute anti-demote* [Demoted by @${
+          text: `_*❌ Bot yetkisi düşürüldü, geri yükleme yapılamıyor* [Yetki düşüren: @${
             message.from.split("@")[0]
           }]_`,
           mentions: admin_jids,

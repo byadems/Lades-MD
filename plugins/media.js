@@ -44,7 +44,7 @@ Module(
     const start = parts[0]?.trim();
     const end = parts[1]?.trim();
     const savedFile = await message.reply_message.download();
-    await message.sendMessage("_Processing trim..._");
+    await message.sendMessage("_⏳ Kırpma işleniyor..._");
     if (message.reply_message.audio) {
       const out = getTempPath("trim.ogg");
       await trim(savedFile, start, end, out);
@@ -64,7 +64,7 @@ Module(
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.audio)
-      return await message.send("_Need audio!_");
+      return await message.send("_🎵 Ses dosyası gerekli!_");
 
     try {
       const processingMsg = await message.sendReply("_🎬 Ses siyah ekrana sahip videoya dönüştürülüyor..._"
@@ -107,7 +107,7 @@ Module(
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
       console.error("Siyah video oluşturma hatası:", error);
-      await message.send("_Siyah video oluşturulamadı. Lütfen tekrar deneyin._");
+      await message.send("_❌ Siyah video oluşturulamadı. Lütfen tekrar deneyin._");
     }
   }
 );
@@ -169,7 +169,7 @@ Module(
       (!message.reply_message && files.length < 2) ||
       (message.reply_message && !message.reply_message.video)
     )
-      return await message.send("Bana videolar verin");
+      return await message.send("_🎬 Bana videolar verin_");
     if (message.reply_message.video && files.length == 1) {
       var savedFile = await message.reply_message.download();
       await fs.writeFileSync(
@@ -265,7 +265,7 @@ Module(
     if (!message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     var savedFile = await message.reply_message.download();
-    await message.sendReply("*İşleniyor..*");
+    await message.sendReply("*⏳ İşleniyor..*");
     ffmpeg(savedFile)
       .fps(13)
       .videoBitrate(500)
@@ -281,16 +281,16 @@ Module(
 Module(
   {
     pattern: "interp ?(.*)",
-    desc: "Increases video's frame rate (FPS)",
+    desc: "Videonun kare hızını (FPS) artırır",
     use: "edit",
   },
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     if (match[1] <= 10)
-      return await message.send("*Low FPS Value ⚠️*\n*Minimun = 10*");
+      return await message.send("*⚠️ FPS değeri düşük*\n*Minimum = 10*");
     if (match[1] >= 500)
-      return await message.send("*High FPS Value ⚠️*\n*Maximum = 500*");
+      return await message.send("*⚠️ FPS değeri yüksek*\n*Maksimum = 500*");
     var savedFile = await message.reply_message.download();
     await message.sendReply("*✨ Hareket enterpolasyonu ve işleniyor..*");
     ffmpeg(savedFile)
@@ -356,13 +356,14 @@ Module(
   },
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.video)
-      return await message.sendReply("*🎬 Bir videoyu yanıtla*\n*.rotate left|right|flip*"
+      return await message.sendReply("*🎬 Bir videoyu yanıtla*\n*.rotate sol|sağ|ters*"
       );
     var file = await message.reply_message.download();
     var angle = "1";
-    if (match[1] === "left") angle = "2";
-    if (match[1] === "flip") angle = "3";
-    await message.send("_Processing..._");
+    const dir = (match[1] || "").toLowerCase();
+    if (dir === "left" || dir === "sol") angle = "2";
+    if (dir === "flip" || dir === "ters") angle = "3";
+    await message.send("_⏳ İşleniyor..._");
     await message.sendReply(
       fs.readFileSync(await rotate(file, angle)),
       "video"
@@ -376,7 +377,7 @@ Module(
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");
     var file = await message.reply_message.download();
     var angle = "3";
-    await message.send("_Processing..._");
+    await message.send("_⏳ İşleniyor..._");
     await message.sendReply(
       fs.readFileSync(await rotate(file, angle)),
       "video"

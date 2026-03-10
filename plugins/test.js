@@ -70,6 +70,6 @@ Module(
     let sent_msg = await message.sendReply("*❮ ᴘɪɴɢ ᴛᴇsᴛɪ ❯*");
     const diff = process.hrtime(start);
     const ms = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(2);
-    await message.edit("*ɢᴇᴄɪᴋᴍᴇ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);
+    await message.edit("*🚀 ᴛᴇᴘᴋɪ sᴜ̈ʀᴇsɪ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);
   }
 );
