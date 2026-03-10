@@ -6,6 +6,7 @@ const language = require("./manglish");
 
 // Grouped database operations
 const {
+  syncWarnsSequence,
   getWarn,
   setWarn,
   resetWarn,
@@ -82,6 +83,7 @@ const { censorBadWords, badWords } = require("./censor");
 
 module.exports = {
   // Database Operations
+  syncWarnsSequence,
   getWarn,
   setWarn,
   fancy,

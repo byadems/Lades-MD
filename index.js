@@ -38,6 +38,12 @@ async function main() {
     await initializeDatabase();
     console.log("- Veritabanı başlatıldı");
     logger.info("Veritabanı başarıyla başlatıldı.");
+    try {
+      const { syncWarnsSequence } = require("./plugins/utils/db/functions");
+      await syncWarnsSequence();
+    } catch (seqErr) {
+      logger.warn({ err: seqErr }, "Uyarı sequence senkronizasyonu atlandı (PostgreSQL değilse normal)");
+    }
     const dbRows = await BotVariable.findAll();
     const dbValues = Object.fromEntries(dbRows.map((r) => [r.key, r.value]));
     if (Object.keys(dbValues).length > 0) {

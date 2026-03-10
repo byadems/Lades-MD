@@ -12,6 +12,18 @@ const {
   GoodbyeDB,
   FilterDB,
 } = require("./models");
+const config = require("../../../config");
+
+async function syncWarnsSequence() {
+  if (config.sequelize?.getDialect?.() !== "postgres") return;
+  try {
+    await config.sequelize.query(
+      "SELECT setval(pg_get_serial_sequence('\"_warns\"', 'id'), GREATEST(COALESCE((SELECT MAX(id) FROM \"_warns\"), 1), 1))"
+    );
+  } catch (e) {
+    console.error("Uyarı sequence senkronizasyonu hatası:", e?.message);
+  }
+}
 
 async function getWarn(jid = null, user = null, cnt) {
   if (!jid || !user) return null;
@@ -54,7 +66,19 @@ async function setWarn(
     timestamp: new Date(),
   };
 
-  await warnDB.create(warnData);
+  try {
+    await warnDB.create(warnData);
+  } catch (e) {
+    if (
+      e.name === "SequelizeUniqueConstraintError" &&
+      e.errors?.some((x) => x.path === "id")
+    ) {
+      await syncWarnsSequence();
+      await warnDB.create(warnData);
+    } else {
+      throw e;
+    }
+  }
 
   return await getWarn(jid, user);
 }
@@ -614,6 +638,7 @@ const filter = {
 };
 
 module.exports = {
+  syncWarnsSequence,
   getWarn,
   setWarn,
   resetWarn,
