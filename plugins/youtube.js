@@ -532,9 +532,9 @@ Module(
 
       try {
         if (!downloadMsg) {
-          downloadMsg = await message.sendReply("_🔍 Yedek yöntem deneniyor..._");
+          downloadMsg = await message.sendReply("_🔎 Aranıyor... (bu işlem 10-60 saniye sürebilir)_");
         } else {
-          await message.edit("_🔍 Yedek yöntem deneniyor..._", message.jid, downloadMsg.key);
+          await message.edit("_🔎 Aranıyor... (bu işlem 10-60 saniye sürebilir)_", message.jid, downloadMsg.key);
         }
 
         let query = input.trim();
@@ -556,7 +556,7 @@ Module(
 
         const { title, duration, download_url } = data.result;
         await message.edit(
-          `_📤 *${title}* gönderiliyor..._`,
+          `_🔻 İndirilip yükleniyor... *${title}* (${duration || "—"})_`,
           message.jid,
           downloadMsg.key
         );
@@ -568,16 +568,16 @@ Module(
         }, { quoted: message.data });
 
         await message.edit(
-          `_✅ *${title}* hazır!_`,
+          `_✅ Hazır! *${title}*_`,
           message.jid,
           downloadMsg.key
         );
       } catch (fallbackError) {
         console.error("Yedek yöntem hatası:", fallbackError.message);
         if (downloadMsg) {
-          await message.edit("_❌ İndirme başarısız! Farklı şekilde deneyin._", message.jid, downloadMsg.key);
+          await message.edit("_⚠️ İndirme başarısız! Farklı şekilde deneyin._", message.jid, downloadMsg.key);
         } else {
-          await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
+          await message.sendReply("_⚠️ İndirme başarısız! Farklı şekilde deneyin._");
         }
       }
     }
