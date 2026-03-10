@@ -1452,7 +1452,7 @@ Module(
             });
           } else if (antilinkConf.mode === "warn") {
             const { WARN } = require("../config");
-            const warnLimit = parseInt(WARN || 4);
+            const warnLimit = parseInt(WARN || "4");
             const targetNumericId = usr?.split("@")[0];
 
             try {

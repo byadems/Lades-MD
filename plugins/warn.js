@@ -11,7 +11,7 @@ const {
 } = require("./utils");
 
 const handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
-const warnLimit = parseInt(WARN || 4);
+const warnLimit = parseInt(WARN || "4");
 const sudoUsers = (SUDO || "").split(",");
 
 Module(
