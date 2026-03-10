@@ -278,7 +278,10 @@ Module(
     if (!message.isGroup)
       return await message.sendReply("_ℹ️ Nereden çıkayım? Bu bir grup komutu!_"
       );
-    return await message.client.groupLeave(message.jid);
+    // Tepki (reaction) gruptayken gönderilsin diye groupLeave'i erteliyoruz.
+    // Aksi halde bot ayrıldıktan sonra tepki gönderilmeye çalışılır ve 403 hatası oluşur.
+    const jid = message.jid;
+    setImmediate(() => message.client.groupLeave(jid));
   }
 );
 Module(

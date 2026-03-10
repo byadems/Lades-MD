@@ -16,6 +16,28 @@ const axios = require("axios");
 const fileType = require("file-type");
 const { getTempPath, getTempSubdir } = require("../core/helpers");
 
+/** TTS için metni google-tts-api limitine (200 karakter) uygun hale getirir. */
+function prepareTtsText(text) {
+  const maxLen = 200;
+  const trimmed = (text || "").trim();
+  if (!trimmed || trimmed.length <= maxLen) return trimmed;
+  const parts = trimmed.split(/([.,;:!?\s\n\u060C\u061B\u3002\uff01\uff1f]+)/);
+  let out = "";
+  for (const p of parts) {
+    if (/[.,;:!?\s\n]/.test(p)) {
+      out += p;
+    } else {
+      let rest = p;
+      while (rest.length > maxLen) {
+        out += rest.slice(0, maxLen) + " ";
+        rest = rest.slice(maxLen);
+      }
+      out += rest;
+    }
+  }
+  return out.trim() || trimmed.slice(0, maxLen);
+}
+
 const getFileType = async (buffer) => {
   try {
     if (fileType.fileTypeFromBuffer) {
@@ -484,19 +506,17 @@ Module(
     }
     let audio;
 
+    const ttsText = prepareTtsText(ttsMessage);
     if (LANG === "ml") {
       try {
-        audio = await gtts(ttsMessage.trim(), LANG);
-      } catch {
+        audio = await gtts(ttsText, LANG);
+      } catch (e) {
+        console.error("TTS Hatası:", e?.message || e);
         return await message.sendReply("_" + Lang.TTS_ERROR + "_");
       }
     } else {
       try {
-        const ttsResult = await aiTTS(
-          ttsMessage.trim(),
-          VOICE,
-          SPEED.toFixed(2)
-        );
+        const ttsResult = await aiTTS(ttsText, VOICE, SPEED.toFixed(2));
         if (ttsResult && ttsResult.url) {
           audio = { url: ttsResult.url };
         } else {
@@ -507,8 +527,9 @@ Module(
       } catch (e) {
         console.error("Yapay zeka TTS başarısız, gtts kullanılıyor:", e);
         try {
-          audio = await gtts(ttsMessage.trim(), LANG);
-        } catch {
+          audio = await gtts(ttsText, LANG);
+        } catch (err) {
+          console.error("TTS Hatası:", err?.message || err);
           return await message.sendReply("_" + Lang.TTS_ERROR + "_");
         }
       }
