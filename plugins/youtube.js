@@ -10,6 +10,7 @@ const {
   convertM4aToMp3,
 } = require("./utils/yt");
 const { spotifyTrack } = require("./utils/misc");
+const { censorBadWords } = require("./utils");
 
 const config = require("../config");
 const MODE = config.MODE;
@@ -65,7 +66,7 @@ Module(
       resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
       results.forEach((video, index) => {
-        resultText += `*${index + 1}.* ${video.title}\n`;
+        resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
         resultText += `   _Süre:_ \`${
           video.duration
         }\` | _Görüntülenme:_ \`${formatViews(video.views)}\`\n`;
@@ -113,7 +114,7 @@ Module(
       resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
       results.forEach((video, index) => {
-        resultText += `*${index + 1}.* ${video.title}\n`;
+        resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
         resultText += `   _Süre:_ \`${
           video.duration
         }\` | _Görüntülenme:_ \`${formatViews(video.views)}\`\n`;
@@ -180,7 +181,7 @@ Module(
       const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
       let qualityText = "_*Video Kalitesini Seçin*_\n\n";
-      qualityText += `_*${info.title}*_\n\n(${videoId})\n\n`;
+      qualityText += `_*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
 
       if (uniqueQualities.length === 0) {
         return await message.edit(
@@ -295,12 +296,13 @@ Module(
 
       const stats = fs.statSync(videoPath);
 
+      const safeTitle = censorBadWords(result.title);
       if (stats.size > VIDEO_SIZE_LIMIT) {
         const stream = fs.createReadStream(videoPath);
         await message.sendMessage({ stream }, "document", {
-          fileName: `${result.title}.mp4`,
+          fileName: `${safeTitle}.mp4`,
           mimetype: "video/mp4",
-          caption: `_*${result.title}*_\n\n_Dosya boyutu: ${formatBytes(
+          caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(
             stats.size
           )}_\n_Kalite: 360p_`,
         });
@@ -308,7 +310,7 @@ Module(
       } else {
         const stream = fs.createReadStream(videoPath);
         await message.sendReply({ stream }, "video", {
-          caption: `_*${result.title}*_\n\n_Kalite: 360p_`,
+          caption: `_*${safeTitle}*_\n\n_Kalite: 360p_`,
         });
         stream.destroy();
       }
@@ -375,11 +377,12 @@ Module(
 
       await message.edit("_📤 Ses gönderiliyor..._", message.jid, downloadMsg.key);
 
+      const safeTitle = censorBadWords(result.title);
       const stream = fs.createReadStream(audioPath);
       await message.sendMessage({ stream }, "document", {
-        fileName: `${result.title}.m4a`,
+        fileName: `${safeTitle}.m4a`,
         mimetype: "audio/mp4",
-        caption: `_*${result.title}*_`,
+        caption: `_*${safeTitle}*_`,
       });
       stream.destroy();
 
@@ -451,8 +454,9 @@ Module(
         const mp3Path = await convertM4aToMp3(audioPath);
         audioPath = mp3Path;
 
+        const safeTitle = censorBadWords(result.title);
         await message.edit(
-          `_📤 *${result.title}* gönderiliyor..._`,
+          `_📤 *${safeTitle}* gönderiliyor..._`,
           message.jid,
           downloadMsg.key
         );
@@ -464,7 +468,7 @@ Module(
         stream1.destroy();
 
         await message.edit(
-          `_✅ *${result.title}* indirildi!_`,
+          `_✅ *${safeTitle}* indirildi!_`,
           message.jid,
           downloadMsg.key
         );
@@ -487,8 +491,9 @@ Module(
         }
 
         const video = results[0];
+        const safeTitle = censorBadWords(video.title);
         await message.edit(
-          `_⬇️ *${video.title}* indiriliyor..._`,
+          `_⬇️ *${safeTitle}* indiriliyor..._`,
           message.jid,
           downloadMsg.key
         );
@@ -500,7 +505,7 @@ Module(
         audioPath = mp3Path;
 
         await message.edit(
-          `_📤 *${video.title}* gönderiliyor..._`,
+          `_📤 *${safeTitle}* gönderiliyor..._`,
           message.jid,
           downloadMsg.key
         );
@@ -512,7 +517,7 @@ Module(
         stream2.destroy();
 
         await message.edit(
-          `_✅ *${video.title}* indirildi!_`,
+          `_✅ *${safeTitle}* indirildi!_`,
           message.jid,
           downloadMsg.key
         );
@@ -555,8 +560,9 @@ Module(
         }
 
         const { title, duration, download_url } = data.result;
+        const safeTitle = censorBadWords(title);
         await message.edit(
-          `_🔻 İndirilip yükleniyor... *${title}* (${duration || "—"})_`,
+          `_🔻 İndirilip yükleniyor... *${safeTitle}* (${duration || "—"})_`,
           message.jid,
           downloadMsg.key
         );
@@ -564,11 +570,11 @@ Module(
         await message.client.sendMessage(message.jid, {
           audio: { url: download_url },
           mimetype: "audio/mpeg",
-          fileName: `${title}.mp3`,
+          fileName: `${safeTitle}.mp3`,
         }, { quoted: message.data });
 
         await message.edit(
-          `_✅ Hazır! *${title}*_`,
+          `_✅ Hazır! *${safeTitle}*_`,
           message.jid,
           downloadMsg.key
         );
@@ -631,8 +637,9 @@ Module(
         let audioPath;
 
         try {
+          const safeTitle = censorBadWords(selectedVideo.title);
           downloadMsg = await message.sendReply(
-            `_⬇️ *${selectedVideo.title}* indiriliyor..._`
+            `_⬇️ *${safeTitle}* indiriliyor..._`
           );
 
           const result = await downloadAudio(selectedVideo.url);
@@ -710,7 +717,8 @@ Module(
         });
         const thumbnailBuffer = Buffer.from(thumbnailResponse.data);
 
-        let caption = `_*${selectedVideo.title}*_\n\n`;
+        const safeTitle = censorBadWords(selectedVideo.title);
+        let caption = `_*${safeTitle}*_\n\n`;
         caption += `*Kanal:* ${selectedVideo.channel.name}\n`;
         caption += `*Süre:* \`${selectedVideo.duration}\`\n`;
         caption += `*Görüntülenme:* \`${formatViews(selectedVideo.views)}\`\n`;
@@ -807,13 +815,14 @@ Module(
             );
 
             const stats = fs.statSync(filePath);
+            const safeTitle = censorBadWords(result.title);
 
             if (stats.size > VIDEO_SIZE_LIMIT) {
               const stream5 = fs.createReadStream(filePath);
               await message.sendMessage({ stream: stream5 }, "document", {
-                fileName: `${result.title}.mp4`,
+                fileName: `${safeTitle}.mp4`,
                 mimetype: "video/mp4",
-                caption: `_*${result.title}*_\n\n_Dosya boyutu: ${formatBytes(
+                caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(
                   stats.size
                 )}_\n_Kalite: 360p_`,
               });
@@ -821,7 +830,7 @@ Module(
             } else {
               const stream6 = fs.createReadStream(filePath);
               await message.sendReply({ stream: stream6 }, "video", {
-                caption: `_*${result.title}*_\n\n_Kalite: 360p_`,
+                caption: `_*${safeTitle}*_\n\n_Kalite: 360p_`,
               });
               stream6.destroy();
             }
@@ -916,11 +925,12 @@ Module(
               downloadMsg.key
             );
 
+            const safeTitle = censorBadWords(result.title);
             const stream = fs.createReadStream(audioPath);
             await message.sendMessage({ stream }, "document", {
-              fileName: `${result.title}.m4a`,
+              fileName: `${safeTitle}.m4a`,
               mimetype: "audio/mp4",
-              caption: `_*${result.title}*_`,
+              caption: `_*${safeTitle}*_`,
             });
             stream.destroy();
 
@@ -972,13 +982,14 @@ Module(
             );
 
             const stats = fs.statSync(videoPath);
+            const safeTitle = censorBadWords(result.title);
 
             if (stats.size > VIDEO_SIZE_LIMIT) {
               const stream7 = fs.createReadStream(videoPath);
               await message.sendMessage({ stream: stream7 }, "document", {
-                fileName: `${result.title}.mp4`,
+                fileName: `${safeTitle}.mp4`,
                 mimetype: "video/mp4",
-                caption: `_*${result.title}*_\n\n_Dosya boyutu: ${formatBytes(
+                caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(
                   stats.size
                 )}_\n_Kalite: ${selectedQuality}_`,
               });
@@ -986,7 +997,7 @@ Module(
             } else {
               const stream8 = fs.createReadStream(videoPath);
               await message.sendReply({ stream: stream8 }, "video", {
-                caption: `_*${result.title}*_\n\n_Kalite: ${selectedQuality}_`,
+                caption: `_*${safeTitle}*_\n\n_Kalite: ${selectedQuality}_`,
               });
               stream8.destroy();
             }
@@ -1052,8 +1063,9 @@ Module(
       const spotifyInfo = await spotifyTrack(url);
       const { title, artist } = spotifyInfo;
 
+      const safeTitle = censorBadWords(title);
       await message.edit(
-        `_⬇️ *${artist}* - *${title}* indiriliyor..._`,
+        `_⬇️ *${artist}* - *${safeTitle}* indiriliyor..._`,
         message.jid,
         downloadMsg.key
       );

@@ -78,6 +78,8 @@ const linkDetector = require("./link-detector");
 
 const fancy = require("./fancy");
 
+const { censorBadWords, badWords } = require("./censor");
+
 module.exports = {
   // Database Operations
   getWarn,
@@ -149,4 +151,8 @@ module.exports = {
   // Link Detection
   linkDetector,
   lyrics,
+
+  // Küfür sansürü (tüm pluginlerden erişilebilir)
+  censorBadWords,
+  badWords,
 };
