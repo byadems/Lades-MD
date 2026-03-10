@@ -6,12 +6,12 @@ function TimeCalculator(a) {
     f = Math.floor((a % 3600) / 60),
     g = Math.floor(a % 60);
   return (
-    (b > 0 ? b + (1 === b ? " year, " : " years, ") : "") +
-    (c > 0 ? c + (1 === c ? " month, " : " months, ") : "") +
-    (d > 0 ? d + (1 === d ? " day, " : " days, ") : "") +
-    (e > 0 ? e + (1 === e ? " hour, " : " hours, ") : "") +
-    (f > 0 ? f + (1 === f ? " minute " : " minutes, ") : "") +
-    (g > 0 ? g + (1 === g ? " second" : " seconds ") : "")
+    (b > 0 ? b + (1 === b ? " yıl, " : " yıl, ") : "") +
+    (c > 0 ? c + (1 === c ? " ay, " : " ay, ") : "") +
+    (d > 0 ? d + (1 === d ? " gün, " : " gün, ") : "") +
+    (e > 0 ? e + (1 === e ? " saat, " : " saat, ") : "") +
+    (f > 0 ? f + (1 === f ? " dakika " : " dakika, ") : "") +
+    (g > 0 ? g + (1 === g ? " saniye" : " saniye ") : "")
   );
 }
 const { Module } = require("../main");
@@ -67,9 +67,9 @@ Module(
   },
   async (message, match) => {
     const start = process.hrtime();
-    let sent_msg = await message.sendReply("*❮ ᴛᴇsᴛ ᴘɪɴɢ ❯*");
+    let sent_msg = await message.sendReply("*❮ ᴘɪɴɢ ᴛᴇsᴛɪ ❯*");
     const diff = process.hrtime(start);
     const ms = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(2);
-    await message.edit("*ʟᴀᴛᴇɴᴄʏ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);
+    await message.edit("*ɢᴇᴄɪᴋᴍᴇ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);
   }
 );

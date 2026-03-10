@@ -273,21 +273,21 @@ Module(
         {
           buttonId: handler + "antifake on",
           buttonText: {
-            displayText: "On",
+            displayText: "Açık",
           },
           type: 1,
         },
         {
           buttonId: handler + "antifake off",
           buttonText: {
-            displayText: "Off",
+            displayText: "Kapalı",
           },
           type: 1,
         },
         {
           buttonId: handler + "antifake allow",
           buttonText: {
-            displayText: "Allowed prefixes",
+            displayText: "İzin verilen önekler",
           },
           type: 1,
         },
@@ -349,7 +349,7 @@ Module(
       if (message.action == "demote") admin_jids.push(message.participant[0].id);
       await message.client.sendMessage(message.jid, {
         text: `_*[${
-          message.action == "promote" ? "Promote detected" : "Demote detected"
+          message.action == "promote" ? "Yükseltme algılandı" : "Düşürme algılandı"
         }]*_\n\n@${message.from.split("@")[0]} ${message.action}d @${
           message.participant[0].id.split("@")[0]
         }`,

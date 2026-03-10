@@ -400,7 +400,7 @@ Module(
           await clearAllContexts(target);
           return await message.sendReply(
             `*_💭 Contexts Cleared for All ${
-              target === "gruplar" ? "Groups" : "DMs"
+              target === "gruplar" ? "Gruplar" : "DM'ler"
             }_*\n\n` +
               `_Konuşma geçmişleri tüm  ${
                 target === "gruplar" ? "gruplar" : "DMs"

@@ -145,7 +145,7 @@ Module(
       const allFiles = [...(albumData.images || []), ...(albumData.videos || [])];
       if (allFiles.length === 0) return await message.send("_Albümde medya yok_");
 
-      await message.send(`_Converting ${allFiles.length} stickers..._`);
+      await message.send(`_${allFiles.length} çıkartma dönüştürülüyor..._`);
       for (const file of allFiles) {
         try {
           const isVideo = albumData.videos?.includes(file);
@@ -203,10 +203,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_No video files in album. MP3 requires video/audio files._");
+        return await message.send("_Albümde video dosyası yok. MP3 için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_Converting ${videoFiles.length} files to mp3..._`);
+      await message.send(`_${videoFiles.length} dosya mp3'e dönüştürülüyor..._`);
       for (let i = 0; i < videoFiles.length; i++) {
         try {
           const file = videoFiles[i];
@@ -257,10 +257,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_No video files in album. Slow requires video/audio files._");
+        return await message.send("_Albümde video dosyası yok. Yavaşlatma için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_Slowing ${videoFiles.length} files..._`);
+      await message.send(`_${videoFiles.length} dosya yavaşlatılıyor..._`);
       for (let i = 0; i < videoFiles.length; i++) {
         try {
           const file = videoFiles[i];
@@ -322,10 +322,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_No video files in album. Sped requires video/audio files._");
+        return await message.send("_Albümde video dosyası yok. Hızlandırma için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_Speeding ${videoFiles.length} files..._`);
+      await message.send(`_${videoFiles.length} dosya hızlandırılıyor..._`);
       for (let i = 0; i < videoFiles.length; i++) {
         try {
           const file = videoFiles[i];
@@ -387,10 +387,10 @@ Module(
       const videoFiles = albumData.videos || [];
       
       if (videoFiles.length === 0) {
-        return await message.send("_No video files in album. Bass requires video/audio files._");
+        return await message.send("_Albümde video dosyası yok. Bas için video/ses dosyası gerekir._");
       }
 
-      await message.send(`_Adding bass to ${videoFiles.length} files..._`);
+      await message.send(`_${videoFiles.length} dosyaya bas ekleniyor..._`);
       for (const file of videoFiles) {
         try {
           bass(file, match[1], async function (audio) {
@@ -530,7 +530,7 @@ Module(
   async (message, match) => {
     if (message.reply_message === false)
       return await message.send(
-        "_Reply to a media file (image, video, audio, sticker, or document)_"
+        "_Bir medya dosyasına (görsel, video, ses, çıkartma veya belge) yanıt verin_"
       );
 
     if (
@@ -542,7 +542,7 @@ Module(
       !message.reply_message.album
     ) {
       return await message.send(
-        "_Reply to a media file (image, video, audio, sticker, or document)_"
+        "_Bir medya dosyasına (görsel, video, ses, çıkartma veya belge) yanıt verin_"
       );
     }
 
@@ -552,7 +552,7 @@ Module(
       const allFiles = [...(albumData.images || []), ...(albumData.videos || [])];
       if (allFiles.length === 0) return await message.send("_Albümde medya yok_");
 
-      await message.send(`_Converting ${allFiles.length} files to documents..._`);
+      await message.send(`_${allFiles.length} dosya belgeye dönüştürülüyor..._`);
       for (let i = 0; i < allFiles.length; i++) {
         try {
           const filePath = allFiles[i];
@@ -585,9 +585,9 @@ Module(
       const mediaInfo = mediaMessage[mediaType];
 
       if (mediaInfo.fileLength && mediaInfo.fileLength > 50 * 1024 * 1024) {
-        return await message.send("_File too large! Maximum size is 50MB_");
+        return await message.send("_Dosya çok büyük! Maksimum boyut 50MB_");
       }
-      const processingMsg = await message.send("_Converting to document..._");
+      const processingMsg = await message.send("_Belgeye dönüştürülüyor..._");
 
       const filePath = await message.reply_message.download();
       const stream = fs.createReadStream(filePath);
@@ -621,7 +621,7 @@ Module(
       }
 
       await message.edit(
-        "_Document conversion complete!_",
+        "_Belge dönüşümü tamamlandı!_",
         message.jid,
         processingMsg.key
       );
@@ -659,12 +659,12 @@ Module(
 
     if (!url || !url.startsWith("http")) {
       return await message.send(
-        "_Please provide a valid URL or reply to a message containing a URL_"
+        "_Geçerli bir URL girin veya URL içeren bir mesaja yanıt verin_"
       );
     }
 
     try {
-      await message.send("_Downloading file..._");
+      await message.send("_Dosya indiriliyor..._");
 
       const response = await axios.get(url, {
         responseType: "stream",
@@ -702,7 +702,7 @@ Module(
         quoted: message.quoted,
         fileName: fileName,
         mimetype: mimetype,
-        caption: `_Downloaded from: ${url}_`,
+        caption: `_İndirildi: ${url}_`,
       });
     } catch (error) {
       console.error("Upload error:", error);
@@ -828,7 +828,7 @@ Module(
 
     if (!match[1]) {
       return await message.send(
-        "_Please specify aspect ratio. Examples:_\n• `.resize 16:9` - Widescreen\n• `.resize 9:16` - Vertical/Stories\n• `.resize 4:3` - Classic\n• `.resize 21:9` - Ultrawide\n• `.resize 1:1` - Square"
+        "_En-boy oranı belirtin. Örnekler:_\n• `.resize 16:9` - Geniş ekran\n• `.resize 9:16` - Dikey/Hikaye\n• `.resize 4:3` - Klasik\n• `.resize 21:9` - Ultra geniş\n• `.resize 1:1` - Kare"
       );
     }
 
@@ -836,7 +836,7 @@ Module(
 
     if (!input.includes(":")) {
       return await message.send(
-        "_Invalid format! Use aspect ratios like 16:9, 9:16, 4:3, etc._"
+        "_Geçersiz format! 16:9, 9:16, 4:3 gibi en-boy oranları kullanın._"
       );
     }
 
@@ -851,13 +851,13 @@ Module(
       heightRatio <= 0
     ) {
       return await message.send(
-        "_Invalid aspect ratio! Use positive numbers like 16:9, 9:16, etc._"
+        "_Geçersiz en-boy oranı! 16:9, 9:16 gibi pozitif sayılar kullanın._"
       );
     }
 
     try {
       const processingMsg = await message.send(
-        `_Resizing to ${input} aspect ratio..._`
+        `_${input} en-boy oranına yeniden boyutlandırılıyor..._`
       );
 
       const savedFile = await message.reply_message.download();
@@ -903,12 +903,12 @@ Module(
             if (isVideo) {
               await message.sendMessage(fs.readFileSync(outputPath), "video", {
                 quoted: message.quoted,
-                caption: `_Resized to ${input} aspect ratio (${targetWidth}x${targetHeight})_`,
+                caption: `_${input} en-boy oranına boyutlandırıldı (${targetWidth}x${targetHeight})_`,
               });
             } else {
               await message.sendMessage(fs.readFileSync(outputPath), "image", {
                 quoted: message.quoted,
-                caption: `_Resized to ${input} aspect ratio (${targetWidth}x${targetHeight})_`,
+                caption: `_${input} en-boy oranına boyutlandırıldı (${targetWidth}x${targetHeight})_`,
               });
             }
 
@@ -916,7 +916,7 @@ Module(
             fs.unlinkSync(outputPath);
 
             await message.edit(
-              `_Aspect ratio change to ${input} completed ✅_`,
+              `_${input} en-boy oranı değişikliği tamamlandı ✅_`,
               message.jid,
               processingMsg.key
             );
@@ -958,7 +958,7 @@ Module(
 
     if (!match[1]) {
       return await message.send(
-        "_Please specify compression percentage. Examples:_\n• `.compress 50` - 50% compression (moderate)\n• `.compress 70` - 70% compression (high)\n• `.compress 80` - 80% compression (very high)\n• `.compress 30` - 30% compression (light)"
+        "_Sıkıştırma yüzdesi belirtin. Örnekler:_\n• `.compress 50` - %50 sıkıştırma (orta)\n• `.compress 70` - %70 sıkıştırma (yüksek)\n• `.compress 80` - %80 sıkıştırma (çok yüksek)\n• `.compress 30` - %30 sıkıştırma (hafif)"
       );
     }
 
@@ -970,13 +970,13 @@ Module(
       compressionPercent > 95
     ) {
       return await message.send(
-        "_Invalid compression percentage! Use values between 10-95._"
+        "_Geçersiz sıkıştırma yüzdesi! 10-95 arası değer kullanın._"
       );
     }
 
     try {
       const processingMsg = await message.send(
-        `_Compressing by ${compressionPercent}%..._`
+        `_%${compressionPercent} sıkıştırılıyor..._`
       );
 
       const savedFile = await message.reply_message.download();
@@ -1034,14 +1034,14 @@ Module(
             if (isVideo) {
               await message.sendMessage(fs.readFileSync(outputPath), "video", {
                 quoted: message.quoted,
-                caption: `_Compressed by ${actualReduction}%_\n_${formatSize(
+                caption: `_%${actualReduction} sıkıştırıldı_\n_${formatSize(
                   originalSize
                 )} → ${formatSize(compressedSize)}_`,
               });
             } else {
               await message.sendMessage(fs.readFileSync(outputPath), "image", {
                 quoted: message.quoted,
-                caption: `_Compressed by ${actualReduction}%_\n_${formatSize(
+                caption: `_%${actualReduction} sıkıştırıldı_\n_${formatSize(
                   originalSize
                 )} → ${formatSize(compressedSize)}_`,
               });
@@ -1051,7 +1051,7 @@ Module(
             fs.unlinkSync(outputPath);
 
             await message.edit(
-              `_Compression completed ✅ (${actualReduction}% reduction)_`,
+              `_Sıkıştırma tamamlandı ✅ (%${actualReduction} azalma)_`,
               message.jid,
               processingMsg.key
             );

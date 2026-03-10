@@ -177,7 +177,7 @@ Module(
       }\n_*Following:*_ ${accountInfo.following}\n_*Bio:*_ ${
         accountInfo.bio
       }\n_*Private account:*_ ${
-        accountInfo.is_private ? "Yes" : "No"
+        accountInfo.is_private ? "Evet" : "Hayır"
       } \n_*Posts:*_ ${accountInfo.posts}`,
       quoted: message.data,
     });
@@ -294,7 +294,7 @@ Module(
 
       const toDownload = Math.min(desiredCount, searchResults.length);
       await message.sendReply(
-        `_Downloading ${toDownload} results for ${searchQuery} from Pinterest_`
+        `_Pinterest'ten ${searchQuery} için ${toDownload} sonuç indiriliyor_`
       );
 
       const imagesToSend = searchResults

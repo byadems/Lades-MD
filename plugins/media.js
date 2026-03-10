@@ -329,18 +329,18 @@ Module(
       return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
     const Message = {
-      text: `*Title:* ${data.title}\n
-Artists: ${data.artists?.map((e) => e.name + " ")}\n
-Released on: ${data.release_date}\n
-Duration: ${getDuration(data.duration_ms)}\n
-Album: ${data.album?.name}\n
-Genres: ${data.genres?.map((e) => e.name + " ")}\n
-Label: ${data.label}\n
-Spotify: ${"spotify" in data.external_metadata ? "Available" : "Unavailable"}\n
+      text: `*Başlık:* ${data.title}\n
+Sanatçılar: ${data.artists?.map((e) => e.name + " ")}\n
+Yayın: ${data.release_date}\n
+Süre: ${getDuration(data.duration_ms)}\n
+Albüm: ${data.album?.name}\n
+Türler: ${data.genres?.map((e) => e.name + " ")}\n
+Etiket: ${data.label}\n
+Spotify: ${"spotify" in data.external_metadata ? "Mevcut" : "Mevcut değil"}\n
 YouTube: ${
         "youtube" in data.external_metadata
           ? "https://youtu.be/" + data.external_metadata.youtube.vid
-          : "Unavailable"
+          : "Mevcut değil"
       }\n`,
       //    footer: '🎼 Listen to full music on',
       //    buttons,

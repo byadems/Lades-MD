@@ -401,7 +401,7 @@ Module({ on: "text", fromMe }, async (message) => {
           const { title, artist } = spotifyInfo;
 
           await message.edit(
-            `_Downloading *${title}* by *${artist}*..._`,
+            `_*${title}* - *${artist}* indiriliyor..._`,
             message.jid,
             downloadMsg.key
           );

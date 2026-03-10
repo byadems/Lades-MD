@@ -10,7 +10,7 @@ Module(
     fromMe: false,
     desc: "Otomatik yanıt filtreleri oluşturun. Kullanım: .filter tetikleyici | yanıt",
     usage:
-      ".filter hello | Hi there! | chat\n.filter help | I can help you | global\n.filter bye | Goodbye! | group | exact",
+      ".filter merhaba | Merhaba! | chat\n.filter yardım | Size yardım edebilirim | global\n.filter güle | Güle güle! | group | exact",
     use: "utility",
   },
   async (message, match) => {

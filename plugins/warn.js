@@ -44,9 +44,9 @@ Module(
           `*Kullanım:*\n` +
           `• \`${handler}warn @user reason\`\n` +
           `• \`${handler}warn reply reason\`\n` +
-          `• \`${handler}uyarı @user\` - Check uyarı\n` +
+          `• \`${handler}uyarı @user\` - Uyarıları kontrol et\n` +
           `• \`${handler}rmwarn @user\` - Bir uyarıyı kaldır\n` +
-          `• \`${handler}resetwarn @user\` - Remove all uyarı\n` +
+          `• \`${handler}resetwarn @user\` - Tüm uyarıları kaldır\n` +
           `• \`${handler}warnlist\` - Tüm uyarılanları listele`
       );
     }
