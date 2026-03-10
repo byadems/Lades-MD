@@ -56,6 +56,7 @@ function Module(info, func) {
     desc: info.desc ?? "",
     usage: info.usage ?? "",
     excludeFromCommands: info.excludeFromCommands ?? false,
+    dontAddCommandList: info.dontAddCommandList ?? false,
     warn: info.warn ?? "",
     use: info.use ?? "",
     function: func,

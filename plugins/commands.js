@@ -72,7 +72,7 @@ Module(
   },
   async (message, args) => {
     const availableCommands = commands.filter(
-      (cmd) => !cmd.excludeFromCommands && cmd.pattern
+      (cmd) => !cmd.excludeFromCommands && !cmd.dontAddCommandList && cmd.pattern
     );
     const totalCommandCount = availableCommands.length;
 
@@ -294,18 +294,24 @@ Module(
     const stars = ["✦", "✯", "✯", "✰", "◬"];
     const star = stars[Math.floor(Math.random() * stars.length)];
 
-    let use_ = commands.map((e) => e.use);
+    const visibleCommands = commands.filter(
+      (cmd) =>
+        cmd.pattern &&
+        !cmd.excludeFromCommands &&
+        !cmd.dontAddCommandList
+    );
+    let use_ = visibleCommands.map((e) => e.use);
     const others = (use) => {
       return use === "" ? "diğer" : use;
     };
     let types = [
       ...new Set(
-        commands.filter((e) => e.pattern).map((e) => e.use || "Genel")
+        visibleCommands.map((e) => e.use || "Genel")
       ),
     ];
 
     let cmd_obj = {};
-    for (const command of commands) {
+    for (const command of visibleCommands) {
       let type_det = command.use || "Genel";
       if (!cmd_obj[type_det]?.length) cmd_obj[type_det] = [];
       let cmd_name = extractCommandName(command.pattern);
