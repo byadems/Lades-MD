@@ -80,7 +80,8 @@ async function setWarn(
     }
   }
 
-  return await getWarn(jid, user);
+  const warnLimit = parseInt(config.WARN || "3");
+  return await getWarn(jid, user, warnLimit);
 }
 
 async function resetWarn(jid = null, user) {
