@@ -335,7 +335,7 @@ const baseConfig = {
     "78c84c62b32a88e86daf87dd509a657a",
   ],
   RG: process.env.RG || "919074309534-1632403322@g.us,120363116963909366@g.us",
-  BOT_INFO: process.env.BOT_INFO || "Lades;Bot;https://i.ibb.co/0Rb3CrkM/Lades-Bot-Logo.png",
+  BOT_INFO: process.env.BOT_INFO || "Lades;Bot;https://i.ibb.co/1GPRrv7Z/Lades-Bot-Logo.jpg",
   RBG_KEY: process.env.RBG_KEY || "",
   ALLOWED: process.env.ALLOWED || "90",
   NOT_ALLOWED: process.env.NOT_ALLOWED || "852",
