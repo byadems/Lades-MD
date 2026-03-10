@@ -343,11 +343,22 @@ Module(
     const botName = infoParts[0] || "Botum";
     const botOwner = infoParts[1] || "Belirtilmedi";
     const botVersion = VERSION;
-    let botImageLink = (infoParts[2] || "").trim();
-    // Config'te görsel belirlenmemişse (boş/default/http değil) varsayılan logo kullanılır
-    const DEFAULT_MENU_IMAGE_URL = "https://i.ibb.co/0Rb3CrkM/Lades-Bot-Logo.png";
-    if (!botImageLink || botImageLink === "default" || !botImageLink.startsWith("http")) {
-      botImageLink = DEFAULT_MENU_IMAGE_URL;
+    // Görsel URL: 4 parçalı (ad;sahip;telefon;url) veya 3 parçalı (ad;sahip;url) format desteklenir
+    const imagePart = infoParts.find((p) => (p || "").trim().startsWith("http"));
+    let botImageLink = (imagePart || infoParts[2] || "").trim();
+    const isVarsayilan =
+      !botImageLink ||
+      botImageLink === "default" ||
+      botImageLink === "varsayılan" ||
+      !botImageLink.startsWith("http");
+    const defaultLogoPath = path.join(__dirname, "utils", "images", "default.png");
+    let imagePayload;
+    if (isVarsayilan && fs.existsSync(defaultLogoPath)) {
+      imagePayload = fs.readFileSync(defaultLogoPath);
+    } else if (isVarsayilan) {
+      imagePayload = { url: "https://i.ibb.co/0Rb3CrkM/Lades-Bot-Logo.png" };
+    } else {
+      imagePayload = { url: botImageLink };
     }
 
     const menu = `╭═══〘 \`${botName}\` 〙═══⊷❍
@@ -357,7 +368,7 @@ Module(
 ┃${star}│ _*\`Üye\`*_ : ${message.senderName.replace(/[\r\n]+/gm, "")}
 ┃${star}│ _*\`Mod\`*_ : ${MODE}
 ┃${star}│ _*\`Sunucu\`*_ : ${os.platform() === "linux" ? "Linux" : "Bilinmeyen İşletim Sistemi"}
-┃${star}│ _*\`Kullanılabilir RAM\`*_ : ${used} of ${total}
+┃${star}│ _*\`Kullanılabilir RAM\`*_ : ${used} / ${total}
 ┃${star}│ _*\`Toplam Kullanıcı\`*_ : ${totalUsers}
 ┃${star}│ _*\`Versiyon\`*_ : ${botVersion}
 ┃${star}│
@@ -372,11 +383,11 @@ Module(
 ${cmdmenu}`;
     try {
       await message.client.sendMessage(message.jid, {
-        image: { url: botImageLink },
+        image: imagePayload,
         caption: menu,
       });
     } catch (error) {
-      console.error("Error sending menu:", error);
+      console.error("Menü görseli gönderilirken hata:", error);
       await message.client.sendMessage(message.jid, {
         text: menu,
       });
@@ -444,7 +455,7 @@ _\`.setinfo\` yerine bu ayrı komutları kullanın:_
 _Bot bilgisi şu şekilde saklanır: \`ad;sahip;görselbağlantısı\`_
 
 *İpuçları:*
-- _Yerel varsayılan görsel için \`default\` kullanın_
+- _Yerel varsayılan görsel için \`varsayılan\` kullanın_
 - _Değişiklikler otomatik kaydedilir_
 - _Güncel bilgiyi görmek için \`.menu\` kullanın_`;
 
@@ -512,7 +523,7 @@ Module(
       try {
         fs.unlinkSync(downloadedFile);
       } catch (e) {
-        console.log("Failed to delete temp file:", downloadedFile);
+        console.log("Geçici dosya silinemedi:", downloadedFile);
       }
 
       const url = uploadRes.url || uploadRes.display_url;
@@ -521,13 +532,14 @@ Module(
       }
 
       const parts = config.BOT_INFO.split(";");
-      parts[2] = url;
+      while (parts.length < 3) parts.push("");
+      parts[parts.length - 1] = url;
       await setVar("BOT_INFO", parts.join(";"));
       return await message.sendReply(
         `_✅ Bot görseli başarıyla güncellendi!_\n\n*🖼️ Yeni Görsel URL:* ${url}`
       );
     } catch (error) {
-      console.error("Error setting image:", error);
+      console.error("Görsel ayarlanırken hata:", error);
       return await message.sendReply("_⚠️ Görsel ayarlanamadı. Lütfen tekrar deneyin._"
       );
     }

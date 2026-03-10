@@ -56,14 +56,19 @@ Module(
         await m.sendReply(`_🎵 Varsayılan ses verisi kullanılıyor, değiştirmek için .setvar kullanın_`
         );
       }
+      const botInfoParts = config.BOT_INFO.split(";");
+      const botImgPart =
+        botInfoParts.find((p) => (p || "").trim().startsWith("http")) ||
+        botInfoParts[3] ||
+        botInfoParts[2] ||
+        "";
+      const botImgUrl = ["default", "varsayılan"].includes(botImgPart?.trim())
+        ? "https://i.ibb.co/s98DyMMq/NL-1.png"
+        : botImgPart;
       let spl = inf.split(";"),
         image = spl[2]
           ? await getBuffer(spl[2])
-          : await getBuffer(
-              config.BOT_INFO.split(";")?.[3] === "default"
-                ? "https://i.ibb.co/s98DyMMq/NL-1.png"
-                : config.BOT_INFO.split(";")[3]
-            ),
+          : await getBuffer(botImgUrl),
         res = await addID3(
           q,
           spl[0],
