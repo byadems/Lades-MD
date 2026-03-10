@@ -418,7 +418,7 @@ Module(
   async (message, match) => {
     let input = (match[1] || message.reply_message?.text || "").trim();
     if (!input) {
-      return await message.sendReply("_⚠️ Lütfen şarkı adını veya bağlantısını verin!_\n_Örnek: .şarkı sezen aksu_"
+      return await message.sendReply("_⚠️ Lütfen şarkı adı veya bağlantısı yazın!_\n_Örnek: .şarkı Duman - Bu Akşam_"
       );
     }
 
@@ -447,7 +447,7 @@ Module(
       }
 
       if (url) {
-        downloadMsg = await message.sendReply("_⬇️ Ses indiriliyor..._");
+        downloadMsg = await message.sendReply("_🔻 İndiriliyor..._");
         const result = await downloadAudio(url);
         audioPath = result.path;
 
@@ -456,7 +456,7 @@ Module(
 
         const safeTitle = censorBadWords(result.title);
         await message.edit(
-          `_📤 *${safeTitle}* gönderiliyor..._`,
+          `_🔺 Yükleniyor..._ *${safeTitle}*`,
           message.jid,
           downloadMsg.key
         );
@@ -468,7 +468,7 @@ Module(
         stream1.destroy();
 
         await message.edit(
-          `_✅ *${safeTitle}* indirildi!_`,
+          `_✅ Hazır!_ *${safeTitle}*`,
           message.jid,
           downloadMsg.key
         );
@@ -493,7 +493,7 @@ Module(
         const video = results[0];
         const safeTitle = censorBadWords(video.title);
         await message.edit(
-          `_⬇️ *${safeTitle}* indiriliyor..._`,
+          `_🔻 İndiriliyor..._ *${safeTitle}*`,
           message.jid,
           downloadMsg.key
         );
@@ -505,7 +505,7 @@ Module(
         audioPath = mp3Path;
 
         await message.edit(
-          `_📤 *${safeTitle}* gönderiliyor..._`,
+          `_🔺 Yükleniyor..._ *${safeTitle}*`,
           message.jid,
           downloadMsg.key
         );
@@ -517,7 +517,7 @@ Module(
         stream2.destroy();
 
         await message.edit(
-          `_✅ *${safeTitle}* indirildi!_`,
+          `_✅ Hazır!_ *${safeTitle}*`,
           message.jid,
           downloadMsg.key
         );
@@ -537,9 +537,9 @@ Module(
 
       try {
         if (!downloadMsg) {
-          downloadMsg = await message.sendReply("_🔎 Aranıyor... (bu işlem 10-60 saniye sürebilir)_");
+          downloadMsg = await message.sendReply("_🔎 Aranıyor..._ (bu işlem 10-60 saniye sürebilir)");
         } else {
-          await message.edit("_🔎 Aranıyor... (bu işlem 10-60 saniye sürebilir)_", message.jid, downloadMsg.key);
+          await message.edit("_🔎 Aranıyor..._ (bu işlem 10-60 saniye sürebilir)", message.jid, downloadMsg.key);
         }
 
         let query = input.trim();
@@ -574,7 +574,7 @@ Module(
         }, { quoted: message.data });
 
         await message.edit(
-          `_✅ Hazır! *${safeTitle}*_`,
+          `_✅ Hazır!_ *${safeTitle}*`,
           message.jid,
           downloadMsg.key
         );
