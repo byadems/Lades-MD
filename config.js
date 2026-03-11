@@ -25,6 +25,21 @@ const isRailway = __dirname.startsWith("/railway");
 
 const logger = P({ level: process.env.LOG_LEVEL || "silent" });
 
+function applyPostgresResilience(sequelizeInstance) {
+  if (!sequelizeInstance || sequelizeInstance.__pgGuardsApplied) {
+    return;
+  }
+  sequelizeInstance.__pgGuardsApplied = true;
+
+  sequelizeInstance.addHook("afterConnect", (connection) => {
+    connection.on?.("error", (err) => {
+      if (err?.message?.includes("savepoint") && err?.message?.includes("does not exist")) {
+        logger.debug({ err: err.message }, "PostgreSQL savepoint hatası (bağlantı yeniden kullanılacak)");
+      }
+    });
+  });
+}
+
 function applySQLiteResilience(sequelizeInstance) {
   if (!sequelizeInstance || sequelizeInstance.__sqliteGuardsApplied) {
     return;
@@ -236,19 +251,28 @@ const sequelize = (() => {
     return sqliteInstance;
   }
 
-  return new Sequelize(DATABASE_URL, {
+  const isPostgres = /^postgres(ql)?:\/\//i.test(DATABASE_URL);
+  const pgInstance = new Sequelize(DATABASE_URL, {
     dialectOptions: {
       ssl: { require: true, rejectUnauthorized: false },
       connectTimeout: 30000,
     },
     logging: DEBUG,
-    pool: {
-      max: 3,
-      min: 0,
-      acquire: 60000,
-      idle: 5000,
-      evict: 1000,
-    },
+    pool: isPostgres
+      ? {
+          max: parseInt(process.env.PG_POOL_MAX || "10", 10),
+          min: parseInt(process.env.PG_POOL_MIN || "2", 10),
+          acquire: 60000,
+          idle: 30000,
+          evict: 5000,
+        }
+      : {
+          max: 3,
+          min: 0,
+          acquire: 60000,
+          idle: 5000,
+          evict: 1000,
+        },
     retry: {
       max: 5,
       match: [
@@ -256,9 +280,15 @@ const sequelize = (() => {
         /ETIMEDOUT/,
         /ConnectionError/,
         /Operation timeout/,
+        /savepoint.*does not exist/,
       ],
     },
   });
+
+  if (isPostgres) {
+    applyPostgresResilience(pgInstance);
+  }
+  return pgInstance;
 })();
 
 const SESSION_STRING = process.env.SESSION || process.env.SESSION_ID;

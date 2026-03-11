@@ -8,6 +8,20 @@ const { suppressLibsignalLogs } = require("./core/helpers");
 
 suppressLibsignalLogs();
 
+// PostgreSQL savepoint rollback gürültüsünü azalt (bağlantı havuzu otomatik düzeltiyor)
+if (process.env.SUPPRESS_PG_SAVEPOINT_LOG !== "false") {
+  const config = require("./config");
+  const origWrite = process.stderr.write.bind(process.stderr);
+  process.stderr.write = function (chunk, enc, cb) {
+    const s = typeof chunk === "string" ? chunk : String(chunk || "");
+    if (s.includes("savepoint") && s.includes("does not exist")) {
+      if (config.DEBUG) origWrite(chunk, enc, cb);
+      return typeof cb === "function" ? (cb(), true) : true;
+    }
+    return origWrite(chunk, enc, cb);
+  };
+}
+
 const { initializeDatabase, BotVariable } = require("./core/database");
 const { BotManager } = require("./core/manager");
 const config = require("./config");

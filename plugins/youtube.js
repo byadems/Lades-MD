@@ -542,7 +542,7 @@ Module(
         }
       }
     } catch (error) {
-      console.error("Çalma hatası, yedek yöntem deneniyor:", error.message);
+      if (config.DEBUG) console.error("Çalma hatası, yedek yöntem deneniyor:", error.message);
       if (audioPath && fs.existsSync(audioPath)) {
         try {
           fs.unlinkSync(audioPath);
