@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "start": "pm2 start index.js --name lades-md --attach"
+    "start": "pm2 start ecosystem.config.js --attach"
   },
   "keywords": [
     "whatsapp",

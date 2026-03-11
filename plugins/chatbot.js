@@ -19,6 +19,19 @@ const chatbotStates = new Map();
 const chatContexts = new Map();
 const modelStates = new Map();
 
+const MAX_CONTEXT_CHATS = 100;
+
+function pruneContexts() {
+  if (chatContexts.size > MAX_CONTEXT_CHATS) {
+    const excess = chatContexts.size - MAX_CONTEXT_CHATS;
+    const keys = chatContexts.keys();
+    for (let i = 0; i < excess; i++) {
+      const k = keys.next().value;
+      chatContexts.delete(k);
+    }
+  }
+}
+
 let globalSystemPrompt =
   "Sen Lades adında yardımsever bir yapay zeka asistandısın. Kısa, nazik ve bilgilendirici ol.";
 
@@ -162,6 +175,8 @@ async function getAIResponse(message, chatJid, imageBuffer = null) {
       if (contextArray.length > 20) {
         contextArray.splice(0, contextArray.length - 20);
       }
+
+      pruneContexts();
 
       return aiResponse;
     } else {

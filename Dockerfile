@@ -11,6 +11,7 @@ RUN git clone -b main https://github.com/byadems/Lades-MD /lds
 WORKDIR /lds
 RUN mkdir -p temp
 ENV TZ=Europe/Istanbul
+ENV NODE_OPTIONS="--max-old-space-size=512"
 RUN npm install -g --force yarn pm2
 RUN yarn install
 CMD ["npm", "start"]

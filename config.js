@@ -45,15 +45,17 @@ function applyPostgresResilience(sequelizeInstance) {
   const bufferedMessageQueries = [];
   let queueActive = false;
 
+  const PG_BUFFER_FLUSH_MS = 10 * 60 * 1000;
+  const PG_BUFFER_MAX = 100;
+
   const _bufferFlushInterval = setInterval(async () => {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Periyodik: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
-      const pending = [...bufferedMessageQueries];
-      bufferedMessageQueries.length = 0;
+      const pending = bufferedMessageQueries.splice(0);
       writeQueue.push(...pending);
       setImmediate(flushQueue);
     }
-  }, 1000 * 60 * 60);
+  }, PG_BUFFER_FLUSH_MS);
 
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
@@ -82,8 +84,7 @@ function applyPostgresResilience(sequelizeInstance) {
   sequelizeInstance.__flushBufferedQueries = async () => {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Kapatma: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
-      const pending = [...bufferedMessageQueries];
-      bufferedMessageQueries.length = 0;
+      const pending = bufferedMessageQueries.splice(0);
       writeQueue.push(...pending);
       await flushQueue();
     }
@@ -127,10 +128,9 @@ function applyPostgresResilience(sequelizeInstance) {
         isBuffered: true
       });
 
-      if (bufferedMessageQueries.length > 200) {
-        logger.info(`Tampon 200 öğeye ulaştı, erken yazma yapılıyor...`);
-        const pending = [...bufferedMessageQueries];
-        bufferedMessageQueries.length = 0;
+      if (bufferedMessageQueries.length > PG_BUFFER_MAX) {
+        logger.info(`Tampon ${PG_BUFFER_MAX} öğeye ulaştı, erken yazma yapılıyor...`);
+        const pending = bufferedMessageQueries.splice(0);
         writeQueue.push(...pending);
         setImmediate(flushQueue);
       }
@@ -161,9 +161,8 @@ function applyPostgresResilience(sequelizeInstance) {
           isBuffered: true
         });
 
-        if (bufferedMessageQueries.length > 200) {
-          const pending = [...bufferedMessageQueries];
-          bufferedMessageQueries.length = 0;
+        if (bufferedMessageQueries.length > PG_BUFFER_MAX) {
+          const pending = bufferedMessageQueries.splice(0);
           writeQueue.push(...pending);
           setImmediate(flushQueue);
         }
@@ -215,19 +214,20 @@ function applySQLiteResilience(sequelizeInstance) {
 
   const originalQuery = sequelizeInstance.query.bind(sequelizeInstance);
   const writeQueue = [];
-  const bufferedMessageQueries = []; // For messages and message_stats
+  const bufferedMessageQueries = [];
   let queueActive = false;
 
-  // Ensure periodic flush of buffered message queries (every 1 hour)
+  const SQLITE_BUFFER_FLUSH_MS = 10 * 60 * 1000;
+  const SQLITE_BUFFER_MAX = 100;
+
   const _bufferFlushInterval = setInterval(async () => {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Periyodik: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
-      const pending = [...bufferedMessageQueries];
-      bufferedMessageQueries.length = 0;
+      const pending = bufferedMessageQueries.splice(0);
       writeQueue.push(...pending);
       setImmediate(flushQueue);
     }
-  }, 1000 * 60 * 60);
+  }, SQLITE_BUFFER_FLUSH_MS);
 
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
@@ -242,7 +242,7 @@ function applySQLiteResilience(sequelizeInstance) {
         const result = await task();
         if (resolve) resolve(result);
       } catch (error) {
-        if (!isBuffered) { // only reject if it's an active awaiter
+        if (!isBuffered) {
            if (reject) reject(error);
         } else {
            logger.error({ err: error }, "Bekleyen veritabanı yazma sorgusu çalıştırılamadı");
@@ -253,12 +253,10 @@ function applySQLiteResilience(sequelizeInstance) {
     queueActive = false;
   };
 
-  // Expose a flush function so that index.js can call it during shutdown
   sequelizeInstance.__flushBufferedQueries = async () => {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Kapatma: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
-      const pending = [...bufferedMessageQueries];
-      bufferedMessageQueries.length = 0;
+      const pending = bufferedMessageQueries.splice(0);
       writeQueue.push(...pending);
       await flushQueue();
     }
@@ -282,7 +280,6 @@ function applySQLiteResilience(sequelizeInstance) {
   const isHighVolumeQuery = (sql) => {
       if (!sql || typeof sql !== "string") return false;
       const lower = sql.toLowerCase();
-      // Target the tables generating the highest load
       return lower.includes('into "messages"') || lower.includes("into `messages`") || lower.includes("into messages") ||
              lower.includes('into "message_stats"') || lower.includes("into `message_stats`") || lower.includes("into message_stats") ||
              lower.includes('update "messages"') || lower.includes("update `messages`") || lower.includes("update messages") ||
@@ -294,27 +291,22 @@ function applySQLiteResilience(sequelizeInstance) {
       return originalQuery(sql, ...rest);
     }
 
-    // High volume queries are pushed to a slow buffer
     if (isHighVolumeQuery(sql)) {
         bufferedMessageQueries.push({
             task: () => originalQuery(sql, ...rest),
             isBuffered: true
         });
         
-        // If buffer gets too huge, flush it before 1 hour
-        if (bufferedMessageQueries.length > 200) {
-            logger.info(`Tampon 200 öğeye ulaştı, erken yazma yapılıyor...`);
-            const pending = [...bufferedMessageQueries];
-            bufferedMessageQueries.length = 0;
+        if (bufferedMessageQueries.length > SQLITE_BUFFER_MAX) {
+            logger.info(`Tampon ${SQLITE_BUFFER_MAX} öğeye ulaştı, erken yazma yapılıyor...`);
+            const pending = bufferedMessageQueries.splice(0);
             writeQueue.push(...pending);
             setImmediate(flushQueue);
         }
         
-        // Immediately resolve to unblock the caller (store.js usually doesn't await the specific result fields)
         return Promise.resolve([[], 0]);
     }
 
-    // Normal queries execute immediately in queue
     return new Promise((resolve, reject) => {
       writeQueue.push({
         task: () => originalQuery(sql, ...rest),
@@ -338,9 +330,8 @@ function applySQLiteResilience(sequelizeInstance) {
               isBuffered: true
           });
           
-          if (bufferedMessageQueries.length > 200) {
-             const pending = [...bufferedMessageQueries];
-             bufferedMessageQueries.length = 0;
+          if (bufferedMessageQueries.length > SQLITE_BUFFER_MAX) {
+             const pending = bufferedMessageQueries.splice(0);
              writeQueue.push(...pending);
              setImmediate(flushQueue);
           }

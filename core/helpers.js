@@ -187,6 +187,42 @@ async function toBuffer(input) {
   return null;
 }
 
+const STALE_FILE_AGE_MS = 30 * 60 * 1000;
+let _tempCleanupTimer = null;
+
+function startTempCleanup() {
+  if (_tempCleanupTimer) return;
+  _tempCleanupTimer = setInterval(() => {
+    try {
+      if (!fs.existsSync(TEMP_DIR)) return;
+      const now = Date.now();
+      const entries = fs.readdirSync(TEMP_DIR, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(TEMP_DIR, entry.name);
+        try {
+          const stat = fs.statSync(fullPath);
+          if (now - stat.mtimeMs > STALE_FILE_AGE_MS) {
+            if (entry.isDirectory()) {
+              fs.rmSync(fullPath, { recursive: true, force: true });
+            } else {
+              fs.unlinkSync(fullPath);
+            }
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }, 15 * 60 * 1000);
+
+  if (_tempCleanupTimer.unref) _tempCleanupTimer.unref();
+}
+
+function stopTempCleanup() {
+  if (_tempCleanupTimer) {
+    clearInterval(_tempCleanupTimer);
+    _tempCleanupTimer = null;
+  }
+}
+
 module.exports = {
   loadBaileys,
   suppressLibsignalLogs,
@@ -199,4 +235,6 @@ module.exports = {
   ensureTempDir,
   getTempPath,
   getTempSubdir,
+  startTempCleanup,
+  stopTempCleanup,
 };

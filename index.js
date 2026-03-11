@@ -32,7 +32,35 @@ const {
   TEMP_DIR,
   initializeKickBot,
   cleanupKickBot,
+  startTempCleanup,
+  stopTempCleanup,
 } = require("./core/helpers");
+
+const MEMORY_CHECK_INTERVAL = 5 * 60 * 1000;
+const HEAP_WARN_THRESHOLD_MB = 400;
+
+let _memoryMonitorTimer = null;
+
+function startMemoryMonitor() {
+  _memoryMonitorTimer = setInterval(() => {
+    const mem = process.memoryUsage();
+    const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
+    const rssMB = Math.round(mem.rss / 1024 / 1024);
+
+    if (heapMB > HEAP_WARN_THRESHOLD_MB) {
+      logger.warn({ heapMB, rssMB }, `Yüksek bellek kullanımı tespit edildi`);
+      console.warn(`[Bellek] Heap: ${heapMB}MB / RSS: ${rssMB}MB — yüksek kullanım!`);
+
+      if (typeof global.gc === "function") {
+        global.gc();
+        const after = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
+        logger.info({ before: heapMB, after }, "GC zorlandı (yüksek heap)");
+      }
+    }
+  }, MEMORY_CHECK_INTERVAL);
+
+  if (_memoryMonitorTimer.unref) _memoryMonitorTimer.unref();
+}
 
 async function main() {
   ensureTempDir();
@@ -80,6 +108,8 @@ async function main() {
   const shutdownHandler = async (signal) => {
     console.log(`\n${signal} alındı, kapatılıyor...`);
     logger.info(`${signal} alındı, kapatılıyor...`);
+    if (_memoryMonitorTimer) clearInterval(_memoryMonitorTimer);
+    stopTempCleanup();
     cleanupKickBot();
     // Flush buffered DB queries before shutting down (from config.js buffer system)
     if (typeof config.sequelize?.__flushBufferedQueries === 'function') {
@@ -122,6 +152,9 @@ async function main() {
   };
 
   if (process.env.USE_SERVER !== "false") startServer();
+
+  startMemoryMonitor();
+  startTempCleanup();
 }
 
 if (require.main === module) {
