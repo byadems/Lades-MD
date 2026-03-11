@@ -121,18 +121,21 @@ function applyPostgresResilience(sequelizeInstance) {
     return false;
   };
 
-  const isAntiDeleteQuery = (sql) => {
+  const isAntiDeleteDml = (sql) => {
     if (!sql || typeof sql !== "string") return false;
-    return sql.toLowerCase().includes("antideletecache");
+    const lower = sql.toLowerCase();
+    if (!lower.includes("antideletecache")) return false;
+    const trimmed = lower.trimStart();
+    return trimmed.startsWith("insert") || trimmed.startsWith("update") || trimmed.startsWith("delete");
   };
 
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
-    if (isAntiDeleteQuery(sql)) {
-      return Promise.resolve([[], 0]);
-    }
-
     if (!isWriteQuery(sql)) {
       return originalQuery(sql, ...rest);
+    }
+
+    if (isAntiDeleteDml(sql)) {
+      return Promise.resolve([[], 0]);
     }
 
     if (isHighVolumeQuery(sql)) {
@@ -164,12 +167,12 @@ function applyPostgresResilience(sequelizeInstance) {
   if (typeof sequelizeInstance.queryRaw === "function") {
     const originalQueryRaw = sequelizeInstance.queryRaw.bind(sequelizeInstance);
     sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
-      if (isAntiDeleteQuery(sql)) {
-        return Promise.resolve([[], 0]);
-      }
-
       if (!isWriteQuery(sql)) {
         return originalQueryRaw(sql, ...rest);
+      }
+
+      if (isAntiDeleteDml(sql)) {
+        return Promise.resolve([[], 0]);
       }
 
       if (isHighVolumeQuery(sql)) {
@@ -311,18 +314,21 @@ function applySQLiteResilience(sequelizeInstance) {
       return false;
   };
 
-  const isAntiDeleteQuery = (sql) => {
+  const isAntiDeleteDml = (sql) => {
     if (!sql || typeof sql !== "string") return false;
-    return sql.toLowerCase().includes("antideletecache");
+    const lower = sql.toLowerCase();
+    if (!lower.includes("antideletecache")) return false;
+    const trimmed = lower.trimStart();
+    return trimmed.startsWith("insert") || trimmed.startsWith("update") || trimmed.startsWith("delete");
   };
 
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
-    if (isAntiDeleteQuery(sql)) {
-      return Promise.resolve([[], 0]);
-    }
-
     if (!isWriteQuery(sql)) {
       return originalQuery(sql, ...rest);
+    }
+
+    if (isAntiDeleteDml(sql)) {
+      return Promise.resolve([[], 0]);
     }
 
     if (isHighVolumeQuery(sql)) {
@@ -354,12 +360,12 @@ function applySQLiteResilience(sequelizeInstance) {
   if (typeof sequelizeInstance.queryRaw === "function") {
     const originalQueryRaw = sequelizeInstance.queryRaw.bind(sequelizeInstance);
     sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
-      if (isAntiDeleteQuery(sql)) {
-        return Promise.resolve([[], 0]);
-      }
-
       if (!isWriteQuery(sql)) {
         return originalQueryRaw(sql, ...rest);
+      }
+
+      if (isAntiDeleteDml(sql)) {
+        return Promise.resolve([[], 0]);
       }
 
       if (isHighVolumeQuery(sql)) {
