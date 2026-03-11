@@ -50,6 +50,37 @@ const { BotVariable } = require("../core/database");
 
 var handler = config.HANDLERS !== "false" ? config.HANDLERS.split("")[0] : "";
 
+let _antiwordJidsCache = null;
+let _antiwordCacheTime = 0;
+let _antilinkCache = new Map();
+let _antilinkCacheTime = 0;
+const MANAGE_CACHE_TTL = 60000;
+
+async function getCachedAntiwordJids() {
+  if (_antiwordJidsCache && Date.now() - _antiwordCacheTime < MANAGE_CACHE_TTL) {
+    return _antiwordJidsCache;
+  }
+  const db = await antiword.get();
+  _antiwordJidsCache = new Set(db.map((d) => d.jid));
+  _antiwordCacheTime = Date.now();
+  return _antiwordJidsCache;
+}
+
+async function getCachedAntilinkConfig(jid) {
+  if (_antilinkCache.has(jid) && Date.now() - _antilinkCacheTime < MANAGE_CACHE_TTL) {
+    return _antilinkCache.get(jid);
+  }
+  const conf = await antilinkConfig.get(jid);
+  _antilinkCache.set(jid, conf);
+  _antilinkCacheTime = Date.now();
+  return conf;
+}
+
+function invalidateManageCache() {
+  _antiwordJidsCache = null;
+  _antilinkCache.clear();
+}
+
 async function setVar(key, value, message = false) {
   await BotVariable.upsert({
     key: key.trim(),
@@ -1375,18 +1406,14 @@ Module(
         if (quotedMsg.includes(setting.title)) {
           const value = option === 1 ? "true" : "false";
           await setVar(setting.env_var, value);
-          await message.sendReply(`${setting.title} set to ${value}`);
+          await message.sendReply(`${setting.title} ${value} olarak ayarlandı`);
           return;
         }
       }
     }
 
-    var antiworddb = await antiword.get();
-    const antiwordjids = [];
-    antiworddb.map((data) => {
-      antiwordjids.push(data.jid);
-    });
-    if (antiwordjids.includes(message.jid)) {
+    const antiwordjids = await getCachedAntiwordJids();
+    if (antiwordjids.has(message.jid)) {
       var antiwordWarn = config.ANTIWORD_WARN?.split(",") || [];
       if (antiwordWarn.includes(message.jid)) return;
       let disallowedWords = (config.ANTI_WORDS || "auto").split(",");
@@ -1395,7 +1422,7 @@ Module(
       let thatWord = containsDisallowedWords(message.message, disallowedWords);
       if (thatWord) {
         await message.sendReply(
-          `_The word ${thatWord} is not allowed in this chat!_`
+          `_${thatWord} kelimesi bu sohbette yasaklıdır!_`
         );
         await message.client.groupParticipantsUpdate(
           message.jid,
@@ -1411,7 +1438,7 @@ Module(
     const foundLinks = linkDetector.detectLinks(message.message);
 
     if (foundLinks.length > 0) {
-      const antilinkConf = await antilinkConfig.get(message.jid);
+      const antilinkConf = await getCachedAntilinkConfig(message.jid);
 
       if (antilinkConf && antilinkConf.enabled) {
         let linkBlocked = false;
@@ -1444,7 +1471,7 @@ Module(
           });
           const customMessage =
             antilinkConf.customMessage ||
-            `⚠️ *Link Detected!*\n\n_Links are not allowed in this group._`;
+            `⚠️ *Bağlantı Algılandı!*\n\n_Bu grupta bağlantılara izin verilmiyor._`;
 
           if (antilinkConf.mode === "delete") {
             await message.sendMessage(customMessage, "text", {
@@ -1559,18 +1586,14 @@ Module(
       const mins = Math.floor((seconds % 3600) / 60);
       const secs = seconds % 60;
 
-      return `${days} ${days === 1 ? "day" : "days"}, ${hours} ${
-        hours === 1 ? "hr" : "hrs"
-      }, ${mins} ${mins === 1 ? "min" : "mins"}, ${secs} ${
-        secs === 1 ? "sec" : "secs"
-      }`;
+      return `${days} gün, ${hours} sa, ${mins} dk, ${secs} sn`;
     };
 
     const osUptime = formatTime(Math.floor(require("os").uptime()));
     const processUptime = formatTime(Math.floor(process.uptime()));
 
     return await message.sendReply(
-      `                 *[ UPTIME ]*\n\n_System: ${osUptime}_\n\n_Process: ${processUptime}_`
+      `                 *[ ÇALIŞMA SÜRESİ ]*\n\n_Sistem: ${osUptime}_\n\n_İşlem: ${processUptime}_`
     );
   }
 );

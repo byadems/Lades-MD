@@ -62,7 +62,7 @@ Module(
     fromMe: true,
     desc: "Grupta mesaj atan kullanıcıların mesaj sayılarını gösterir",
     usage:
-      ".msgs (all members with messages)\n.msgs @mention (specific member)",
+      ".msgs (mesajı olan tüm üyeler)\n.msgs @etiket (belirli üye)",
     use: "group",
   },
   async (message, match) => {
@@ -98,11 +98,11 @@ Module(
       );
 
       if (usersWithMessages.length === 0) {
-        return await message.sendReply("_❌ Veritabanında mesajı olan hiçbir üye bulunamadı._"
+        return await message.sendReply("_❌ Veritabanında mesajı olan üye bulunamadı._"
         );
       }
 
-      let final_msg = `_Messages sent by ${usersWithMessages.length} members_\n_Sorted by message count (highest to lowest)_\n\n`;
+      let final_msg = `_${usersWithMessages.length} üyenin gönderdiği mesajlar_\n_Mesaj sayısına göre sıralı (en yüksekten en düşüğe)_\n\n`;
 
       for (let userObj of usersWithMessages) {
         let user = userObj.jid;
@@ -112,20 +112,20 @@ Module(
         let lastMsg = timeSince(userStat.lastMessageAt);
         let types_msg = "\n";
         if (userStat.textMessages > 0)
-          types_msg += `_Text: *${userStat.textMessages}*_\n`;
+          types_msg += `_Metin: *${userStat.textMessages}*_\n`;
         if (userStat.imageMessages > 0)
-          types_msg += `_Image: *${userStat.imageMessages}*_\n`;
+          types_msg += `_Görsel: *${userStat.imageMessages}*_\n`;
         if (userStat.videoMessages > 0)
           types_msg += `_Video: *${userStat.videoMessages}*_\n`;
         if (userStat.audioMessages > 0)
-          types_msg += `_Audio: *${userStat.audioMessages}*_\n`;
+          types_msg += `_Ses: *${userStat.audioMessages}*_\n`;
         if (userStat.stickerMessages > 0)
-          types_msg += `_Sticker: *${userStat.stickerMessages}*_\n`;
+          types_msg += `_Çıkartma: *${userStat.stickerMessages}*_\n`;
         if (userStat.otherMessages > 0)
-          types_msg += `_Others: *${userStat.otherMessages}*_\n`;
-        final_msg += `_Participant: *+${
+          types_msg += `_Diğer: *${userStat.otherMessages}*_\n`;
+        final_msg += `_Katılımcı: *+${
           user.split("@")[0]
-        }*_\n_Name: *${name}*_\n_Total msgs: *${count}*_\n_Last msg: *${lastMsg}*_${types_msg}\n\n`;
+        }*_\n_İsim: *${name}*_\n_Toplam mesaj: *${count}*_\n_Son mesaj: *${lastMsg}*_${types_msg}\n\n`;
       }
 
       return await message.sendReply(final_msg);
@@ -283,7 +283,7 @@ Module(
 
             if (kickCount % 5 === 0) {
               await message.send(
-                `_Kicked ${kickCount}/${inactiveMembers.length} members..._`
+                `_${kickCount}/${inactiveMembers.length} üye atıldı..._`
               );
             }
           } catch (error) {
@@ -292,18 +292,18 @@ Module(
         }
 
         return await message.send(
-          `_✅ Kicked ${kickCount}/${inactiveMembers.length} inactive members._`
+          `_✅ ${kickCount}/${inactiveMembers.length} pasif üye atıldı._`
         );
       } else {
         for (let i = 0; i < inactiveMembers.length; i++) {
           const member = inactiveMembers[i];
           responseMsg += `${i + 1}. @${member.jid.split("@")[0]}\n`;
-          responseMsg += `   _Name:_ ${member.name}\n`;
-          responseMsg += `   _Last msg:_ ${member.lastMessage}\n`;
-          responseMsg += `   _Total msgs:_ ${member.totalMessages}\n\n`;
+          responseMsg += `   _İsim:_ ${member.name}\n`;
+          responseMsg += `   _Son mesaj:_ ${member.lastMessage}\n`;
+          responseMsg += `   _Toplam mesaj:_ ${member.totalMessages}\n\n`;
         }
 
-        responseMsg += `_Kullanmak için \`.inactive ${durationStr} kick\` to remove these members._`;
+        responseMsg += `_Bu üyeleri atmak için \`.inactive ${durationStr} kick\` kullanın._`;
 
         return await message.client.sendMessage(message.jid, {
           text: responseMsg,
@@ -384,7 +384,7 @@ Module(
           );
         }
 
-        let responseMsg = `_Top ${topUsers.length} ${scopeText} users by message count_\n\n`;
+        let responseMsg = `_Mesaj sayısına göre en iyi ${topUsers.length} ${scopeText} kullanıcı_\n\n`;
 
         for (let i = 0; i < topUsers.length; i++) {
           const user = topUsers[i];
@@ -393,17 +393,17 @@ Module(
           const lastMessage = timeSince(user.lastMessageAt);
 
           responseMsg += `*${rank}.* @${user.jid.split("@")[0]}\n`;
-          responseMsg += `   _Name:_ ${name}\n`;
-          responseMsg += `   _Messages:_ ${user.totalMessages}${
-            isGlobal ? " (across all chats)" : ""
+          responseMsg += `   _İsim:_ ${name}\n`;
+          responseMsg += `   _Mesajlar:_ ${user.totalMessages}${
+            isGlobal ? " (tüm sohbetlerde)" : ""
           }\n`;
           responseMsg += `   _Son görülme:_ ${lastMessage}\n\n`;
         }
 
         if (isGlobal) {
-          responseMsg += `\n_💡 Tip: Use \`.users chat\` for current chat stats only._`;
+          responseMsg += `\n_💡 İpucu: Sadece mevcut sohbet istatistikleri için \`.users chat\` kullanın._`;
         } else if (message.isGroup) {
-          responseMsg += `\n_💡 Tip: Use \`.users global\` for global stats across all chats._`;
+          responseMsg += `\n_💡 İpucu: Tüm sohbetlerdeki genel istatistikler için \`.users global\` kullanın._`;
         }
 
         const mentions = topUsers.map((user) => user.jid);

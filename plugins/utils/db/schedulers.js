@@ -2,11 +2,18 @@ const config = require("../../../config");
 const { DataTypes, Op } = require("sequelize");
 
 async function updateOrCreate(model, findCriteria, createData) {
+  try {
+    if (typeof model.upsert === "function") {
+      await model.upsert(createData);
+      return true;
+    }
+  } catch (_) {}
   const existingRecord = await model.findOne({ where: findCriteria });
   if (existingRecord) {
-    await existingRecord.destroy();
+    await existingRecord.update(createData);
+  } else {
+    await model.create(createData);
   }
-  await model.create(createData);
   return true;
 }
 

@@ -276,9 +276,8 @@ function getValidTLDs() {
  * Create regex patterns for link detection
  * @returns {RegExp[]} Array of regex patterns
  */
-function createLinkPatterns() {
+const _cachedLinkPatterns = (() => {
   const tldPattern = validTLDs.join("|");
-
   return [
     /\bhttps?:\/\/\S+/gi,
     /\bwww\.\S+\.\S+/gi,
@@ -291,6 +290,11 @@ function createLinkPatterns() {
       "gi"
     ),
   ];
+})();
+
+function createLinkPatterns() {
+  _cachedLinkPatterns.forEach((p) => { p.lastIndex = 0; });
+  return _cachedLinkPatterns;
 }
 
 /**

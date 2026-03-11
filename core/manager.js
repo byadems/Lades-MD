@@ -37,7 +37,7 @@ class BotManager {
     async sendMessage(sessionId, jid, message) {
         const bot = this.getBot(sessionId);
         if (!bot) {
-            throw new Error(`No bot found or initialized for session: ${sessionId}`);
+            throw new Error(`Oturum için bot bulunamadı veya başlatılamadı: ${sessionId}`);
         }
         return await bot.sendMessage(jid, message);
     }

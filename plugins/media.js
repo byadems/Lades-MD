@@ -17,9 +17,13 @@ const acr = new acrcloud({
 var handler = config.HANDLERS !== "false" ? config.HANDLERS.split("")[0] : "";
 async function findMusic(file) {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error("Müzik tanıma zaman aşımına uğradı")), 15000);
     acr.identify(file).then((result) => {
-      var data = result.metadata?.music[0];
-      resolve(data);
+      clearTimeout(timeout);
+      resolve(result.metadata?.music?.[0] ?? null);
+    }).catch((err) => {
+      clearTimeout(timeout);
+      reject(err);
     });
   });
 }

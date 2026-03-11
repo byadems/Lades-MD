@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const config = require("../../../config");
 
-config.sequelize.sync();
+config.sequelize.sync().catch((e) => console.error("Model senkronizasyon hatası:", e?.message));
 
 const warnDB = config.sequelize.define("_warn", {
   chat: {

@@ -18,10 +18,10 @@ function convertToBool(text, fault = "true", fault2 = "on") {
   return text === fault || text === fault2;
 }
 
-const isVPS = !__dirname.startsWith("/lds");
-const isHeroku = __dirname.startsWith("/lds");
-const isKoyeb = __dirname.startsWith("/lds");
 const isRailway = __dirname.startsWith("/railway");
+const isKoyeb = !!process.env.KOYEB_PUBLIC_DOMAIN;
+const isHeroku = __dirname.startsWith("/lds") && !isKoyeb;
+const isVPS = !isHeroku && !isKoyeb && !isRailway;
 
 const logger = P({ level: process.env.LOG_LEVEL || "silent" });
 
@@ -465,7 +465,9 @@ const sequelize = (() => {
 const SESSION_STRING = process.env.SESSION || process.env.SESSION_ID;
 
 const SESSION = SESSION_STRING
-  ? SESSION_STRING.split(",").map((s) => s.split("~")[1].trim())
+  ? SESSION_STRING.split(",")
+      .map((s) => { const parts = s.split("~"); return parts.length > 1 ? parts[1].trim() : parts[0].trim(); })
+      .filter(Boolean)
   : [];
 
 const settingsMenu = [
@@ -522,15 +524,15 @@ const baseConfig = {
   AUTOUNMUTE_MSG:
     process.env.AUTOUNMUTE_MSG ||
     "_Grup otomatik susturma kaldırıldı!_\n_(AUTOUNMUTE_MSG düzenleyin)_",
-  AUTO_READ_STATUS: convertToBool(process.env.AUTO_READ_STATUS) || true,
+  AUTO_READ_STATUS: process.env.AUTO_READ_STATUS !== undefined ? convertToBool(process.env.AUTO_READ_STATUS) : true,
   READ_MESSAGES: convertToBool(process.env.READ_MESSAGES) || false,
   PMB_VAR: convertToBool(process.env.PMB_VAR) || false,
-  DIS_PM: convertToBool(process.env.DIS_PM) || true,
-  REJECT_CALLS: convertToBool(process.env.REJECT_CALLS) || true,
+  DIS_PM: process.env.DIS_PM !== undefined ? convertToBool(process.env.DIS_PM) : true,
+  REJECT_CALLS: process.env.REJECT_CALLS !== undefined ? convertToBool(process.env.REJECT_CALLS) : true,
   ALLOWED_CALLS: process.env.ALLOWED_CALLS || "",
   CALL_REJECT_MESSAGE: process.env.CALL_REJECT_MESSAGE || "",
   PMB: process.env.PMB || "_Kişisel mesajlara izin verilmiyor, ENGELLENDİ!_",
-  READ_COMMAND: convertToBool(process.env.READ_COMMAND) || true,
+  READ_COMMAND: process.env.READ_COMMAND !== undefined ? convertToBool(process.env.READ_COMMAND) : true,
   IMGBB_KEY: [
     "76a050f031972d9f27e329d767dd988f",
     "deb80cd12ababea1c9b9a8ad6ce3fab2",
@@ -550,9 +552,9 @@ const baseConfig = {
       ? "default"
       : process.env.AUDIO_DATA,
   TAKE_KEY: process.env.TAKE_KEY || "",
-  CMD_REACTION: convertToBool(process.env.CMD_REACTION) || true,
+  CMD_REACTION: process.env.CMD_REACTION !== undefined ? convertToBool(process.env.CMD_REACTION) : true,
   /** Komutları paralel çalıştır (bir işlem bitmeden diğerine geçebilir) */
-  PARALLEL_COMMANDS: convertToBool(process.env.PARALLEL_COMMANDS) || true,
+  PARALLEL_COMMANDS: process.env.PARALLEL_COMMANDS !== undefined ? convertToBool(process.env.PARALLEL_COMMANDS) : true,
   MODE: process.env.MODE || "private",
   WARN: process.env.WARN || "3",
   ANTILINK_WARN: process.env.ANTILINK_WARN || "",

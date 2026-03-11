@@ -13,11 +13,13 @@ const axios = require("axios");
 const isFromMe = botConfig.MODE === "public" ? false : true;
 
 async function checkRedirect(url) {
-  let split_url = url.split("/");
-  if (split_url.includes("share")) {
-    let res = await axios.get(url);
-    return res.request.res.responseUrl;
-  }
+  try {
+    let split_url = url.split("/");
+    if (split_url.includes("share")) {
+      let res = await axios.get(url, { timeout: 10000, maxRedirects: 5 });
+      return res.request.res.responseUrl || url;
+    }
+  } catch (_) {}
   return url;
 }
 Module(

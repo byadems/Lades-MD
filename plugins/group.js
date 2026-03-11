@@ -895,11 +895,11 @@ Module(
       } catch (error) {
         console.error("Grup verisi alınırken hata:", error);
       }
-      let _msg = `*Recent Chat JIDs*\n_Showing ${recentChats.length} most recent chats_\n\n`;
+      let _msg = `*Son Sohbet JID'leri*\n_${recentChats.length} en son sohbet gösteriliyor_\n\n`;
       for (let i = 0; i < recentChats.length; i++) {
         const chat = recentChats[i];
         const count = i + 1;
-        const chatType = chat.type === "group" ? "👥 Group" : "💬 Private";
+        const chatType = chat.type === "group" ? "👥 Grup" : "💬 Özel";
         let chatName = chat.name || "Bilinmiyor";
         if (chat.type === "group" && allGroups[chat.jid]) {
           chatName =
@@ -908,16 +908,16 @@ Module(
         const lastMessageTime = new Date(chat.lastMessageTime).toLocaleString();
         _msg += `_*${count}. ${chatType}:*_ \`${chatName}\`\n`;
         _msg += `_JID:_ \`${chat.jid}\`\n`;
-        _msg += `_Last Message:_ ${lastMessageTime}\n\n`;
+        _msg += `_Son Mesaj:_ ${lastMessageTime}\n\n`;
       }
       const chunkSize = 4000;
       if (_msg.length > chunkSize) {
         const chunks = [];
-        let currentChunk = `*Recent Chat JIDs*\n_Showing ${recentChats.length} most recent chats_\n\n`;
+        let currentChunk = `*Son Sohbet JID'leri*\n_${recentChats.length} en son sohbet gösteriliyor_\n\n`;
         for (let i = 0; i < recentChats.length; i++) {
           const chat = recentChats[i];
           const count = i + 1;
-          const chatType = chat.type === "group" ? "👥 Group" : "💬 Private";
+          const chatType = chat.type === "group" ? "👥 Grup" : "💬 Özel";
           let chatName = chat.name || "Bilinmiyor";
           if (chat.type === "group" && allGroups[chat.jid]) {
             chatName =
@@ -926,7 +926,7 @@ Module(
           const lastMessageTime = new Date(
             chat.lastMessageTime
           ).toLocaleString();
-          const chatInfo = `_*${count}. ${chatType}:*_ \`${chatName}\`\n_JID:_ \`${chat.jid}\`\n_Last Message:_ ${lastMessageTime}\n\n`;
+          const chatInfo = `_*${count}. ${chatType}:*_ \`${chatName}\`\n_JID:_ \`${chat.jid}\`\n_Son Mesaj:_ ${lastMessageTime}\n\n`;
           if (currentChunk.length + chatInfo.length > chunkSize) {
             chunks.push(currentChunk);
             currentChunk = chatInfo;

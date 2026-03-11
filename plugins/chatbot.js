@@ -19,17 +19,22 @@ const chatbotStates = new Map();
 const chatContexts = new Map();
 const modelStates = new Map();
 
-const MAX_CONTEXT_CHATS = 100;
+const MAX_CHAT_MAPS = 200;
 
-function pruneContexts() {
-  if (chatContexts.size > MAX_CONTEXT_CHATS) {
-    const excess = chatContexts.size - MAX_CONTEXT_CHATS;
-    const keys = chatContexts.keys();
+function pruneMap(map, max = MAX_CHAT_MAPS) {
+  if (map.size > max) {
+    const excess = map.size - max;
+    const keys = map.keys();
     for (let i = 0; i < excess; i++) {
-      const k = keys.next().value;
-      chatContexts.delete(k);
+      map.delete(keys.next().value);
     }
   }
+}
+
+function pruneContexts() {
+  pruneMap(chatContexts, 100);
+  pruneMap(chatbotStates, MAX_CHAT_MAPS);
+  pruneMap(modelStates, MAX_CHAT_MAPS);
 }
 
 let globalSystemPrompt =

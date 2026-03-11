@@ -59,14 +59,6 @@ const userStatsCache = new Map();
 let _statsFlushTimer = null;
 let _statsDirtyKeys = new Set();
 
-// ─── Helper: shallow instance clone for cached Sequelize rows ────────────────
-
-function fakeInstance(raw, Model) {
-  if (!raw) return null;
-  if (raw.dataValues) return raw;
-  return raw;
-}
-
 // ─── Apply Caching ──────────────────────────────────────────────────────────
 
 function applyDatabaseCaching() {
@@ -111,18 +103,14 @@ function applyDatabaseCaching() {
   };
 
   AntiDeleteCache.findOne = async function (options) {
-    const msgId =
-      options?.where?.messageId ??
-      options?.where?.messageId?.[Symbol.for("sequelize.Op.like")] ??
-      null;
-    if (msgId) {
-      if (typeof msgId === "string") {
-        const exact = antiDeleteCache.get(msgId);
-        if (exact) return exact;
-        for (const [k, v] of antiDeleteCache.entries()) {
-          if (k.startsWith(msgId) || k.endsWith(msgId) || k.includes(msgId)) return v;
-        }
-      }
+    const rawId = options?.where?.messageId;
+    const msgId = typeof rawId === "string" ? rawId
+      : typeof rawId === "object" && rawId !== null
+        ? rawId[Object.getOwnPropertySymbols(rawId)?.[0]] ?? null
+        : null;
+    if (msgId && typeof msgId === "string") {
+      const exact = antiDeleteCache.get(msgId);
+      if (exact) return exact;
     }
     return null;
   };
@@ -206,16 +194,15 @@ function applyDatabaseCaching() {
 
   Chat.upsert = async function (values, options) {
     const jid = values?.jid;
-    if (jid) {
-      if (chatCache.has(jid)) {
-        const existing = chatCache.get(jid);
-        if (existing?.dataValues) Object.assign(existing.dataValues, values);
-        return [existing, false];
-      }
+    if (jid && chatCache.has(jid)) {
+      const existing = chatCache.get(jid);
+      if (existing?.dataValues) Object.assign(existing.dataValues, values);
+      return [existing, false];
     }
     try {
       const result = await _origChatUpsert(values, options);
       if (jid && result?.[0]) chatCache.set(jid, result[0]);
+      pruneMap(chatCache);
       return result;
     } catch (e) {
       if (jid) {
@@ -276,16 +263,15 @@ function applyDatabaseCaching() {
 
   User.upsert = async function (values, options) {
     const jid = values?.jid;
-    if (jid) {
-      if (userCache.has(jid)) {
-        const existing = userCache.get(jid);
-        if (existing?.dataValues) Object.assign(existing.dataValues, values);
-        return [existing, false];
-      }
+    if (jid && userCache.has(jid)) {
+      const existing = userCache.get(jid);
+      if (existing?.dataValues) Object.assign(existing.dataValues, values);
+      return [existing, false];
     }
     try {
       const result = await _origUserUpsert(values, options);
       if (jid && result?.[0]) userCache.set(jid, result[0]);
+      pruneMap(userCache);
       return result;
     } catch (e) {
       if (jid) {
