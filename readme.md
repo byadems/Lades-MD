@@ -71,13 +71,13 @@ Create a `.env` file in the root directory:
 Single session:
 
 ```
-SESSION=RGNK~d7a5s66
+SESSION=LDS~d7a5s66
 ```
 
 Multi-session:
 
 ```
-SESSION=RGNK~d7a5s66,RGNK~7ad8cW
+SESSION=LDS~d7a5s66,LDS~7ad8cW
 ```
 
 #### Required Variables

@@ -144,7 +144,7 @@ Module(
           );
         }
 
-        if (!__dirname.startsWith("/rgnk")) {
+        if (!__dirname.startsWith("/lds")) {
           await git.reset("hard", ["HEAD"]);
           await git.pull();
           await message.edit(
@@ -195,7 +195,7 @@ Module(
           );
         }
 
-        if (!__dirname.startsWith("/rgnk")) {
+        if (!__dirname.startsWith("/lds")) {
           await git.reset("hard", ["HEAD"]);
           await git.pull();
           await message.edit(
