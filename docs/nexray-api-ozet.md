@@ -10,7 +10,8 @@
 - **pinterest** – pinterest komutunda ve autodl'de yedek (`plugins/social.js`, `plugins/autodl.js`)
 - **twitter** – twitter komutu ve autodl (`plugins/social.js`, `plugins/autodl.js`)
 - **colorize** – renklendir komutu (`plugins/media.js`)
-- **deepimg** – yzdüzenle / aigörsel komutu (`plugins/media.js`)
+- **gptimage** – yzdüzenle komutu: Görsel + metin talimatı ile GPT Vision düzenleme (`plugins/media.js`)
+- **deepimg** – aigörsel komutu: Metinden görsel oluşturma (`plugins/media.js`)
 
 ---
 

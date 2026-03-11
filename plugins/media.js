@@ -96,15 +96,50 @@ Module(
 
 Module(
   {
-    pattern: "(yzdüzenle|aigörsel) ?(.*)",
-    desc: "Metinden AI ile görsel oluşturur",
-    usage: ".yzdüzenle <açıklama> veya .aigörsel <açıklama>",
+    pattern: "yzdüzenle ?(.*)",
+    desc: "GPT Vision ile görseli metin talimatına göre düzenler",
+    usage: ".yzdüzenle <talimat> (görsele yanıt verin)",
     use: "edit",
   },
   async (message, match) => {
-    const prompt = (match[2] || message.reply_message?.text || "").trim();
+    if (!message.reply_message || !message.reply_message.image)
+      return await message.sendReply("_🖼️ Düzenlemek için bir görsele yanıt verin._");
+
+    const prompt = (match[1] || "").trim();
     if (!prompt)
-      return await message.sendReply("_🖼️ Görsel açıklaması girin._\n_Örnek: .yzdüzenle gün batımında deniz manzarası_");
+      return await message.sendReply("_📝 Düzenleme talimatı girin._\n_Örnek: .yzdüzenle cilt rengini siyah yap_");
+
+    try {
+      const processingMsg = await message.sendReply("_🎨 Görsel GPT Vision ile düzenleniyor..._");
+      const imgBuffer = await message.reply_message.download("buffer");
+      const mimetype = message.reply_message.mimetype || "image/jpeg";
+      const resultBuffer = await nexray.gptImage(imgBuffer, prompt, mimetype);
+      if (resultBuffer && resultBuffer.length) {
+        await message.sendReply(resultBuffer, "image", {
+          caption: `_*${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}*_`,
+        });
+        await message.edit("_✅ Görsel düzenlendi!_", message.jid, processingMsg.key);
+      } else {
+        await message.edit("_❌ Düzenleme başarısız. Lütfen farklı bir talimat deneyin._", message.jid, processingMsg.key);
+      }
+    } catch (error) {
+      console.error("yzdüzenle hatası:", error);
+      await message.sendReply("_❌ Bir hata oluştu. Lütfen tekrar deneyin._");
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "aigörsel ?(.*)",
+    desc: "Metinden AI ile görsel oluşturur",
+    usage: ".aigörsel <açıklama>",
+    use: "edit",
+  },
+  async (message, match) => {
+    const prompt = (match[1] || message.reply_message?.text || "").trim();
+    if (!prompt)
+      return await message.sendReply("_🖼️ Görsel açıklaması girin._\n_Örnek: .aigörsel gün batımında deniz manzarası_");
 
     try {
       const processingMsg = await message.sendReply("_🎨 Görsel oluşturuluyor..._");

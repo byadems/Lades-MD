@@ -1,8 +1,9 @@
 /**
  * Nexray API (api.nexray.web.id) yardımcı modülü
- * Yedek indirme, colorize ve AI görsel üretimi için kullanılır.
+ * Yedek indirme, colorize ve AI görsel işleme için kullanılır.
  */
 const axios = require("axios");
+const FormData = require("form-data");
 
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 60000;
@@ -24,6 +25,36 @@ async function colorize(imageUrl) {
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray colorize]", e?.message);
+  }
+  return null;
+}
+
+/**
+ * GPT Vision ile görseli metin promptuna göre düzenler.
+ * @param {Buffer} imageBuffer - Düzenlenecek görsel
+ * @param {string} prompt - Düzenleme talimatı (örn: "Change skin color to black")
+ * @param {string} [mimetype] - Görsel MIME tipi (varsayılan: image/jpeg)
+ * @returns {Promise<Buffer|null>} Düzenlenmiş görsel buffer veya null
+ */
+async function gptImage(imageBuffer, prompt, mimetype = "image/jpeg") {
+  try {
+    const ext = mimetype.split("/")[1] || "jpg";
+    const form = new FormData();
+    form.append("image", imageBuffer, { filename: `image.${ext}`, contentType: mimetype });
+    form.append("param", String(prompt).trim());
+
+    const res = await axios.post(`${BASE}/ai/gptimage`, form, {
+      headers: form.getHeaders(),
+      responseType: "arraybuffer",
+      timeout: 90000,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    });
+    if (res.status === 200 && res.data?.length) {
+      return Buffer.from(res.data);
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray gptImage]", e?.message);
   }
   return null;
 }
@@ -210,6 +241,7 @@ async function downloadYtMp4(url) {
 
 module.exports = {
   colorize,
+  gptImage,
   deepImg,
   downloadInstagram,
   downloadTiktok,
