@@ -3,6 +3,7 @@ const config = require("../config");
 const { setVar } = require("./manage");
 const { downloadGram, pinterestDl, tiktok, fb, spotifyTrack } = require("./utils");
 const { getVideoInfo, downloadAudio, convertM4aToMp3, searchYoutube } = require("./utils/yt");
+const nexray = require("./utils/nexray");
 const fs = require("fs");
 const fromMe = config.MODE !== "public";
 
@@ -170,7 +171,7 @@ Module({ on: "text", fromMe }, async (message) => {
                 console.error("[Otomatik İndirme YT Ses]", error?.message || error);
               if (downloadMsg) {
                 await message.edit(
-                  "_Download failed!_",
+                  "_❌ İndirme başarısız!_",
                   message.jid,
                   downloadMsg.key
                 );
@@ -265,7 +266,7 @@ Module({ on: "text", fromMe }, async (message) => {
             qualityText += `*${uniqueQualities.length + 1}.* _*Audio Only*_${audioSizeInfo}\n`;
           }
 
-          qualityText += "\n_Reply with a number to download_";
+          qualityText += "\n_İndirmek için bir numara ile yanıtlayın_";
           await message.sendReply(qualityText);
         } catch (err) {
           if (config.DEBUG) console.error("[Otomatik İndirme YT]", err?.message || err);
@@ -283,12 +284,19 @@ Module({ on: "text", fromMe }, async (message) => {
 
         for (const url of platformGroups["instagram"]) {
           try {
-            const downloadResult = await downloadGram(url);
+            let downloadResult = await downloadGram(url);
+            if (!downloadResult || !downloadResult.length) {
+              downloadResult = await nexray.downloadInstagram(url);
+            }
             if (downloadResult && downloadResult.length) {
               allMediaUrls.push(...downloadResult);
             }
           } catch (err) {
             if (config.DEBUG) console.error("[Otomatik İndirme IG]", err?.message || err);
+            try {
+              const fallback = await nexray.downloadInstagram(url);
+              if (fallback?.length) allMediaUrls.push(...fallback);
+            } catch (_) {}
           }
         }
 
@@ -323,12 +331,29 @@ Module({ on: "text", fromMe }, async (message) => {
       // handle tiktok (only process first url for now - api limitation)
       if (platformGroups["tiktok"]) {
         try {
-          const downloadResult = await tiktok(platformGroups["tiktok"][0]);
-          await message.sendReply(downloadResult, "video");
+          let downloadResult = await tiktok(platformGroups["tiktok"][0]);
+          if (!downloadResult) {
+            const fallback = await nexray.downloadTiktok(platformGroups["tiktok"][0]);
+            downloadResult = fallback?.url ? { url: fallback.url } : null;
+          }
+          if (downloadResult) {
+            await message.sendReply(downloadResult, "video");
+          } else {
+            await message.react("❌");
+          }
         } catch (err) {
           if (config.DEBUG)
             console.error("[Otomatik İndirme TikTok]", err?.message || err);
-          await message.react("❌");
+          try {
+            const fallback = await nexray.downloadTiktok(platformGroups["tiktok"][0]);
+            if (fallback?.url) {
+              await message.sendReply({ url: fallback.url }, "video");
+            } else {
+              await message.react("❌");
+            }
+          } catch (_) {
+            await message.react("❌");
+          }
         }
         return;
       }
@@ -342,17 +367,19 @@ Module({ on: "text", fromMe }, async (message) => {
 
         for (const url of platformGroups["pinterest"]) {
           try {
-            const pinterestResult = await pinterestDl(url);
-            if (
-              pinterestResult &&
-              pinterestResult.status &&
-              pinterestResult.result
-            ) {
-              allMediaUrls.push(pinterestResult.result);
+            let pinterestResult = await pinterestDl(url);
+            let mediaUrl = pinterestResult?.status && pinterestResult?.result ? pinterestResult.result : null;
+            if (!mediaUrl) {
+              mediaUrl = await nexray.downloadPinterest(url);
             }
+            if (mediaUrl) allMediaUrls.push(mediaUrl);
           } catch (err) {
             if (config.DEBUG)
               console.error("[Otomatik İndirme Pinterest]", err?.message || err);
+            try {
+              const fallback = await nexray.downloadPinterest(url);
+              if (fallback) allMediaUrls.push(fallback);
+            } catch (_) {}
           }
         }
 
@@ -381,11 +408,27 @@ Module({ on: "text", fromMe }, async (message) => {
       // handle facebook (only process first url for now)
       if (platformGroups["facebook"]) {
         try {
-          const result = await fb(platformGroups["facebook"][0]);
-          await message.sendReply({ url: result.url }, "video");
+          let result = await fb(platformGroups["facebook"][0]);
+          if (!result?.url) {
+            result = await nexray.downloadFacebook(platformGroups["facebook"][0]);
+          }
+          if (result?.url) {
+            await message.sendReply({ url: result.url }, "video");
+          } else {
+            await message.react("❌");
+          }
         } catch (err) {
           if (config.DEBUG) console.error("[Otomatik İndirme FB]", err?.message || err);
-          await message.react("❌");
+          try {
+            const fallback = await nexray.downloadFacebook(platformGroups["facebook"][0]);
+            if (fallback?.url) {
+              await message.sendReply({ url: fallback.url }, "video");
+            } else {
+              await message.react("❌");
+            }
+          } catch (_) {
+            await message.react("❌");
+          }
         }
         return;
       }
@@ -450,8 +493,18 @@ Module({ on: "text", fromMe }, async (message) => {
         } catch (err) {
           if (config.DEBUG)
             console.error("[Otomatik İndirme Spotify]", err?.message || err);
+          try {
+            const fallback = await nexray.downloadSpotify(platformGroups["spotify"][0]);
+            if (fallback?.url) {
+              if (!downloadMsg) downloadMsg = await message.sendReply("_⬇️ Yedek yöntemle indiriliyor..._");
+              await message.edit("_📤 Ses gönderiliyor..._", message.jid, downloadMsg.key);
+              await message.sendReply({ url: fallback.url }, "audio");
+              await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
+              return;
+            }
+          } catch (_) {}
           if (downloadMsg) {
-            await message.edit("_Download failed!_", message.jid, downloadMsg.key);
+            await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
           } else {
             await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
           }
@@ -465,7 +518,17 @@ Module({ on: "text", fromMe }, async (message) => {
 
       // handle twitter
       if (platformGroups["twitter"]) {
-        await message.react("❌");
+        try {
+          const result = await nexray.downloadTwitter(platformGroups["twitter"][0]);
+          if (result?.url) {
+            await message.sendReply({ url: result.url }, "video");
+          } else {
+            await message.react("❌");
+          }
+        } catch (err) {
+          if (config.DEBUG) console.error("[Otomatik İndirme Twitter]", err?.message || err);
+          await message.react("❌");
+        }
         return;
       }
     } catch (err) {
@@ -530,11 +593,11 @@ Module(
     if (cmd === "on") {
       if (target === "gruplar") {
         await setVar("AUTODL_ALL_GROUPS", "true");
-        return await message.sendReply("_❌ Tüm gruplarda AutoDL aktif ✅_\n_Kapatmak için .autodl off gruplar kullanın_"
+        return await message.sendReply("_✅ Tüm gruplarda AutoDL aktif_\n_Kapatmak için .autodl off gruplar kullanın_"
         );
       } else if (target === "dms") {
         await setVar("AUTODL_ALL_DMS", "true");
-        return await message.sendReply("_❌ Tüm DM'lerde AutoDL aktif ✅_\n_Kapatmak için .autodl off dms kullanın_"
+        return await message.sendReply("_✅ Tüm DM'lerde AutoDL aktif_\n_Kapatmak için .autodl off dms kullanın_"
         );
       } else {
         const enabledList = readList();

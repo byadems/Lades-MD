@@ -11,6 +11,7 @@ const {
 } = require("./utils/yt");
 const { spotifyTrack } = require("./utils/misc");
 const { censorBadWords } = require("./utils");
+const nexray = require("./utils/nexray");
 
 const config = require("../config");
 const MODE = config.MODE;
@@ -322,6 +323,19 @@ Module(
         fs.unlinkSync(videoPath);
       }
     } catch (error) {
+      try {
+        const fallback = await nexray.downloadYtMp4(url);
+        if (fallback?.url) {
+          if (!downloadMsg) downloadMsg = await message.sendReply("_⬇️ Yedek yöntemle indiriliyor..._");
+          await message.edit("_📤 Video yükleniyor..._", message.jid, downloadMsg.key);
+          const safeTitle = censorBadWords(fallback.title || "video");
+          await message.sendReply({ url: fallback.url }, "video", {
+            caption: `_*${safeTitle}*_\n\n_Yedek indirme_`,
+          });
+          await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
+          return;
+        }
+      } catch (_) {}
       console.error("Video indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
@@ -1111,6 +1125,16 @@ Module(
         fs.unlinkSync(audioPath);
       }
     } catch (error) {
+      try {
+        const fallback = await nexray.downloadSpotify(url);
+        if (fallback?.url) {
+          if (!downloadMsg) downloadMsg = await message.sendReply("_⬇️ Yedek yöntemle indiriliyor..._");
+          await message.edit("_📤 Ses gönderiliyor..._", message.jid, downloadMsg.key);
+          await message.sendReply({ url: fallback.url }, "audio");
+          await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
+          return;
+        }
+      } catch (_) {}
       console.error("Spotify indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);

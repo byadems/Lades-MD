@@ -7,6 +7,7 @@ const {
   igStalk,
   fb,
 } = require("./utils");
+const nexray = require("./utils/nexray");
 const botConfig = require("../config");
 const axios = require("axios");
 const isFromMe = botConfig.MODE === "public" ? false : true;
@@ -73,12 +74,20 @@ Module(
       // download from all urls
       for (const url of instagramUrls) {
         try {
-          const downloadResult = await downloadGram(url);
+          let downloadResult = await downloadGram(url);
+          if (!downloadResult?.length) {
+            downloadResult = await nexray.downloadInstagram(url);
+          }
           if (downloadResult && downloadResult.length) {
             allMediaUrls.push(...downloadResult);
           }
         } catch (err) {
-          console.error("İndirme hatası:", url, err?.message);
+          try {
+            const fallback = await nexray.downloadInstagram(url);
+            if (fallback?.length) allMediaUrls.push(...fallback);
+          } catch (_) {
+            console.error("İndirme hatası:", url, err?.message);
+          }
         }
       }
 
@@ -137,13 +146,24 @@ Module(
     }
     if (!videoLink) return await message.sendReply("_⚠️ Facebook bağlantısı gerekli_");
     try {
-      const { url } = await fb(videoLink);
-      return await message.sendReply({ url }, "video");
+      let result = await fb(videoLink);
+      if (!result?.url) {
+        result = await nexray.downloadFacebook(videoLink);
+      }
+      if (result?.url) {
+        return await message.sendReply({ url: result.url }, "video");
+      }
     } catch (e) {
+      try {
+        const fallback = await nexray.downloadFacebook(videoLink);
+        if (fallback?.url) {
+          return await message.sendReply({ url: fallback.url }, "video");
+        }
+      } catch (_) {}
       console.error("Facebook indirme hatası:", e.message);
-      return await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
-      );
     }
+    return await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
+    );
   }
 );
 
@@ -256,22 +276,23 @@ Module(
     if (/\bhttps?:\/\/\S+/gi.test(userQuery)) {
       userQuery = userQuery.match(/\bhttps?:\/\/\S+/gi)[0];
       let pinterestResult;
+      let url;
       try {
         pinterestResult = await pinterestDl(userQuery);
+        url = pinterestResult?.status && pinterestResult?.result ? pinterestResult.result : null;
+        if (!url) url = await nexray.downloadPinterest(userQuery);
       } catch (err) {
-        console.error("Pinterest indirme hatası:", err?.message || err);
-        return await message.sendReply("_❌ Sunucu hatası_");
+        try {
+          url = await nexray.downloadPinterest(userQuery);
+        } catch (_) {
+          console.error("Pinterest indirme hatası:", err?.message || err);
+          return await message.sendReply("_❌ Sunucu hatası_");
+        }
       }
 
-      if (
-        !pinterestResult ||
-        !pinterestResult.status ||
-        !pinterestResult.result
-      )
+      if (!url)
         return await message.sendReply("_❌ Bu bağlantı için indirilebilir medya bulunamadı_"
         );
-
-      const url = pinterestResult.result;
       const quotedMessage = message.reply_message
         ? message.quoted
         : message.data;
@@ -329,6 +350,34 @@ Module(
 
 Module(
   {
+    pattern: "twitter ?(.*)",
+    fromMe: isFromMe,
+    desc: "Twitter/X video indirici",
+    usage: ".twitter <bağlantı> veya bağlantıyı yanıtlayın",
+    use: "download",
+  },
+  async (message, match) => {
+    let videoLink = match[1] !== "" ? match[1] : message.reply_message?.text;
+    if (!videoLink) return await message.sendReply("_⚠️ Bir Twitter/X URL'si gerekli_");
+    videoLink = videoLink.match(/\bhttps?:\/\/\S+/gi)?.[0];
+    if (!videoLink || !/twitter\.com|x\.com/i.test(videoLink))
+      return await message.sendReply("_⚠️ Geçerli bir Twitter/X bağlantısı gerekli_");
+    try {
+      const result = await nexray.downloadTwitter(videoLink);
+      if (result?.url) {
+        await message.sendReply({ url: result.url }, "video");
+      } else {
+        await message.sendReply("_⚠️ Bu bağlantı için indirilebilir medya bulunamadı_");
+      }
+    } catch (e) {
+      console.error("Twitter indirme hatası:", e?.message);
+      await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_");
+    }
+  }
+);
+
+Module(
+  {
     pattern: "tiktok ?(.*)",
     fromMe: isFromMe,
     desc: "TikTok video indirici",
@@ -342,10 +391,26 @@ Module(
     let downloadResult;
     try {
       downloadResult = await tiktok(videoLink);
-      await message.sendReply(downloadResult, "video");
+      if (!downloadResult) {
+        const fallback = await nexray.downloadTiktok(videoLink);
+        downloadResult = fallback?.url ? { url: fallback.url } : null;
+      }
+      if (downloadResult) {
+        await message.sendReply(downloadResult, "video");
+      } else {
+        await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_");
+      }
     } catch (error) {
-      return await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_"
-      );
+      try {
+        const fallback = await nexray.downloadTiktok(videoLink);
+        if (fallback?.url) {
+          await message.sendReply({ url: fallback.url }, "video");
+        } else {
+          await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_");
+        }
+      } catch (_) {
+        await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_");
+      }
     }
   }
 );

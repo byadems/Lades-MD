@@ -6,7 +6,8 @@ const { getTempPath, getTempSubdir } = require("../core/helpers");
 const config = require("../config"),
   MODE = config.MODE;
 const { getString } = require("./utils/lang");
-const { avMix, circle, rotate, trim } = require("./utils");
+const { avMix, circle, rotate, trim, uploadToImgbb } = require("./utils");
+const nexray = require("./utils/nexray");
 const acrcloud = require("acrcloud");
 const acr = new acrcloud({
   host: "identify-eu-west-1.acrcloud.com",
@@ -56,6 +57,73 @@ Module(
     }
   }
 );
+Module(
+  {
+    pattern: "renklendir",
+    desc: "Siyah-beyaz fotoğrafı renklendirir (yanıtlanan görsel)",
+    usage: ".renklendir (görsele yanıt verin)",
+    use: "edit",
+  },
+  async (message) => {
+    if (!message.reply_message || !message.reply_message.image)
+      return await message.sendReply("_🖼️ Renklendirmek için siyah-beyaz bir görsele yanıt verin._");
+
+    try {
+      const processingMsg = await message.sendReply("_🎨 Görsel renklendiriliyor..._");
+      const imgPath = await message.reply_message.download();
+      const uploadRes = await uploadToImgbb(imgPath);
+      const imageUrl = uploadRes?.url || uploadRes?.image?.url;
+      if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+
+      if (!imageUrl) {
+        await message.edit("_❌ Görsel yüklenemedi. Lütfen tekrar deneyin._", message.jid, processingMsg.key);
+        return;
+      }
+
+      const resultBuffer = await nexray.colorize(imageUrl);
+      if (resultBuffer && resultBuffer.length) {
+        await message.sendReply(resultBuffer, "image");
+        await message.edit("_✅ Renklendirme tamamlandı!_", message.jid, processingMsg.key);
+      } else {
+        await message.edit("_❌ Renklendirme başarısız. Lütfen tekrar deneyin._", message.jid, processingMsg.key);
+      }
+    } catch (error) {
+      console.error("Renklendir hatası:", error);
+      await message.sendReply("_❌ Bir hata oluştu. Lütfen tekrar deneyin._");
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "(yzdüzenle|aigörsel) ?(.*)",
+    desc: "Metinden AI ile görsel oluşturur",
+    usage: ".yzdüzenle <açıklama> veya .aigörsel <açıklama>",
+    use: "edit",
+  },
+  async (message, match) => {
+    const prompt = (match[2] || message.reply_message?.text || "").trim();
+    if (!prompt)
+      return await message.sendReply("_🖼️ Görsel açıklaması girin._\n_Örnek: .yzdüzenle gün batımında deniz manzarası_");
+
+    try {
+      const processingMsg = await message.sendReply("_🎨 Görsel oluşturuluyor..._");
+      const resultBuffer = await nexray.deepImg(prompt);
+      if (resultBuffer && resultBuffer.length) {
+        await message.sendReply(resultBuffer, "image", {
+          caption: `_*${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}*_`,
+        });
+        await message.edit("_✅ Görsel oluşturuldu!_", message.jid, processingMsg.key);
+      } else {
+        await message.edit("_❌ Görsel oluşturulamadı. Lütfen farklı bir açıklama deneyin._", message.jid, processingMsg.key);
+      }
+    } catch (error) {
+      console.error("AI görsel hatası:", error);
+      await message.sendReply("_❌ Bir hata oluştu. Lütfen tekrar deneyin._");
+    }
+  }
+);
+
 Module(
   {
     pattern: "black",
