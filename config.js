@@ -104,11 +104,15 @@ function applyPostgresResilience(sequelizeInstance) {
     );
   };
 
+  const HIGH_VOLUME_TABLES = [
+    "messages", "message_stats", "chats", "contacts", "group_metadata",
+    "users", "userstats", "antideletecaches", "spamtrackers",
+  ];
+
   const isHighVolumeQuery = (sql) => {
     if (!sql || typeof sql !== "string") return false;
     const lower = sql.toLowerCase();
-    const tables = ["messages", "message_stats", "chats", "contacts", "group_metadata"];
-    for (const t of tables) {
+    for (const t of HIGH_VOLUME_TABLES) {
       if (
         lower.includes(`into "${t}"`) || lower.includes(`into \`${t}\``) || lower.includes(`into ${t} `) ||
         lower.includes(`update "${t}"`) || lower.includes(`update \`${t}\``) || lower.includes(`update ${t} `)
@@ -117,7 +121,16 @@ function applyPostgresResilience(sequelizeInstance) {
     return false;
   };
 
+  const isAntiDeleteQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    return sql.toLowerCase().includes("antideletecache");
+  };
+
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
+    if (isAntiDeleteQuery(sql)) {
+      return Promise.resolve([[], 0]);
+    }
+
     if (!isWriteQuery(sql)) {
       return originalQuery(sql, ...rest);
     }
@@ -151,6 +164,10 @@ function applyPostgresResilience(sequelizeInstance) {
   if (typeof sequelizeInstance.queryRaw === "function") {
     const originalQueryRaw = sequelizeInstance.queryRaw.bind(sequelizeInstance);
     sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
+      if (isAntiDeleteQuery(sql)) {
+        return Promise.resolve([[], 0]);
+      }
+
       if (!isWriteQuery(sql)) {
         return originalQueryRaw(sql, ...rest);
       }
@@ -277,16 +294,33 @@ function applySQLiteResilience(sequelizeInstance) {
     );
   };
   
+  const SQLITE_HV_TABLES = [
+    "messages", "message_stats", "chats", "users", "userstats",
+    "antideletecaches", "spamtrackers", "contacts", "group_metadata",
+  ];
+
   const isHighVolumeQuery = (sql) => {
       if (!sql || typeof sql !== "string") return false;
       const lower = sql.toLowerCase();
-      return lower.includes('into "messages"') || lower.includes("into `messages`") || lower.includes("into messages") ||
-             lower.includes('into "message_stats"') || lower.includes("into `message_stats`") || lower.includes("into message_stats") ||
-             lower.includes('update "messages"') || lower.includes("update `messages`") || lower.includes("update messages") ||
-             lower.includes('update "message_stats"') || lower.includes("update `message_stats`") || lower.includes("update message_stats");
+      for (const t of SQLITE_HV_TABLES) {
+        if (
+          lower.includes(`into "${t}"`) || lower.includes("into `" + t + "`") || lower.includes("into " + t + " ") ||
+          lower.includes(`update "${t}"`) || lower.includes("update `" + t + "`") || lower.includes("update " + t + " ")
+        ) return true;
+      }
+      return false;
+  };
+
+  const isAntiDeleteQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    return sql.toLowerCase().includes("antideletecache");
   };
 
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
+    if (isAntiDeleteQuery(sql)) {
+      return Promise.resolve([[], 0]);
+    }
+
     if (!isWriteQuery(sql)) {
       return originalQuery(sql, ...rest);
     }
@@ -320,6 +354,10 @@ function applySQLiteResilience(sequelizeInstance) {
   if (typeof sequelizeInstance.queryRaw === "function") {
     const originalQueryRaw = sequelizeInstance.queryRaw.bind(sequelizeInstance);
     sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
+      if (isAntiDeleteQuery(sql)) {
+        return Promise.resolve([[], 0]);
+      }
+
       if (!isWriteQuery(sql)) {
         return originalQueryRaw(sql, ...rest);
       }

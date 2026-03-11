@@ -35,6 +35,7 @@ const {
   startTempCleanup,
   stopTempCleanup,
 } = require("./core/helpers");
+const { applyDatabaseCaching, shutdownCache } = require("./core/db-cache");
 
 const MEMORY_CHECK_INTERVAL = 5 * 60 * 1000;
 const HEAP_WARN_THRESHOLD_MB = 400;
@@ -103,6 +104,8 @@ async function main() {
     process.exit(1);
   }
 
+  applyDatabaseCaching();
+
   const botManager = new BotManager();
 
   const shutdownHandler = async (signal) => {
@@ -111,7 +114,12 @@ async function main() {
     if (_memoryMonitorTimer) clearInterval(_memoryMonitorTimer);
     stopTempCleanup();
     cleanupKickBot();
-    // Flush buffered DB queries before shutting down (from config.js buffer system)
+    try {
+      await shutdownCache();
+      console.log("- DB önbellek verileri yazıldı.");
+    } catch (cacheErr) {
+      logger.error({ err: cacheErr }, "Kapatma sırasında cache flush hatası");
+    }
     if (typeof config.sequelize?.__flushBufferedQueries === 'function') {
       try {
         await config.sequelize.__flushBufferedQueries();
