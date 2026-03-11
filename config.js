@@ -38,6 +38,148 @@ function applyPostgresResilience(sequelizeInstance) {
       }
     });
   });
+
+  // Query buffering (messages, message_stats) - same logic as SQLite to reduce egress
+  const originalQuery = sequelizeInstance.query.bind(sequelizeInstance);
+  const writeQueue = [];
+  const bufferedMessageQueries = [];
+  let queueActive = false;
+
+  const _bufferFlushInterval = setInterval(async () => {
+    if (bufferedMessageQueries.length > 0) {
+      logger.info(`Periyodik: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
+      const pending = [...bufferedMessageQueries];
+      bufferedMessageQueries.length = 0;
+      writeQueue.push(...pending);
+      setImmediate(flushQueue);
+    }
+  }, 1000 * 60 * 60);
+
+  const flushQueue = async () => {
+    if (queueActive || writeQueue.length === 0) {
+      return;
+    }
+
+    queueActive = true;
+
+    while (writeQueue.length > 0) {
+      const { task, resolve, reject, isBuffered } = writeQueue.shift();
+      try {
+        const result = await task();
+        if (resolve) resolve(result);
+      } catch (error) {
+        if (!isBuffered) {
+          if (reject) reject(error);
+        } else {
+          logger.error({ err: error }, "Bekleyen veritabanı yazma sorgusu çalıştırılamadı");
+        }
+      }
+    }
+
+    queueActive = false;
+  };
+
+  sequelizeInstance.__flushBufferedQueries = async () => {
+    if (bufferedMessageQueries.length > 0) {
+      logger.info(`Kapatma: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
+      const pending = [...bufferedMessageQueries];
+      bufferedMessageQueries.length = 0;
+      writeQueue.push(...pending);
+      await flushQueue();
+    }
+    clearInterval(_bufferFlushInterval);
+  };
+
+  const isWriteQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return true;
+    const normalizedSql = sql.trim().toUpperCase();
+    return (
+      normalizedSql.startsWith("INSERT") ||
+      normalizedSql.startsWith("UPDATE") ||
+      normalizedSql.startsWith("DELETE") ||
+      normalizedSql.startsWith("CREATE") ||
+      normalizedSql.startsWith("ALTER") ||
+      normalizedSql.startsWith("DROP")
+    );
+  };
+
+  const isHighVolumeQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    const lower = sql.toLowerCase();
+    const tables = ["messages", "message_stats", "chats", "contacts", "group_metadata"];
+    for (const t of tables) {
+      if (
+        lower.includes(`into "${t}"`) || lower.includes(`into \`${t}\``) || lower.includes(`into ${t} `) ||
+        lower.includes(`update "${t}"`) || lower.includes(`update \`${t}\``) || lower.includes(`update ${t} `)
+      ) return true;
+    }
+    return false;
+  };
+
+  sequelizeInstance.query = function serializedQuery(sql, ...rest) {
+    if (!isWriteQuery(sql)) {
+      return originalQuery(sql, ...rest);
+    }
+
+    if (isHighVolumeQuery(sql)) {
+      bufferedMessageQueries.push({
+        task: () => originalQuery(sql, ...rest),
+        isBuffered: true
+      });
+
+      if (bufferedMessageQueries.length > 200) {
+        logger.info(`Tampon 200 öğeye ulaştı, erken yazma yapılıyor...`);
+        const pending = [...bufferedMessageQueries];
+        bufferedMessageQueries.length = 0;
+        writeQueue.push(...pending);
+        setImmediate(flushQueue);
+      }
+
+      return Promise.resolve([[], 0]);
+    }
+
+    return new Promise((resolve, reject) => {
+      writeQueue.push({
+        task: () => originalQuery(sql, ...rest),
+        resolve,
+        reject,
+      });
+      setImmediate(flushQueue);
+    });
+  };
+
+  if (typeof sequelizeInstance.queryRaw === "function") {
+    const originalQueryRaw = sequelizeInstance.queryRaw.bind(sequelizeInstance);
+    sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
+      if (!isWriteQuery(sql)) {
+        return originalQueryRaw(sql, ...rest);
+      }
+
+      if (isHighVolumeQuery(sql)) {
+        bufferedMessageQueries.push({
+          task: () => originalQueryRaw(sql, ...rest),
+          isBuffered: true
+        });
+
+        if (bufferedMessageQueries.length > 200) {
+          const pending = [...bufferedMessageQueries];
+          bufferedMessageQueries.length = 0;
+          writeQueue.push(...pending);
+          setImmediate(flushQueue);
+        }
+        return Promise.resolve([[], 0]);
+      }
+
+      return new Promise((resolve, reject) => {
+        writeQueue.push({
+          task: () => originalQueryRaw(sql, ...rest),
+          resolve,
+          reject,
+        });
+        setImmediate(flushQueue);
+      });
+    };
+  }
 }
 
 function applySQLiteResilience(sequelizeInstance) {
