@@ -18,8 +18,8 @@ function convertToBool(text, fault = "true", fault2 = "on") {
   return text === fault || text === fault2;
 }
 
-const isVPS = !(__dirname.startsWith("/lds") || __dirname.startsWith("/skl"));
-const isHeroku = __dirname.startsWith("/skl");
+const isVPS = !__dirname.startsWith("/lds");
+const isHeroku = __dirname.startsWith("/lds");
 const isKoyeb = __dirname.startsWith("/lds");
 const isRailway = __dirname.startsWith("/railway");
 
