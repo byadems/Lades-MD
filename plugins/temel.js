@@ -67,9 +67,9 @@ Module({pattern: 'link', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (a
 }))
 
 Module({ on: 'text', fromMe: false }, async (k) => {
-    const isActivated = !process.env.AUTO_DEL
+    const isActivated = !config.AUTO_DEL
         ? true
-        : process.env.AUTO_DEL.split(',').includes(k.jid);
+        : config.AUTO_DEL.split(',').includes(k.jid);
     if (!isActivated) return;
     if (!/\bhttps?:\/\/\S+/gi.test(k.message)) return;
     const links = k.message.match(/\bhttps?:\/\/\S+/gi);
@@ -2391,7 +2391,7 @@ Module({
     on: 'text',
     fromMe: false,
 }, async (k, g) => {
-    const isActivated = !process.env.AUTO_DEL ? true : process.env.AUTO_DEL.split(',').includes(k.jid);
+    const isActivated = !config.AUTO_DEL ? true : config.AUTO_DEL.split(',').includes(k.jid);
     if (/\bhttps?:\/\/\S+/gi.test(k.message) && isActivated) {
         var F = k.message.match(/\bhttps?:\/\/\S+/gi);
         let hasGroupLink = false;
