@@ -86,6 +86,7 @@ async function deepImg(prompt) {
  * @returns {Promise<string[]|null>} Medya URL listesi veya null
  */
 async function downloadInstagram(url) {
+  // v1 endpoint
   try {
     const res = await axios.get(`${BASE}/downloader/instagram`, {
       params: { url },
@@ -94,13 +95,35 @@ async function downloadInstagram(url) {
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
-      if (Array.isArray(r)) return r.filter(Boolean);
+      if (Array.isArray(r)) {
+        const urls = r.map(item => item?.url || item?.thumbnail || item).filter(Boolean);
+        if (urls.length) return urls;
+      }
       if (r.url) return [r.url];
       if (r.video_url) return [r.video_url];
       if (r.video_urls) return r.video_urls.filter(Boolean);
     }
   } catch (e) {
-    if (process.env.DEBUG) console.error("[Nexray instagram]", e?.message);
+    if (process.env.DEBUG) console.error("[Nexray instagram v1]", e?.message);
+  }
+
+  // v2 endpoint (daha zengin veri, yedek)
+  try {
+    const res = await axios.get(`${BASE}/downloader/v2/instagram`, {
+      params: { url },
+      timeout: TIMEOUT,
+    });
+    const data = res.data;
+    if (data?.status && data?.result) {
+      const r = data.result;
+      if (r.media && Array.isArray(r.media)) {
+        const urls = r.media.map(m => m?.url || m).filter(Boolean);
+        if (urls.length) return urls;
+      }
+      if (r.thumbnail) return [r.thumbnail];
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray instagram v2]", e?.message);
   }
   return null;
 }
@@ -119,7 +142,7 @@ async function downloadTiktok(url) {
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
-      return { url: r.url || r.video || r.play?.url || r.download_url };
+      return { url: r.data || r.url || r.video || r.play?.url || r.download_url, title: r.title };
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray tiktok]", e?.message);
@@ -163,7 +186,7 @@ async function downloadPinterest(url) {
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
-      return r.url || r.video || r.image || null;
+      return r.image || r.url || r.video || r.thumbnail || null;
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray pinterest]", e?.message);
@@ -185,8 +208,11 @@ async function downloadTwitter(url) {
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
-      const vid = r.video_url || r.video || r.url || r.videos?.[0]?.url;
-      return vid ? { url: vid } : null;
+      const dlArr = r.download_url;
+      const bestUrl = Array.isArray(dlArr) && dlArr.length > 0
+        ? dlArr[0]?.url || dlArr[0]
+        : r.video_url || r.video || r.url || r.videos?.[0]?.url;
+      return bestUrl ? { url: bestUrl, title: r.title, thumbnail: r.thumbnail } : null;
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray twitter]", e?.message);
