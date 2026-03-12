@@ -16,14 +16,15 @@ const sudoUsers = (SUDO || "").split(",");
 
 Module(
   {
-    pattern: "warn ?(.*)",
+    pattern: "(warn|uyar) ?(.*)",
     fromMe: false,
     desc: "Gruptaki bir kullanıcıyı uyarır. Sınıra ulaştığında atılır.",
     usage: ".warn @user reason\n.warn reply reason",
     use: "group",
   },
   async (message, match) => {
-    if (!match[0].split(" ")[0]?.toLowerCase().endsWith("warn")) return;
+    const trigger = match[0].split(" ")[0]?.toLowerCase();
+    if (!["warn", "uyar"].includes(trigger)) return;
     if (!message.isGroup)
       return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
@@ -124,7 +125,7 @@ Module(
 
 Module(
   {
-    pattern: "uyarı ?(.*)",
+    pattern: "(uyarı|kaçuyarı) ?(.*)",
     fromMe: false,
     desc: "Bir kullanıcının uyarılarını kontrol eder",
     usage: ".uyarı @user\n.uyarı reply",
@@ -195,7 +196,7 @@ Module(
 
 Module(
   {
-    pattern: "rmwarn ?(.*)",
+    pattern: "(rmwarn|uyarısil) ?(.*)",
     fromMe: false,
     desc: "Kullanıcıdan bir uyarıyı siler",
     usage: ".rmwarn @user\n.rmwarn reply",
@@ -262,7 +263,7 @@ Module(
 
 Module(
   {
-    pattern: "resetwarn ?(.*)",
+    pattern: "(resetwarn|uyarısıfırla) ?(.*)",
     fromMe: false,
     desc: "Kullanıcının tüm uyarılarını sıfırlar",
     usage: ".resetwarn @user\n.resetwarn reply",
@@ -328,7 +329,7 @@ Module(
 
 Module(
   {
-    pattern: "warnlist",
+    pattern: "(warnlist|uyarıliste)",
     fromMe: false,
     desc: "Gruptaki tüm uyarılan kullanıcıları listeler",
     usage: ".warnlist",
@@ -407,7 +408,7 @@ Module(
 
 Module(
   {
-    pattern: "setwarnlimit ?(.*)",
+    pattern: "(setwarnlimit|uyarılimit) ?(.*)",
     fromMe: true,
     desc: "Grup için uyarı sınırını ayarlar",
     usage: ".setwarnlimit 5",

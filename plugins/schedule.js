@@ -100,7 +100,7 @@ async function createMessageObject(replyMessage) {
 }
 Module(
   {
-    pattern: "schedule ?(.*)",
+    pattern: "(schedule|planla) ?(.*)",
     use: "utility",
     desc: "İleri bir tarih için mesaj planlar. Mesajı yanıtlayarak kullanın.",
   },
@@ -167,7 +167,7 @@ Module(
 );
 Module(
   {
-    pattern: "scheduled ?(.*)",
+    pattern: "(scheduled|plandurum) ?(.*)",
     use: "utility",
     desc: "Bekleyen tüm planlanmış mesajları listeler",
   },
@@ -205,7 +205,7 @@ Module(
 );
 Module(
   {
-    pattern: "cancel ?(.*)",
+    pattern: "(cancel|plansil) ?(.*)",
     use: "utility",
     desc: "ID'ye göre zamanlanmış bir mesajı iptal eder",
   },

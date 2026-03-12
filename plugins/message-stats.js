@@ -58,7 +58,7 @@ function parseDuration(duration) {
 
 Module(
   {
-    pattern: "msgs ?(.*)",
+    pattern: "(msgs|mesajlar) ?(.*)",
     fromMe: true,
     desc: "Grupta mesaj atan kullanıcıların mesaj sayılarını gösterir",
     usage:
@@ -135,7 +135,7 @@ Module(
 
 Module(
   {
-    pattern: "inactive ?(.*)",
+    pattern: "(inactive|üyetemizle) ?(.*)",
     fromMe: true,
     desc: "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
     usage:

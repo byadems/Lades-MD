@@ -50,7 +50,7 @@ Module(
 
 Module(
   {
-    pattern: "kick ?(.*)",
+    pattern: "(kick|at) ?(.*)",
     fromMe: false,
     desc: Lang.KICK_DESC,
     use: "group",
