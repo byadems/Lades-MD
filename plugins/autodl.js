@@ -263,7 +263,7 @@ Module({ on: "text", fromMe }, async (message) => {
                 audioSizeInfo = ` ~ _${formatBytes(audioSize)}_`;
               }
             }
-            qualityText += `*${uniqueQualities.length + 1}.* _*Audio Only*_${audioSizeInfo}\n`;
+            qualityText += `*${uniqueQualities.length + 1}.* 🎵 _*Sadece Ses*_${audioSizeInfo}\n`;
           }
 
           qualityText += "\n_İndirmek için bir numara ile yanıtlayın_";

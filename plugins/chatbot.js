@@ -651,7 +651,7 @@ Module(
 
     let sent_msg;
     try {
-      sent_msg = await message.sendReply("_Düşünüyor..._");
+      sent_msg = await message.sendReply("_🧠 Düşünüyor..._");
       const fullText = await callGenerativeAI(prompt, imageParts, message, sent_msg);
 
       if (!fullText) {

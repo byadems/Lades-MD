@@ -163,9 +163,9 @@ Module(
       if (!admin) return await message.sendReply("_❌ Ben yönetici değilim_");
       await automute.set(message.jid, match.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
-        `*_Group will auto mute at ${tConvert(
+        `*_⏰ Grup ${tConvert(
           match.match(/(\d+)/g).join(" ")
-        )}, rebooting.._*`
+        )} saatinde otomatik susturulacak, yeniden başlatılıyor.._*`
       );
       process.exit(0);
     }
@@ -204,7 +204,7 @@ Module(
       if (!admin) return await message.sendReply("*❌ Yönetici değilim*");
       await autounmute.set(message.jid, match?.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
-        `*_Group will auto open at ${tConvert(match)}, rebooting.._*`
+        `*_⏰ Grup ${tConvert(match)} saatinde otomatik açılacak, yeniden başlatılıyor.._*`
       );
       process.exit(0);
     }
@@ -349,7 +349,7 @@ Module(
       if (message.action == "demote") admin_jids.push(message.participant[0].id);
       await message.client.sendMessage(message.jid, {
         text: `_*[${
-          message.action == "promote" ? "Yükseltme algılandı" : "Düşürme algılandı"
+          message.action == "promote" ? "🔔 Yükseltme algılandı" : "🔔 Düşürme algılandı"
         }]*_\n\n@${message.from.split("@")[0]} ${message.action}d @${
           message.participant[0].id.split("@")[0]
         }`,

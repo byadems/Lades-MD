@@ -102,7 +102,7 @@ Module(
         );
       }
 
-      let final_msg = `_${usersWithMessages.length} üyenin gönderdiği mesajlar_\n_Mesaj sayısına göre sıralı (en yüksekten en düşüğe)_\n\n`;
+      let final_msg = `📊 _${usersWithMessages.length} üyenin gönderdiği mesajlar_\n_Mesaj sayısına göre sıralı (en yüksekten en düşüğe)_\n\n`;
 
       for (let userObj of usersWithMessages) {
         let user = userObj.jid;
@@ -239,7 +239,7 @@ Module(
         );
       }
 
-      let responseMsg = `_Aktif olmayan üyeler (${durationStr}+):_ *${inactiveMembers.length}*\n\n`;
+      let responseMsg = `👥 _Aktif olmayan üyeler (${durationStr}+):_ *${inactiveMembers.length}*\n\n`;
 
       if (dataWarning) {
         responseMsg += `⚠️ _Uyarı: Veritabanında sadece ${timeSince(
@@ -380,7 +380,7 @@ Module(
 
         if (topUsers.length === 0) {
           return await message.sendReply(
-            `_${scopeText} istatistikleri için veritabanında kullanıcı verisi bulunamadı._`
+            `📊 _${scopeText} istatistikleri için veritabanında kullanıcı verisi bulunamadı._`
           );
         }
 

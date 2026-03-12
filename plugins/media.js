@@ -220,7 +220,7 @@ Module(
       const videoBuffer = fs.readFileSync(outputPath);
       await message.send(videoBuffer, "video");
       await message.edit(
-        "_Siyah video başarıyla oluşturuldu!_",
+        "_✅ Siyah video başarıyla oluşturuldu!_",
         message.jid,
         processingMsg.key
       );
@@ -450,7 +450,7 @@ Module(
       return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
     const Message = {
-      text: `*Başlık:* ${data.title}\n
+      text: `🎶 *Başlık:* ${data.title}\n
 Sanatçılar: ${data.artists?.map((e) => e.name + " ")}\n
 Yayın: ${data.release_date}\n
 Süre: ${getDuration(data.duration_ms)}\n

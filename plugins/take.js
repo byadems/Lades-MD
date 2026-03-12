@@ -17,7 +17,7 @@ Module(
   },
   async (m, match) => {
     if (!m.reply_message)
-      return await m.sendMessage("_Bir sesi veya çıkartmayı yanıtlayın_");
+      return await m.sendMessage("_🎵 Bir sesi veya çıkartmayı yanıtlayın_");
     var audiomsg = m.reply_message.audio;
     var stickermsg = m.reply_message.sticker;
     var q = await m.reply_message.download();

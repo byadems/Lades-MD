@@ -63,7 +63,7 @@ Module(
         );
       }
 
-      let resultText = "YouTube Arama Sonuçları\n\n";
+      let resultText = "🎵 YouTube Arama Sonuçları\n\n";
       resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
       results.forEach((video, index) => {
@@ -111,7 +111,7 @@ Module(
         );
       }
 
-      let resultText = "YouTube Arama Sonuçları\n\n";
+      let resultText = "🎵 YouTube Arama Sonuçları\n\n";
       resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
       results.forEach((video, index) => {
@@ -181,7 +181,7 @@ Module(
       );
       const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-      let qualityText = "_*Video Kalitesini Seçin*_\n\n";
+      let qualityText = "🎬 _*Video Kalitesini Seçin*_\n\n";
       qualityText += `_*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
 
       if (uniqueQualities.length === 0) {
@@ -622,7 +622,7 @@ Module(
     }
     const repliedText = message.reply_message.message;
     if (
-      repliedText.includes("YouTube Arama Sonuçları") &&
+      repliedText.includes("🎵 YouTube Arama Sonuçları") &&
       repliedText.includes("ses indirmek için")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
@@ -703,7 +703,7 @@ Module(
         await message.sendReply("_❌ Seçiminiz işlenemedi._");
       }
     } else if (
-      repliedText.includes("YouTube Arama Sonuçları") &&
+      repliedText.includes("🎵 YouTube Arama Sonuçları") &&
       repliedText.includes("video detaylarını görüntüle")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {

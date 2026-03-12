@@ -40,7 +40,7 @@ Module(
       },
       message.jid
     );
-    return await message.send("_Sohbet temizlendi!_");
+    return await message.send("_🧹 Sohbet temizlendi!_");
   }
 );
 
@@ -606,7 +606,7 @@ Module(
           (match[1] || message.reply_message?.text).slice(0, 512)
         );
       } catch {
-        return await message.sendReply("_Değiştirilemedi!_");
+        return await message.sendReply("_❌ Değiştirilemedi!_");
       }
     }
   }

@@ -334,7 +334,7 @@ Module(
       return await setVar("MODE", match[1], message);
     } else {
       return await message.sendReply(
-        `_*Mode manager*_\n_Current mode: ${config.MODE}_\n_Kullanmak için \`.mode public|private\`_`
+        `⚙️ _*Mod Yöneticisi*_\n_Mevcut mod: ${config.MODE}_\n_Kullanmak için \`.mode public|private\`_`
       );
     }
   }
@@ -749,14 +749,14 @@ Module(
       var status = jids.includes(message.jid) ? "on" : "off";
       var { subject } = await message.client.groupMetadata(message.jid);
       return await message.sendReply(
-        `_Anti demote menu of ${subject}_` +
-          "\n\n_This feature is currently turned *" +
+        `🛡️ _${subject} Anti Demote Menüsü_` +
+          "\n\n_Bu özellik şu anda *" +
           status +
           "*_\n\n_Kullanmak için .antidemote on/off_"
       );
     }
     await message.sendReply(
-      match[1] === "on" ? "_Antidemote etkinleştirildi!_" : "_Antidemote kapatıldı!_"
+      match[1] === "on" ? "_✅ Antidemote etkinleştirildi!_" : "_❌ Antidemote kapatıldı!_"
     );
   }
 );
@@ -785,16 +785,16 @@ Module(
       var status = jids.includes(message.jid) ? "on" : "off";
       var { subject } = await message.client.groupMetadata(message.jid);
       return await message.sendReply(
-        `_Anti promote menu of ${subject}_` +
-          "\n\n_This feature is currently turned *" +
+        `🛡️ _${subject} Anti Promote Menüsü_` +
+          "\n\n_Bu özellik şu anda *" +
           status +
           "*_\n\n_Kullanmak için .antipromote on/off_"
       );
     }
     await message.sendReply(
       match[1] === "on"
-        ? "_Antipromote etkinleştirildi!_"
-        : "_Antipromote kapatıldı!_"
+        ? "_✅ Antipromote etkinleştirildi!_"
+        : "_❌ Antipromote kapatıldı!_"
     );
   }
 );
@@ -1406,7 +1406,7 @@ Module(
         if (quotedMsg.includes(setting.title)) {
           const value = option === 1 ? "true" : "false";
           await setVar(setting.env_var, value);
-          await message.sendReply(`${setting.title} ${value} olarak ayarlandı`);
+          await message.sendReply(`✅ ${setting.title} ${value} olarak ayarlandı`);
           return;
         }
       }
@@ -1580,20 +1580,54 @@ Module(
     desc: "Sistem (OS) / işlem çalışma süresini gösterir (uptime)",
   },
   async (message, match) => {
+    const os = require("os");
     const formatTime = (seconds) => {
       const days = Math.floor(seconds / 86400);
       const hours = Math.floor((seconds % 86400) / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
       const secs = seconds % 60;
-
-      return `${days} gün, ${hours} sa, ${mins} dk, ${secs} sn`;
+      const parts = [];
+      if (days > 0) parts.push(`${days} gün`);
+      if (hours > 0) parts.push(`${hours} sa`);
+      if (mins > 0) parts.push(`${mins} dk`);
+      parts.push(`${secs} sn`);
+      return parts.join(", ");
     };
 
-    const osUptime = formatTime(Math.floor(require("os").uptime()));
+    const bytesToSize = (bytes) => {
+      const sizes = ["B", "KB", "MB", "GB"];
+      if (bytes === 0) return "0 B";
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
+    };
+
+    const osUptime = formatTime(Math.floor(os.uptime()));
     const processUptime = formatTime(Math.floor(process.uptime()));
+    const mem = process.memoryUsage();
+    const heapUsed = bytesToSize(mem.heapUsed);
+    const heapTotal = bytesToSize(mem.heapTotal);
+    const rss = bytesToSize(mem.rss);
+    const freeMem = bytesToSize(os.freemem());
+    const totalMem = bytesToSize(os.totalmem());
+    const cpuModel = os.cpus()?.[0]?.model || "Bilinmiyor";
+    const cpuCount = os.cpus()?.length || 0;
+    const platform = `${os.type()} ${os.release()}`;
+    const nodeVer = process.version;
+    const loadAvg = os.loadavg().map((l) => l.toFixed(2)).join(" / ");
 
     return await message.sendReply(
-      `                 *[ ÇALIŞMA SÜRESİ ]*\n\n_Sistem: ${osUptime}_\n\n_İşlem: ${processUptime}_`
+      `⏱️ *───「 ÇALIŞMA SÜRESİ 」───*\n\n` +
+      `🖥️ _Sistem:_ *${osUptime}*\n` +
+      `🤖 _Bot:_ *${processUptime}*\n\n` +
+      `💾 *───「 BELLEK 」───*\n\n` +
+      `📊 _Heap:_ ${heapUsed} / ${heapTotal}\n` +
+      `📈 _RSS:_ ${rss}\n` +
+      `🧮 _Sistem RAM:_ ${freeMem} boş / ${totalMem} toplam\n\n` +
+      `⚙️ *───「 SİSTEM 」───*\n\n` +
+      `🔧 _Platform:_ ${platform}\n` +
+      `🧠 _CPU:_ ${cpuModel} (${cpuCount} çekirdek)\n` +
+      `📉 _Yük Ort:_ ${loadAvg}\n` +
+      `🟢 _Node.js:_ ${nodeVer}`
     );
   }
 );
