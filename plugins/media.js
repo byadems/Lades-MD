@@ -1,6 +1,8 @@
 const { Module } = require("../main");
 const fs = require("fs");
+const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
+const https = require("https");
 const { getTempPath, getTempSubdir } = require("../core/helpers");
 
 const config = require("../config"),
@@ -8,6 +10,7 @@ const config = require("../config"),
 const { getString } = require("./utils/lang");
 const { avMix, circle, rotate, trim, uploadToImgbb } = require("./utils");
 const nexray = require("./utils/nexray");
+const { censorBadWords } = require("./utils/censor");
 const acrcloud = require("acrcloud");
 const acr = new acrcloud({
   host: "identify-eu-west-1.acrcloud.com",
@@ -28,6 +31,181 @@ async function findMusic(file) {
   });
 }
 const Lang = getString("media");
+
+async function transcribeVoiceMessage(message, targetMessage) {
+  let processingMsg;
+  try {
+    const voiceMsg = targetMessage || message;
+    const isVoice = voiceMsg.audio ||
+      voiceMsg.ptt ||
+      voiceMsg.data?.message?.audioMessage ||
+      voiceMsg.reply_message?.audio ||
+      voiceMsg.reply_message?.ptt;
+    if (!isVoice) {
+      return;
+    }
+    if ((!config.GROQ_API_KEY || config.GROQ_API_KEY === '') && 
+        (!config.OPENAI_API_KEY || config.OPENAI_API_KEY === '')) {
+      return await message.sendReply("⚠️ _API Anahtarı bulunamadı! (Groq veya OpenAI)_");
+    }
+    processingMsg = await message.send("🎙️ _Ses analiz ediliyor..._");
+    const audioBuffer = await voiceMsg.download("buffer");
+    const tempFile = path.join(__dirname, `audio_${Date.now()}.ogg`);
+    fs.writeFileSync(tempFile, audioBuffer);
+    const boundary = `----WebKitFormBoundary${Date.now()}`;
+    const chunks = [];
+
+    chunks.push(Buffer.from(`--${boundary}\r\n`));
+    chunks.push(Buffer.from(`Content-Disposition: form-data; name="model"\r\n\r\n`));
+    chunks.push(Buffer.from(`whisper-large-v3-turbo\r\n`));
+    chunks.push(Buffer.from(`--${boundary}\r\n`));
+    chunks.push(Buffer.from(`Content-Disposition: form-data; name="language"\r\n\r\n`));
+    chunks.push(Buffer.from(`tr\r\n`));
+    chunks.push(Buffer.from(`--${boundary}\r\n`));
+    chunks.push(Buffer.from(`Content-Disposition: form-data; name="file"; filename="audio.ogg"\r\n`));
+    chunks.push(Buffer.from(`Content-Type: audio/ogg\r\n\r\n`));
+    chunks.push(audioBuffer);
+    chunks.push(Buffer.from(`\r\n`));
+    chunks.push(Buffer.from(`--${boundary}--\r\n`));
+
+    const body = Buffer.concat(chunks);
+    const useGroq = config.GROQ_API_KEY && config.GROQ_API_KEY !== '';
+    const makeRequest = (useOpenAI = false) => {
+      return new Promise((resolve, reject) => {
+        const options = useOpenAI ? {
+          hostname: 'api.openai.com',
+          port: 443,
+          path: '/v1/audio/transcriptions',
+          method: 'POST',
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Authorization': `Bearer ${config.OPENAI_API_KEY}`,
+            'Content-Length': body.length
+          }
+        } : {
+          hostname: 'api.groq.com',
+          port: 443,
+          path: '/openai/v1/audio/transcriptions',
+          method: 'POST',
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Authorization': `Bearer ${config.GROQ_API_KEY}`,
+            'Content-Length': body.length
+          }
+        };
+        const req = https.request(options, (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => {
+            if (res.statusCode !== 200) {
+              reject({ statusCode: res.statusCode, data, useOpenAI });
+            } else {
+              resolve({ data, useOpenAI });
+            }
+          });
+        });
+        req.on('error', (err) => {
+          reject({ error: err, useOpenAI });
+        });
+        req.write(body);
+        req.end();
+      });
+    };
+
+    let response;
+    try {
+      if (useGroq) {
+        response = await makeRequest(false);
+      } else {
+        response = await makeRequest(true);
+      }
+    } catch (groqError) {
+      if (!groqError.useOpenAI && config.OPENAI_API_KEY && config.OPENAI_API_KEY !== '') {
+        console.log("⚠️ Groq başarısız, OpenAI API'ye geçiliyor...");
+        try {
+          response = await makeRequest(true);
+          console.log("✅ OpenAI API başarılı!");
+        } catch (openaiError) {
+          console.error("❌ Her iki API de başarısız:", openaiError);
+          return await message.edit(
+            `⚠️ _API hatası: ${openaiError.statusCode || 'Bağlantı hatası'}_\n_${openaiError.data ? JSON.parse(openaiError.data).error?.message : openaiError.error?.message || 'Bilinmeyen hata'}_`,
+            message.jid, processingMsg.key
+          );
+        }
+      } else {
+        console.error("❌ Groq API hatası ve OpenAI anahtarı yok:", groqError);
+        return await message.edit(
+          `⚠️ _API hatası: ${groqError.statusCode || 'Bağlantı hatası'}_\n_${groqError.data ? JSON.parse(groqError.data).error?.message : groqError.error?.message || 'Bilinmeyen hata'}_`,
+          message.jid, processingMsg.key
+        );
+      }
+    }
+    try {
+      const result = JSON.parse(response.data);
+      let transcription = result.text;
+      if (!transcription || transcription.trim() === '') {
+        return await message.edit(
+          "❌ _Maalesef, sesi analiz edemedim veya sessizlik tespit ettim._",
+          message.jid, processingMsg.key
+        );
+      }
+      transcription = censorBadWords(transcription);
+      const apiUsed = response.useOpenAI ? "OpenAI" : "Groq";
+      return await message.edit(
+        `🎙️ *Seste şunları duydum:*\n\n_"${transcription}"_`,
+        message.jid, processingMsg.key
+      );
+    } catch (parseErr) {
+      console.error("Yanıt hatası:", parseErr, response.data);
+      return await message.edit("⚠️ _API yanıtı işlenirken hata oluştu. .dinle komutu ile deneyin._", message.jid, processingMsg.key);
+    }
+  } catch (err) {
+    console.error("dinle modülünde hata:", err);
+    if (processingMsg) {
+      return await message.edit("⚠️ Ses çevrilirken bir hata oluştu.", message.jid, processingMsg.key);
+    } else {
+      return await message.send("⚠️ Ses çevrilirken bir hata oluştu.");
+    }
+  }
+}
+
+Module({
+  pattern: "dinle",
+  fromMe: false,
+  desc: "Sesli mesajı metne dönüştürür. (Tek seferlik sesler de dahil)",
+  usage: ".dinle (bir ses mesajına yanıtlayarak)",
+  use: "group",
+},
+async (message, match) => {
+  const replied = message.reply_message;
+  if (!replied || (!replied.audio && !replied.ptt)) {
+    return await message.sendReply("❌ Lütfen bir ses mesajına yanıtlayarak yazın!");
+  }
+  return await transcribeVoiceMessage(message, replied);
+});
+
+Module({
+  on: 'message',
+  fromMe: false,
+  desc: "Ses mesajını otomatik olarak metne dönüştürür.",
+  use: "group",
+},
+async (message, match) => {
+  try {
+    const audioMsg = message.data?.message?.audioMessage;
+    if (!audioMsg) {
+      return;
+    }
+    if ((!config.GROQ_API_KEY || config.GROQ_API_KEY === '') && 
+        (!config.OPENAI_API_KEY || config.OPENAI_API_KEY === '')) {
+      return;
+    }
+    return await transcribeVoiceMessage(message, message);
+  } catch (err) {
+    console.error("Otomatik dinle hatası:", err);
+  }
+});
+
 Module(
   {
     pattern: "trim ?(.*)",
@@ -428,45 +606,47 @@ Module(
 );
 Module(
   {
-    pattern: "find ?(.*)",
-    desc: "Yapay zeka (AI) kullanarak müzik adını bulur",
-    usage: ".find bir müziğe yanıt verin",
+    pattern: "bul ?(.*)",
+    fromMe: false,
+    desc: "Yapay zeka aracılığıyla çalan şarkının adını bulur.",
+    usage: "Ses dosyasına etiketleyerek .bul yazın.",
     use: "search",
   },
   async (message, match) => {
     if (!message.reply_message?.audio)
-      return await message.sendReply("_💬 Bir müziği yanıtlayın_");
+      return await message.sendReply("⚠️ Bir ses dosyasına etiketleyerek yazın!");
     if (message.reply_message.duration > 60)
-      return await message.send(
-        "_Ses çok büyük! .trim komutuyla sesi 60 saniyenin altına kısaltın_"
+      return await message.sendReply(
+        "⚠️ *Ses çok uzun! .trim komutunu kullanıp sesi 60 saniyeye düşürmenizi öneririm.*"
       );
+
+    await message.send("🧐 Şarkıyı dinliyorum...");
     var audio = await message.reply_message.download("buffer");
     var data = await findMusic(audio);
-    if (!data) return await message.sendReply("_❌ Eşleşen sonuç bulunamadı!_");
-    var buttons = [];
+    if (!data)
+      return await message.sendReply(
+        "🤯 Eşleşen bir sonuç bulunamadı! 👩🏻‍🔧 Dilerseniz daha iyi bir analiz için 15 saniyenin üzerinde kaydederek tekrar deneyin."
+      );
+
     function getDuration(millis) {
       var minutes = Math.floor(millis / 60000);
       var seconds = ((millis % 60000) / 1000).toFixed(0);
       return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
+
     const Message = {
-      text: `🎶 *Başlık:* ${data.title}\n
-Sanatçılar: ${data.artists?.map((e) => e.name + " ")}\n
-Yayın: ${data.release_date}\n
-Süre: ${getDuration(data.duration_ms)}\n
-Albüm: ${data.album?.name}\n
-Türler: ${data.genres?.map((e) => e.name + " ")}\n
-Etiket: ${data.label}\n
-Spotify: ${"spotify" in data.external_metadata ? "Mevcut" : "Mevcut değil"}\n
-YouTube: ${
-        "youtube" in data.external_metadata
-          ? "https://youtu.be/" + data.external_metadata.youtube.vid
-          : "Mevcut değil"
-      }\n`,
-      //    footer: '🎼 Listen to full music on',
-      //    buttons,
-      //    headerType:1
+      text: `🎶 Başlık: *${data.title}*
+🎤 Sanatçılar: ${data.artists?.map((e) => e.name + " ")}
+📆 Çıkış Tarihi: ${data.release_date}
+⏱️ Süre: ${getDuration(data.duration_ms)}
+💿 Albüm: ${data.album?.name}
+🕺🏻 Tür: ${data.genres?.map((e) => e.name + " ")}
+🏢 Yapım Şirketi: ${data.label}
+🤔 Spotify: ${"spotify" in data.external_metadata ? "Mevcut" : "Mevcut Değil"}
+▶️ YouTube: *${"youtube" in data.external_metadata ? "https://youtu.be/" + data.external_metadata.youtube.vid : "Mevcut Değil"}*\n
+ℹ️ İndirmek isterseniz *".şarkı Şarkı İsmi"* şeklinde yazabilirsiniz.`,
     };
+
     await message.client.sendMessage(message.jid, Message);
   }
 );

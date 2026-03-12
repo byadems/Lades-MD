@@ -4,10 +4,12 @@ const config = require("../config");
 const os = require("os");
 const path = require("path");
 const fs = require("fs");
+const axios = require("axios");
 const { uploadToImgbb } = require("./utils/upload");
 const { setVar } = require("./manage");
 const { getTotalUserCount } = require("../core/store");
 const { parseAliveMessage, sendAliveMessage } = require("./utils/alive-parser");
+const { badWords } = require("./utils/censor");
 
 const isPrivateMode = MODE === "private";
 
@@ -584,3 +586,224 @@ Module(
     await parseAlive(message, aliveMessage);
   }
 );
+
+
+const BILDIRIM_JID = "120363258254647790@g.us";
+const getBildirimJid = () => BILDIRIM_JID || null;
+
+const KATEGORILER = {
+  istek: { emoji: "🙏", label: "İstek" },
+  sikayet: { emoji: "😤", label: "Şikayet" },
+  hata: { emoji: "🐛", label: "Hata Bildirimi" },
+  oneri: { emoji: "💡", label: "Öneri" },
+  talep: { emoji: "📋", label: "Talep" },
+};
+
+const normalizeKategori = (raw) => {
+  const map = {
+    istek: "istek",
+    şikayet: "sikayet",
+    sikayet: "sikayet",
+    hata: "hata",
+    öneri: "oneri",
+    oneri: "oneri",
+    talep: "talep",
+  };
+  return map[raw.toLowerCase()] || null;
+};
+
+Module(
+  {
+    pattern: "bildir ?(.*)",
+    fromMe: false,
+    desc: "Bot hakkında istek, şikayet, hata, öneri veya talep iletir.",
+    type: "user",
+    usage:
+      ".bildir istek <mesaj>\n" +
+      ".bildir şikayet <mesaj>\n" +
+      ".bildir hata <mesaj>\n" +
+      ".bildir öneri <mesaj>\n" +
+      ".bildir talep <mesaj>",
+  },
+  async (message, match) => {
+    const input = match[1]?.trim() || "";
+    if (!input) {
+      return message.sendReply(
+        `📣 *Bot Bildirim Merkezi*\n\n` +
+          `_Bot hakkındaki her türlü görüşünü bize iletebilirsin!_\n\n` +
+          `*Kategoriler:*\n` +
+          `🙏🏻 \.bildir istek <mesaj>\` — Özellik isteği\n` +
+          `😤 \.bildir şikayet <mesaj>\` — Şikayet\n` +
+          `🐛 \.bildir hata <mesaj>\` — Hata bildirimi\n` +
+          `💡 \.bildir öneri <mesaj>\` — Fikir/Öneri\n` +
+          `📋 \.bildir talep <mesaj>\` — Özel talep\n\n` +
+          `💬 _Örnek: \.bildir hata Şarkı komutu çalışmıyor\`_`
+      );
+    }
+
+    const parts = input.split(" ");
+    const kategoriKey = normalizeKategori(parts[0]);
+    if (!kategoriKey) {
+      return message.sendReply(
+        `❓ *Geçersiz kategori:* \`${parts[0]}\`\n\n` +
+          `🔻 _Geçerli kategoriler:_\n` +
+          `🙏 istek · 😤 şikayet · 🐛 hata · 💡 öneri · 📋 talep`
+      );
+    }
+
+    const metin = parts.slice(1).join(" ").trim();
+    if (!metin) {
+      const { emoji, label } = KATEGORILER[kategoriKey];
+      return message.sendReply(
+        `${emoji} *${label}* için bir mesaj yazmalısın.\n\n` +
+          `_Örnek: \.bildir ${parts[0]} Mesajınız buraya...\`_`
+      );
+    }
+
+    if (badWords.some((word) => metin.toLowerCase().includes(word.toLowerCase()))) {
+      return message.sendReply(
+        `🚫 *Bildiriminiz gönderilemedi!*\n\n` +
+          `_Mesajınız uygunsuz ifadeler içeriyor._ 🤬\n` +
+          `_Lütfen nezaket kurallarına uygun şekilde iletiniz._ 🙏🏻`
+      );
+    }
+
+    const hedefJid = getBildirimJid();
+    if (!hedefJid) {
+      return message.sendReply(
+        `⚙️ _Bildirim sistemi henüz yapılandırılmamış!_\n` +
+          `_Lütfen geliştiricimi bilgilendirin._`
+      );
+    }
+
+    const { emoji, label } = KATEGORILER[kategoriKey];
+    const gonderenJid = message.sender || message.jid;
+    const tarih = new Date().toLocaleString("tr-TR", {
+      timeZone: "Europe/Istanbul",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    let grupBilgisi = "💬 *DM üzerinden iletildi*";
+    if (message.isGroup) {
+      try {
+        const meta = await message.client.groupMetadata(message.jid);
+        grupBilgisi = `👥 *Grup:* ${meta.subject}\n🆔 *Grup JID:* \`${message.jid}\``;
+      } catch {
+        grupBilgisi = `👥 *Grup JID:* \`${message.jid}\``;
+      }
+    }
+
+    const bildirimMesaji =
+      `${emoji} *Yeni ${label} Bildirimi*\n` +
+      `${"─".repeat(30)}\n` +
+      `👤 *Gönderen:* @${gonderenJid.split("@")[0]}\n` +
+      `${grupBilgisi}\n` +
+      `🕐 *Tarih:* ${tarih}\n` +
+      `${"─".repeat(30)}\n` +
+      `${emoji} *Mesaj:*\n${metin}`;
+
+    try {
+      await message.client.sendMessage(hedefJid, {
+        text: bildirimMesaji,
+        mentions: [gonderenJid],
+      });
+      return message.sendReply(
+        `✅ *Bildiriminizi gönderdim, teşekkürler!*\n\n` +
+          `${emoji} *Kategori:* ${label}\n` +
+          `📝 *Mesajınız:* _${metin}_\n\n` +
+          `_En kısa sürede değerlendirilecektir._ 🙌🏻`
+      );
+    } catch (err) {
+      console.error("[Bildir] Mesaj gönderilemedi:", err?.message || err);
+      return message.sendReply(
+        "❌ _Bildirim gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin._"
+      );
+    }
+  }
+);
+
+
+const currencyMap = {
+  'dolar': 'USD', 'tl': 'TRY', 'euro': 'EUR', 'sterlin': 'GBP', 'frank': 'CHF',
+  'yen': 'JPY', 'yuan': 'CNY', 'rupi': 'INR', 'ruble': 'RUB', 'real': 'BRL',
+  'kanada doları': 'CAD', 'avustralya doları': 'AUD', 'yeni zelanda doları': 'NZD',
+  'hong kong doları': 'HKD', 'singapur doları': 'SGD', 'güney afrika randı': 'ZAR',
+  'isviçre frangı': 'CHF', 'çin yuanı': 'CNY', 'japon yeni': 'JPY',
+  'hindistan rupisi': 'INR', 'güney kore wonu': 'KRW', 'meksika pezosu': 'MXN',
+  'norveç kronu': 'NOK', 'pakistan rupisi': 'PKR', 'rus rublesi': 'RUB',
+  'suudi arabistan riyali': 'SAR', 'türk lirası': 'TRY', 'amerikan doları': 'USD',
+};
+
+function parseAmount(input) {
+  let s = input.replace(/\s+/g, '');
+  const hasDot = s.includes('.');
+  const hasComma = s.includes(',');
+  if (hasDot && hasComma) {
+    if (s.lastIndexOf('.') > s.lastIndexOf(',')) {
+      s = s.replace(/,/g, '');
+    } else {
+      s = s.replace(/\./g, '').replace(/,/g, '.');
+    }
+  } else if (hasComma) {
+    s = s.replace(/,/g, '.');
+  }
+  const num = parseFloat(s);
+  return isNaN(num) ? null : num;
+}
+
+const createApiUrl = (fromCurrency, toCurrency, amount) =>
+  `https://v6.exchangerate-api.com/v6/9f2e3e44d65670cb05593bd9/pair/${fromCurrency}/${toCurrency}/${amount}`;
+
+Module({
+  pattern: 'kur ?(.*)',
+  fromMe: false,
+  desc: 'Belirli bir miktarın iki para birimi arasındaki döviz kuru dönüşümünü hesaplar.',
+  usage: '.kur 2,375.99 dolar tl',
+}, async (message, match) => {
+  if (message.jid === "905396978235-1601666238@g.us") {
+    return message.client.sendMessage(message.jid,
+      { text: "❗ *Bu komut sadece sohbet grubunda kullanılabilir!*" }
+    );
+  }
+  const userInput = (match[1] || '').trim();
+  if (!userInput) {
+    return message.sendReply('❗️ Lütfen geçerli bir giriş yapınız. Örnek: *.kur 1 dolar tl*');
+  }
+  const parts = userInput.split(/\s+/);
+  if (parts.length < 3) {
+    return message.sendReply('❗️ Lütfen geçerli bir giriş yapınız. Örnek: *.kur 1 dolar tl*');
+  }
+  const rawAmount = parts.shift();
+  const rawToCurrency = parts.pop();
+  const rawFromCurrency = parts.join(' ');
+  const amount = parseAmount(rawAmount);
+  const fromCurrency = currencyMap[rawFromCurrency.toLowerCase()] || rawFromCurrency.toUpperCase();
+  const toCurrency = currencyMap[rawToCurrency.toLowerCase()] || rawToCurrency.toUpperCase();
+  if (amount === null || !isFinite(amount) || !fromCurrency || !toCurrency) {
+    return message.sendReply('❗️ Lütfen geçerli bir giriş yapınız. Örneğin: *.kur 1 dolar tl*');
+  }
+  try {
+    const apiUrl = createApiUrl(fromCurrency, toCurrency, amount);
+    const response = await axios.get(apiUrl);
+    if (response.data.result === 'success') {
+      const converted = Number(response.data.conversion_result).toFixed(2);
+      const today = new Date();
+      const dateStr = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
+      return message.sendReply(
+        `📆 ${dateStr} itibariyle
+💱 *${amount} ${fromCurrency} = ${converted} ${toCurrency}*`
+      );
+    } else {
+      throw new Error('API dönüş hatası');
+    }
+  } catch (err) {
+    console.error('Döviz kuru dönüşümü yapılamadı:', err.message);
+    return message.sendReply(
+      '⚠️ Döviz kuru dönüşümü yapılamadı! Lütfen para birimlerini kontrol ediniz.'
+    );
+  }
+});

@@ -444,3 +444,49 @@ Module(
     }
   }
 );
+
+Module(
+  {
+    pattern: "çevir ?(.*)",
+    fromMe: isFromMe,
+    desc: "Metni iki dil arasında çevirir. Örnek: .çevir en tr",
+    usage: ".çevir en tr",
+    use: "search",
+  },
+  async (message, match) => {
+    try {
+      const raw = (match?.[1] || "").trim();
+      const parts = raw.split(/\s+/);
+      if (parts.length < 2) {
+        return await message.sendReply("❗ Kullanımı:\n(Bir mesaja yanıtlayarak) .çevir en tr");
+      }
+      const src = parts[0];
+      const dst = parts[1];
+      let text = parts.slice(2).join(" ").trim();
+      if (!text) {
+        const replied =
+          message.reply_message?.text ||
+          message.reply_message?.caption ||
+          message.reply_message?.conversation;
+        if (replied) text = replied.trim();
+      }
+      if (!text) {
+        return await message.sendReply("❌ Çevrilecek metin bulunamadı!");
+      }
+
+      const { data } = await axios.get("https://api.mymemory.translated.net/get", {
+        params: {
+          q: text,
+          langpair: `${src}|${dst}`,
+        },
+      });
+      const translated = data?.responseData?.translatedText;
+      if (!translated) {
+        return await message.sendReply("❌ Çeviri alınamadı.");
+      }
+      return await message.sendReply(`🌍 *Çeviri (${src} → ${dst})*\n\n${translated}`);
+    } catch (err) {
+      return await message.sendReply("❌ Hata oluştu.");
+    }
+  }
+);

@@ -416,3 +416,80 @@ Module(
     }
   }
 );
+
+function extractTikTokUsername(input) {
+  if (!input) return null;
+  input = input.trim();
+  if (input.startsWith('@')) {
+    return input.slice(1).toLowerCase();
+  }
+  if (/^[a-zA-Z0-9._]{2,24}$/.test(input)) {
+    return input.toLowerCase();
+  }
+  try {
+    const match = input.match(/tiktok\.com\/@([^/?]+)/i);
+    if (match && match[1]) {
+      return match[1].toLowerCase();
+    }
+  } catch (_) {}
+  return null;
+}
+
+Module(
+  {
+    pattern: 'ttara ?(.*)',
+    fromMe: false,
+    desc: 'TikTok kullanıcı bilgilerini getirir. (Gizli hesaplar hariç)',
+    use: 'search',
+  },
+  async (message, match) => {
+    try {
+      let input = (match?.[1] || '').trim();
+      if (!input) {
+        input = message.reply_message?.text || message.reply_message?.caption || '';
+        input = input.trim();
+      }
+      if (!input) {
+        return await message.sendReply(
+          '⚠ _Lütfen bir TikTok @kullanıcı adı veya profil bağlantısı girin! (Gizli hesaplar hariç)_\n' +
+            '*Örnekler:*\n' +
+            '.ttara lades\n' +
+            '.ttara @lades\n' +
+            '.ttara https://www.tiktok.com/@lades'
+        );
+      }
+      const username = extractTikTokUsername(input);
+      if (!username) {
+        return await message.sendReply('❌ _Geçersiz TikTok kullanıcı adı!_');
+      }
+      const response = await axios.get(
+        `https://api.princetechn.com/api/stalk/tiktokstalk?apikey=prince&username=${encodeURIComponent(username)}`
+      );
+      const data = response.data;
+      if (!data || data.status !== 200 || !data.result) {
+        return await message.sendReply('⚠ _Kullanıcı bulunamadı!_');
+      }
+      const user = data.result;
+      let caption = `👤 Kullanıcı Adı: *@${user.username || 'Bilinmiyor'}*\n`;
+      caption += `🆔 Kullanıcı ID: *${user.id || 'Bilinmiyor'}*\n`;
+      caption += `📝 İsim: *${user.name || 'Bilinmiyor'}*\n`;
+      caption += `👥 Takipçi: *${user.followers}*\n`;
+      caption += `➕ Takip: *${user.following}*\n`;
+      caption += `❤️ Beğeni: *${user.likes}*\n\n`;
+      caption += 'ℹ️ BİYOGRAFİ\n';
+      caption += `*${user.bio || 'Biyografi yok'}*\n\n`;
+      if (user.verified) caption += '✅ *Doğrulanmış Hesap*\n';
+      if (user.private) caption += '🔒 *Gizli Hesap*\n';
+      if (user.verified || user.private) caption += '\n';
+      caption += `🔗 *Profil:* https://www.tiktok.com/@${user.username}`;
+      if (user.avatar) {
+        await message.sendMessage({ url: user.avatar }, 'image', { caption, quoted: message.data });
+      } else {
+        await message.sendReply(caption);
+      }
+    } catch (error) {
+      console.error('TikTok Arama Hatası:', error);
+      return await message.sendReply('❌ _Bilgiler getirilirken bir hata oluştu!_');
+    }
+  }
+);
