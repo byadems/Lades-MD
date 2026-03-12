@@ -100,18 +100,18 @@ async function createMessageObject(replyMessage) {
 }
 Module(
   {
-    pattern: "(schedule|planla) ?(.*)",
+    pattern: "planla ?(.*)",
     use: "utility",
     desc: "İleri bir tarih için mesaj planlar. Mesajı yanıtlayarak kullanın.",
   },
   async (m, match) => {
     if (match[1] === "d") return;
     if (!m.reply_message) {
-      return await m.sendReply("_💬 Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*📋 Kullanım:*\n• schedule <jid> <zaman>\n• schedule <zaman> <jid>"
+      return await m.sendReply("_💬 Zamanlamak istediğiniz mesajı yanıtlayın_\n\n*📋 Kullanım:*\n• planla <jid> <zaman>\n• planla <zaman> <jid>"
       );
     }
     if (!match[1]) {
-      return await m.sendReply("_💬 Lütfen JID ve zaman sağlayın_\n\n*📋 Örnek:*\n• schedule 905554443322@s.whatsapp.net 2h"
+      return await m.sendReply("_💬 Lütfen JID ve zaman sağlayın_\n\n*📋 Örnek:*\n• planla 905554443322@s.whatsapp.net 2h"
       );
     }
     const args = match[1].trim().split(/\s+/);
@@ -167,7 +167,7 @@ Module(
 );
 Module(
   {
-    pattern: "(scheduled|plandurum) ?(.*)",
+    pattern: "plandurum ?(.*)",
     use: "utility",
     desc: "Bekleyen tüm planlanmış mesajları listeler",
   },
@@ -195,7 +195,7 @@ Module(
         response += `   *Kalan:* ${timeFromNow}\n`;
         response += `   *İçerik:* ${content}\n\n`;
       });
-      response += '_Zamanlanmış mesajı iptal etmek için "cancel <id>" kullanın_';
+      response += '_Zamanlanmış mesajı iptal etmek için "plansil <id>" kullanın_';
       await m.sendReply(response);
     } catch (error) {
       console.error("Zamanlanmış listeleme hatası:", error);
@@ -205,13 +205,13 @@ Module(
 );
 Module(
   {
-    pattern: "(cancel|plansil) ?(.*)",
+    pattern: "plansil ?(.*)",
     use: "utility",
     desc: "ID'ye göre zamanlanmış bir mesajı iptal eder",
   },
   async (m, match) => {
     if (!match[1]) {
-      return await m.sendReply("_💬 İptal edilecek mesajın ID'sini belirtin_\n\n*Kullanım:* cancel <id>"
+      return await m.sendReply("_💬 İptal edilecek mesajın ID'sini belirtin_\n\n*Kullanım:* plansil <id>"
       );
     }
     const messageId = parseInt(match[1].trim());

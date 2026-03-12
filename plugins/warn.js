@@ -16,16 +16,14 @@ const sudoUsers = (SUDO || "").split(",");
 
 Module(
   {
-    pattern: "(warn|uyar) ?(.*)",
+    pattern: "uyar ?(.*)",
     fromMe: false,
     desc: "Gruptaki bir kullanıcıyı uyarır. Sınıra ulaştığında atılır.",
-    usage: ".warn @user reason\n.warn reply reason",
+    usage: ".uyar @üye sebep\n.uyar sebep",
     use: "group",
   },
   async (message, match) => {
-    const trigger = match[0].split(" ")[0]?.toLowerCase();
-    if (!["warn", "uyar"].includes(trigger)) return;
-    if (!message.isGroup)
+        if (!message.isGroup)
       return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
 
     let adminAccess = ADMIN_ACCESS
@@ -41,14 +39,15 @@ Module(
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply(`_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_\n\n` +
+      return await message.sendReply(
+        `_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_\n\n` +
           `*Kullanım:*\n` +
-          `• \`${handler}warn @user reason\`\n` +
-          `• \`${handler}warn reply reason\`\n` +
-          `• \`${handler}uyarı @user\` - Uyarıları kontrol et\n` +
-          `• \`${handler}rmwarn @user\` - Bir uyarıyı kaldır\n` +
-          `• \`${handler}resetwarn @user\` - Tüm uyarıları kaldır\n` +
-          `• \`${handler}warnlist\` - Tüm uyarılanları listele`
+          `• \`${handler}uyar @üye sebep\` - Uyarmaya yarar\n` +
+          `• \`${handler}kaçuyarı @üye\` - Uyarı sayısını gösterir\n` +
+          `• \`${handler}uyarısil @üye\` - 1 uyarıyı siler\n` +
+          `• \`${handler}uyarısıfırla @üye\` - Tüm uyarıları sıfırlar\n` +
+          `• \`${handler}uyarıliste\` - Tüm uyarılanları listeler\n` +
+          `• \`${handler}uyarılimit\` - Maksimum uyarı limitini belirler`
       );
     }
 
@@ -125,10 +124,10 @@ Module(
 
 Module(
   {
-    pattern: "(uyarı|kaçuyarı) ?(.*)",
+    pattern: "kaçuyarı ?(.*)",
     fromMe: false,
     desc: "Bir kullanıcının uyarılarını kontrol eder",
-    usage: ".uyarı @user\n.uyarı reply",
+    usage: ".kaçuyarı @üye\n.kaçuyarı reply",
     use: "group",
   },
   async (message, match) => {
@@ -196,10 +195,10 @@ Module(
 
 Module(
   {
-    pattern: "(rmwarn|uyarısil) ?(.*)",
+    pattern: "uyarısil ?(.*)",
     fromMe: false,
     desc: "Kullanıcıdan bir uyarıyı siler",
-    usage: ".rmwarn @user\n.rmwarn reply",
+    usage: ".uyarısil @üye\n.uyarısil reply",
     use: "group",
   },
   async (message, match) => {
@@ -263,10 +262,10 @@ Module(
 
 Module(
   {
-    pattern: "(resetwarn|uyarısıfırla) ?(.*)",
+    pattern: "uyarısıfırla ?(.*)",
     fromMe: false,
     desc: "Kullanıcının tüm uyarılarını sıfırlar",
-    usage: ".resetwarn @user\n.resetwarn reply",
+    usage: ".uyarısıfırla @üye\n.uyarısıfırla reply",
     use: "group",
   },
   async (message, match) => {
@@ -329,10 +328,10 @@ Module(
 
 Module(
   {
-    pattern: "(warnlist|uyarıliste)",
+    pattern: "uyarıliste",
     fromMe: false,
     desc: "Gruptaki tüm uyarılan kullanıcıları listeler",
-    usage: ".warnlist",
+    usage: ".uyarıliste",
     use: "group",
   },
   async (message) => {
@@ -393,7 +392,7 @@ Module(
       });
 
       warnList += `_Toplam uyarılan kullanıcı: ${sortedUsers.length}_\n`;
-      warnList += `_Detaylı geçmiş için ${handler}uyarı @user kullanın_`;
+      warnList += `_Detaylı geçmiş için ${handler}kaçuyarı @üye kullanın_`;
 
       await message.client.sendMessage(message.jid, {
         text: warnList,
@@ -408,10 +407,10 @@ Module(
 
 Module(
   {
-    pattern: "(setwarnlimit|uyarılimit) ?(.*)",
+    pattern: "uyarılimit ?(.*)",
     fromMe: true,
     desc: "Grup için uyarı sınırını ayarlar",
-    usage: ".setwarnlimit 5",
+    usage: ".uyarılimit 5",
     use: "group",
   },
   async (message, match) => {
@@ -421,7 +420,7 @@ Module(
       return await message.sendReply(`⚠ *Geçersiz Uyarı Sınırı*\n\n` +
           `- Lütfen 1 ile 20 arasında bir sayı girin.\n` +
           `- Mevcut sınır: \`${warnLimit}\`\n\n` +
-          `*Kullanım:* \`${handler}setwarnlimit 5\``
+          `*Kullanım:* \`${handler}uyarılimit 5\``
       );
     }
 
@@ -487,7 +486,7 @@ Module(
         `- ⚠ Sınırda: \`${atLimit}\`\n` +
         `- ⚠ Sınıra Yakın: \`${nearLimit}\`\n` +
         `- ✓ Güvende: \`${safe}\`\n\n` +
-        `_Detaylı liste için ${handler}warnlist kullanın_`;
+        `_Detaylı liste için ${handler}uyarıliste kullanın_`;
 
       await message.sendReply(stats);
     } catch (error) {

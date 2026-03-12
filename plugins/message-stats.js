@@ -58,11 +58,11 @@ function parseDuration(duration) {
 
 Module(
   {
-    pattern: "(msgs|mesajlar) ?(.*)",
+    pattern: "mesajlar ?(.*)",
     fromMe: true,
     desc: "Grupta mesaj atan kullanıcıların mesaj sayılarını gösterir",
     usage:
-      ".msgs (mesajı olan tüm üyeler)\n.msgs @etiket (belirli üye)",
+      ".mesajlar (mesajı olan tüm üyeler)\n.mesajlar @etiket (belirli üye)",
     use: "group",
   },
   async (message, match) => {
@@ -135,11 +135,11 @@ Module(
 
 Module(
   {
-    pattern: "(inactive|üyetemizle) ?(.*)",
+    pattern: "üyetemizle ?(.*)",
     fromMe: true,
     desc: "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
     usage:
-      ".inactive 30d (30+ gündür pasif üyeler)\n.inactive 10d kick (10+ gündür pasif üyeleri at)\n\nDesteklenen birimler: d (gün), w (hafta), m (ay), y (yıl)",
+      ".üyetemizle 30d (30+ gündür pasif üyeler)\n.üyetemizle 10d kick (10+ gündür pasif üyeleri at)\n\nDesteklenen birimler: d (gün), w (hafta), m (ay), y (yıl)",
     use: "group",
   },
   async (message, match) => {
@@ -152,10 +152,10 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1]) {
         return await message.sendReply("_Kullanım:_\n" +
-            "• `.inactive 30d` - 30+ gündür pasif üyeleri göster\n" +
-            "• `.inactive 10d kick` - 10+ gündür pasif üyeleri at\n" +
-            "• `.inactive 2w` - 2+ haftadır pasif üyeleri göster\n" +
-            "• `.inactive 3m kick` - 3+ aydır pasif üyeleri at\n\n" +
+            "• `.üyetemizle 30d` - 30+ gündür pasif üyeleri göster\n" +
+            "• `.üyetemizle 10d kick` - 10+ gündür pasif üyeleri at\n" +
+            "• `.üyetemizle 2w` - 2+ haftadır pasif üyeleri göster\n" +
+            "• `.üyetemizle 3m kick` - 3+ aydır pasif üyeleri at\n\n" +
             "_Desteklenen birimler:_ d (gün), w (hafta), m (ay), y (yıl)"
         );
       }
@@ -303,7 +303,7 @@ Module(
           responseMsg += `   _Toplam mesaj:_ ${member.totalMessages}\n\n`;
         }
 
-        responseMsg += `_Bu üyeleri atmak için \`.inactive ${durationStr} kick\` kullanın._`;
+        responseMsg += `_Bu üyeleri atmak için \`.üyetemizle ${durationStr} kick\` kullanın._`;
 
         return await message.client.sendMessage(message.jid, {
           text: responseMsg,

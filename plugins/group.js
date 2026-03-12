@@ -50,12 +50,12 @@ Module(
 
 Module(
   {
-    pattern: "(kick|at) ?(.*)",
+    pattern: "at ?(.*)",
     fromMe: false,
     desc: Lang.KICK_DESC,
     use: "group",
     usage:
-      ".kick @etiket veya yanıtla\n.kick all (herkesi at)\n.kick 90 (90 ile başlayan numaraları atar)",
+      ".at @etiket veya yanıtla\n.at all (herkesi at)\n.at 90 (90 ile başlayan numaraları atar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
