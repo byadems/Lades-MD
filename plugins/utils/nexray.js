@@ -164,7 +164,8 @@ async function downloadFacebook(url) {
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
-      return { url: r.url || r.hd || r.sd };
+      const videoUrl = r.video_hd || r.video_sd || r.url || r.hd || r.sd || r.audio;
+      if (videoUrl) return { url: videoUrl, title: r.title };
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray facebook]", e?.message);
