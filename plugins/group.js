@@ -11,12 +11,16 @@ const baileysPromise = loadBaileys()
   });
 const { isAdmin, isNumeric, mentionjid } = require("./utils");
 const { ADMIN_ACCESS, HANDLERS, MODE } = require("../config");
+const config = require("../config");
 const { Module } = require("../main");
+const fs = require("fs");
+const path = require("path");
 const {
   fetchFromStore,
   getFullMessage,
   fetchRecentChats,
 } = require("../core/store");
+const { setVar } = require("./manage");
 var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
 
 Module(
@@ -466,34 +470,16 @@ Module(
     }
   }
 );
-Module(
-  {
-    pattern: "invite",
-    fromMe: false,
-    use: "group",
-    desc: Lang.INVITE_DESC,
-    usage: ".invite (grup davet bağlantısı oluşturur)",
-  },
-  async (message) => {
-    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
-    let adminAccesValidated = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    if (message.fromOwner || adminAccesValidated) {
-      var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply(Lang.NOT_ADMIN);
-      var code = await message.client.groupInviteCode(message.jid);
-      await message.client.sendMessage(
-        message.jid,
-        {
-          text: "https://chat.whatsapp.com/" + code,
-          detectLinks: true,
-        },
-        { detectLinks: true }
-      );
-    }
-  }
-);
+Module({pattern: 'link', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (async (message, match) => {
+    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND)
+    var admin = await isAdmin(message);
+    if (!admin) return await message.sendReply(Lang.NOT_ADMIN)
+    var code = await message.client.groupInviteCode(message.jid)
+    await message.client.sendMessage(message.jid, {
+        text: "*Grubun Davet Bağlantısı: 👇🏻*\n https://chat.whatsapp.com/" + code,detectLinks: true
+    },{detectLinks: true})
+}))
+
 Module(
   {
     pattern: "revoke",
@@ -815,6 +801,164 @@ Module(
     await message.client.updateBlockStatus(user, "unblock");
   }
 );
+const MEMORY_FILE = path.join(__dirname, "visitedLinks.json");
+const loadVisitedLinks = () => {
+  try {
+    if (fs.existsSync(MEMORY_FILE)) {
+      const data = fs.readFileSync(MEMORY_FILE, "utf-8");
+      return new Set(JSON.parse(data));
+    }
+  } catch {
+    return new Set();
+  }
+  return new Set();
+};
+const saveVisitedLinks = (set) => {
+  try {
+    fs.writeFileSync(MEMORY_FILE, JSON.stringify([...set]), "utf-8");
+  } catch (e) {
+    console.error("Hafıza kaydedilemedi:", e);
+  }
+};
+const visitedLinks = loadVisitedLinks();
+
+Module({
+    pattern: "toplukatıl ?(.*)",
+    fromMe: false,
+    use: "owner",
+    desc: "Davet bağlantılarını kullanarak birden fazla WhatsApp grubuna katılmayı sağlar",
+    usage: ".toplukatıl link1, link2, link3 veya .toplukatıl link1 link2 link3",
+  },
+  async (message, match) => {
+    const rgx = /(?:https?:\/\/)?chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})(?:\?[^\s,]*)*/g;
+    if (!match[1] || !match[1].trim()) {
+      return await message.sendReply(
+        `❌ *Lütfen grup bağlantısı girin!*\n\n` +
+        `*Kullanımı:*\n` +
+        `› .toplukatıl link1 link2\n` +
+        `› .toplukatıl link1, link2, link3\n` +
+        `› .toplukatıl link1,link2,link3`
+      );
+    }
+    let rawInput = match[1]
+      .replace(/,\s*/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    let links = rawInput.match(rgx);
+    if (!links || links.length === 0) {
+      return await message.sendReply("❌ *Geçerli WhatsApp grup bağlantısı bulunamadı!*");
+    }
+    links = [...new Set(links)];
+    const DELAY_MIN = 3000;
+    const DELAY_MAX = 6000;
+    const BATCH_SIZE = 21;
+    const REST_TIME = 900000;
+    const randomDelay = () => {
+      const delay = Math.floor(Math.random() * (DELAY_MAX - DELAY_MIN + 1)) + DELAY_MIN;
+      return new Promise((resolve) => setTimeout(resolve, delay));
+    };
+    const getErrorMessage = (error) => {
+      const msg = error?.message || "";
+      if (msg.includes("401"))  return "⛔ Bağlantı geçersiz veya süresi dolmuş";
+      if (msg.includes("403"))  return "🔒 Gruba katılım kısıtlanmış";
+      if (msg.includes("404"))  return "🔍 Grup bulunamadı";
+      if (msg.includes("408"))  return "✋ Zaten bu grubun üyesisiniz";
+      if (msg.includes("500"))  return "🔧 WhatsApp sunucu hatası";
+      if (msg.includes("rate")) return "⏳ Rate limit - çok hızlı istek";
+      return `❓ ${msg || "Bilinmeyen hata"}`;
+    };
+
+    let successCount = 0;
+    let failCount = 0;
+    let skipCount = 0;
+    let memorySkipCount = 0;
+    let results = [];
+    const filteredLinks = [];
+    for (let link of links) {
+      const codeMatch = link.match(
+        /(?:https?:\/\/)?chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})/
+      );
+      if (!codeMatch || !codeMatch[1]) continue;
+      const code = codeMatch[1];
+      if (visitedLinks.has(code)) {
+        memorySkipCount++;
+      } else {
+        filteredLinks.push({ link, code });
+      }
+    }
+    const totalBatches = Math.ceil(filteredLinks.length / BATCH_SIZE);
+    let startMsg =
+      `🔄 *İşlem Başlatıldı*\n\n` +
+      `📋 Toplam bağlantı: *${links.length}*\n`;
+    if (memorySkipCount > 0) {
+      startMsg += `🧠 Hafızadan atlanan: *${memorySkipCount}*\n`;
+    }
+    startMsg +=
+      `🔗 İşlenecek bağlantı: *${filteredLinks.length}*\n` +
+      `📦 Toplam part: *${totalBatches}*\n` +
+      `⏸️ Her *${BATCH_SIZE}* grup sonrası *${REST_TIME / 1000} saniye* dinlenilecek\n\n` +
+      `_Spam koruması için her işlem arasında bekleniyor..._`;
+
+    await message.sendReply(startMsg);
+    for (let i = 0; i < filteredLinks.length; i++) {
+      const { link, code } = filteredLinks[i];
+      try {
+        await message.client.groupAcceptInvite(code);
+        visitedLinks.add(code);
+        saveVisitedLinks(visitedLinks);
+        successCount++;
+        results.push(`✅ [${i + 1}] başarıyla girildi`);
+      } catch (error) {
+        if (error?.message?.includes("408")) {
+          visitedLinks.add(code);
+          saveVisitedLinks(visitedLinks);
+          skipCount++;
+          results.push(`♻️ [${i + 1}] zaten üyesiniz`);
+        } else {
+          failCount++;
+          results.push(`❌ [${i + 1}] ${getErrorMessage(error)}`);
+        }
+      }
+      const isLastLink = i === filteredLinks.length - 1;
+      const isBatchEnd = (i + 1) % BATCH_SIZE === 0;
+      if (!isLastLink) {
+        if (isBatchEnd) {
+          const currentBatch = Math.ceil((i + 1) / BATCH_SIZE);
+          const nextBatch = currentBatch + 1;
+          const nextBatchStart = i + 1;
+          const nextBatchEnd = Math.min(nextBatchStart + BATCH_SIZE, filteredLinks.length);
+          const nextBatchCount = nextBatchEnd - nextBatchStart;
+          await message.sendReply(
+            `⏸️ *${currentBatch}. part tamamlandı.*\n\n` +
+            `✅ Başarılı: *${successCount}*\n` +
+            `❌ Başarısız: *${failCount}*\n` +
+            `♻️ Zaten Üye Olunan: *${skipCount}*\n` +
+            `🧠 Hafızadan Atlanan: *${memorySkipCount}*\n\n` +
+            `📦 Sonraki part: *${nextBatch}. part* (*${nextBatchCount} bağlantı* işlenecek)\n\n` +
+            `⏳ _${REST_TIME / 1000} saniye dinleniliyor, ardından devam edilecek..._`
+          );
+          await new Promise((resolve) => setTimeout(resolve, REST_TIME));
+        } else {
+          await randomDelay();
+        }
+      }
+    }
+    let report =
+      `╔═══════════════════╗\n` +
+      `║   📊 İŞLEM RAPORU    ║\n` +
+      `╚═══════════════════╝\n\n` +
+      `✅ Başarılı: *${successCount}*\n` +
+      `❌ Başarısız: *${failCount}*\n` +
+      `♻️ Zaten Üye Olunan: *${skipCount}*\n` +
+      `🧠 Hafızadan Atlanan: *${memorySkipCount}*\n` +
+      `📋 Toplam: *${links.length}*\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `*📝 Detaylar:*\n` +
+      results.join("\n");
+    await message.sendReply(report);
+  }
+);
+
 Module(
   {
     pattern: "getjids ?(.*)",
@@ -949,6 +1093,245 @@ Module(
     }
   }
 );
+const PIN_DURATIONS = {
+  "24s": 86400,
+  "7g": 604800,
+  "30g": 2592000,
+};
+
+const loadKaraListe = () => {
+  try {
+    const raw = config.DUYURU_KARA_LISTE || "";
+    return raw ? raw.split(",").map((j) => j.trim()).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+};
+const saveKaraListe = async (liste) => {
+  await setVar("DUYURU_LISTE_DISI", liste.join(","));
+};
+
+Module(
+  {
+    pattern: "duyuru ?(.*)",
+    fromMe: true,
+    desc: "Bot'un bulunduğu tüm gruplara duyuru iletir ve isteğe bağlı olarak sabitler.",
+    use: "owner",
+    usage:
+      ".duyuru <mesaj>\n" +
+      ".duyuru <mesaj> | sabitle:24s\n" +
+      ".duyuru karalist ekle <jid>\n" +
+      ".duyuru karalist çıkar <jid>\n" +
+      ".duyuru karalist liste\n" +
+      ".duyuru karalist bu",
+  },
+  async (message, match) => {
+    const adminAccess = ADMIN_ACCESS ? await isAdmin(message, message.sender) : false;
+    if (!message.fromOwner && !adminAccess) {
+      return await message.sendReply("_❌ Bu komutu sadece yetkili kullanıcılar çalıştırabilir._");
+    }
+
+    const input = match[1]?.trim() || "";
+    const arg = input.toLowerCase();
+
+    if (arg.startsWith("grup")) {
+      const parts = input.split(" ");
+      const cmd = parts[1]?.toLowerCase();
+      const jid = parts[2]?.trim();
+      const liste = loadKaraListe();
+      if (cmd === "filtrele" && jid) {
+        if (liste.includes(jid)) return message.sendReply("_Bu grup zaten kara listede._");
+        liste.push(jid);
+        await saveKaraListe(liste);
+        return message.sendReply(`_✅ \`${jid}\` filtreleme listesine eklendi._`);
+      }
+      if (cmd === "sil" && jid) {
+        const yeni = liste.filter((gJid) => gJid !== jid);
+        await saveKaraListe(yeni);
+        return message.sendReply(`_✅ \`${jid}\` filtreleme listesinden çıkarıldı._`);
+      }
+      if (cmd === "liste") {
+        if (!liste.length) return message.sendReply("_Kara liste boş._");
+        return message.sendReply(
+          `*📋 Duyuru Kara Listesi (${liste.length} grup):*\n` +
+            liste.map((gJid, i) => `${i + 1}. \`${gJid}\``).join("\n")
+        );
+      }
+      if (cmd === "bu") {
+        return message.sendReply(`ℹ _Mevcut grup JID'i:_\n\`${message.jid}\``);
+      }
+      return message.sendReply(
+        `🔻 *Grup filtresi kullanımı:*\n` +
+          `• \`.duyuru grup filtrele <jid>\`\n` +
+          `• \`.duyuru grup sil <jid>\`\n` +
+          `• \`.duyuru grup liste\`\n` +
+          `• \`.duyuru grup bu\` — bulunduğun grubun JID'ini göster`
+      );
+    }
+
+    let announceText = input;
+    let pinDuration = null;
+    const pipeIndex = input.lastIndexOf("|");
+    if (pipeIndex !== -1) {
+      const after = input.slice(pipeIndex + 1).trim().toLowerCase();
+      const pinMatch = after.match(/^sabitle:(24s|7g|30g)$/);
+      if (pinMatch) {
+        pinDuration = PIN_DURATIONS[pinMatch[1]];
+        announceText = input.slice(0, pipeIndex).trim();
+      }
+    }
+
+    const hasReply = !!message.reply_message;
+    const hasText = announceText.length > 0;
+    if (!hasText && !hasReply) {
+      return message.sendReply(
+        `📢 _Bot'un bulunduğu tüm gruplara duyuru iletir._\n\n` +
+          `*Kullanım:*\n` +
+          `• \`.duyuru <mesaj>\` — sadece gönder\n` +
+          `• \`.duyuru <mesaj> | sabitle:24s\` — gönder ve 24 saat sabitle\n` +
+          `• \`.duyuru <mesaj> | sabitle:7g\` — gönder ve 7 gün sabitle\n` +
+          `• \`.duyuru <mesaj> | sabitle:30g\` — gönder ve 30 gün sabitle\n` +
+          `• Bir mesaja yanıtla + \`.duyuru\` — o mesajı ilet\n\n` +
+          `*Liste Düzenleme:*\n` +
+          `• \`.duyuru grup filtrele <jid>\`\n` +
+          `• \`.duyuru grup sil <jid>\`\n` +
+          `• \`.duyuru grup liste\`\n` +
+          `• \`.duyuru grup bu\``
+      );
+    }
+
+    let allGroups;
+    try {
+      allGroups = await message.client.groupFetchAllParticipating();
+    } catch (err) {
+      console.error("[Duyuru] groupFetchAllParticipating hatası:", err);
+      return message.sendReply("_❌ Grup listesi alınamadı._");
+    }
+
+    const karaListe = loadKaraListe();
+    const groupJids = Object.keys(allGroups).filter((jid) => !karaListe.includes(jid));
+    if (!groupJids.length) {
+      return message.sendReply("_Hiç grup bulunamadı (veya tamamı liste dışına alınmış)._" );
+    }
+
+    const pinLabel = pinDuration
+      ? `, ${pinDuration === 86400 ? "24 saat" : pinDuration === 604800 ? "7 gün" : "30 gün"} süreyle sabitlenecek`
+      : "";
+    const confirmMsg = await message.sendReply(
+      `_📢 Duyuru *${groupJids.length}* gruba gönderiliyor${pinLabel}…_` +
+        (karaListe.length ? ` _(${karaListe.length} grup atlandı)_` : "")
+    );
+
+    let sent = 0;
+    let pinned = 0;
+    let failed = 0;
+
+    for (const jid of groupJids) {
+      try {
+        let sentMsg;
+        if (hasReply) {
+          sentMsg = await message.client.sendMessage(jid, { forward: message.quoted });
+          if (hasText) {
+            await message.client.sendMessage(jid, { text: announceText });
+          }
+        } else {
+          sentMsg = await message.client.sendMessage(jid, { text: announceText });
+        }
+        sent++;
+
+        if (pinDuration && sentMsg?.key) {
+          try {
+            await message.client.sendMessage(jid, {
+              pin: sentMsg.key,
+              type: 1,
+              time: pinDuration,
+            });
+            pinned++;
+          } catch (pinErr) {
+            console.warn(`[Duyuru] Sabitleme başarısız ${jid}:`, pinErr?.message || pinErr);
+          }
+        }
+
+        if (sent % 10 === 0) {
+          await new Promise((r) => setTimeout(r, 8000 + Math.random() * 4000));
+        }
+        const delayMs = 1500 + Math.floor(Math.random() * 2000);
+        await new Promise((r) => setTimeout(r, delayMs));
+      } catch (err) {
+        console.error(`[Duyuru] ${jid} için başarısız:`, err?.message || err);
+        failed++;
+      }
+    }
+
+    let summary = `*📢 Duyuru tamamlandı!*\n\n` + `✅ _Gönderildi:_ *${sent}/${groupJids.length}*\n`;
+    if (karaListe.length) summary += `🚫 _Atlandı (kara liste):_ *${karaListe.length}*\n`;
+    if (pinDuration) summary += `📌 _Sabitlendi:_ *${pinned}/${sent}*\n`;
+    if (failed > 0) summary += `❌ _Başarısız:_ *${failed}*\n`;
+
+    await message.edit(summary, message.jid, confirmMsg.key);
+  }
+);
+
+Module(
+  {
+    pattern: "sabitle ?(.*)",
+    fromMe: true,
+    desc: "Yanıtlanan mesajı belirli bir süre için sabitler",
+    use: "group",
+    usage:
+      ".sabitle 24s (24 saat)\n.sabitle 7g (7 gün)\n.sabitle 30g (30 gün)\n.sabitle (varsayılan: 7 gün)",
+  },
+  async (message, match) => {
+    if (!message.reply_message) {
+      return await message.sendReply(
+        "_❌ Lütfen sabitlemek istediğiniz mesaja yanıtlayarak yazın!_\n\n" +
+          "🔻 _Kullanım:_\n" +
+          "_.sabitle 24s_ → 24 saat\n" +
+          "_.sabitle 7g_ → 7 gün\n" +
+          "_.sabitle 30g_ → 30 gün\n" +
+          "_.sabitle_ → varsayılan 7 gün"
+      );
+    }
+
+    const input = match[1] ? match[1].trim().toLowerCase() : "";
+    let durationSeconds;
+    let durationText;
+
+    if (input === "24s" || input === "24saat" || input === "1g" || input === "1gün") {
+      durationSeconds = 86400;
+      durationText = "24 saat";
+    } else if (input === "30g" || input === "30gün" || input === "30gun") {
+      durationSeconds = 2592000;
+      durationText = "30 gün";
+    } else {
+      durationSeconds = 604800;
+      durationText = "7 gün";
+    }
+
+    try {
+      const quotedKey = {
+        remoteJid: message.jid,
+        fromMe:
+          message.reply_message.jid?.split("@")[0] ===
+          message.client.user?.id?.split(":")[0],
+        id: message.reply_message.id,
+        participant: message.reply_message.jid,
+      };
+      await message.client.sendMessage(message.jid, {
+        pin: quotedKey,
+        type: 1,
+        time: durationSeconds,
+      });
+      return await message.sendReply(`_📌 Mesaj, başarıyla *${durationText}* süreyle sabitlendi!_`);
+    } catch (error) {
+      console.error("Sabitle komutu hatası:", error);
+      return await message.sendReply(
+        "_❌ Mesaj sabitleme sırasında bir hata oluştu!_\n_Botun grup yöneticisi olduğundan emin olun._"
+      );
+    }
+  }
+);
+
 Module(
   {
     pattern: "pp ?(.*)",
@@ -1012,3 +1395,45 @@ Module(
     }
   }
 );
+
+Module(
+  { pattern: 'etiket', use: 'group', fromMe: false, desc: 'Tüm üyeleri etiketler.' },
+  async (message) => {
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin) return await message.sendReply('❌ _Üzgünüm! Öncelikle yönetici olmalısınız._');
+    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
+
+    const target = message.jid;
+    const group = await message.client.groupMetadata(target);
+    const allMembers = group.participants.map((participant) => participant.id);
+    let text = '✅ *Herkes başarıyla etiketlendi!*';
+
+    allMembers.forEach((jid, index) => {
+      text += `\n${index + 1}. @${jid.split('@')[0]}`;
+    });
+
+    await message.client.sendMessage(target, {
+      text,
+      contextInfo: { mentionedJid: allMembers },
+    });
+  }
+);
+
+Module(
+  { pattern: 'ytetiket', use: 'group', fromMe: false, desc: 'Tüm yöneticileri etiketler.' },
+  async (message) => {
+    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
+
+    const target = message.jid;
+    const group = await message.client.groupMetadata(target);
+    const admins = group.participants.filter((v) => v.admin !== null).map((x) => x.id);
+    let text = '🚨 *Yöneticiler:*';
+
+    admins.forEach((jid) => {
+      text += `\n@${jid.split('@')[0]}`;
+    });
+
+    await message.client.sendMessage(target, { text, contextInfo: { mentionedJid: admins } });
+  }
+);
+
