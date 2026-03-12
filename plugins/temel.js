@@ -56,16 +56,6 @@ acr.identify(file).then(result => {
 let {containsDisallowedWords} = require('./manage');
 const warnLimit = parseInt(WARN || 3);
 
-Module({pattern: 'link', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (async (message, match) => {
-    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND)
-    var admin = await isAdmin(message);
-    if (!admin) return await message.sendReply(Lang.NOT_ADMIN)
-    var code = await message.client.groupInviteCode(message.jid)
-    await message.client.sendMessage(message.jid, {
-        text: "*Grubun Davet Bağlantısı: 👇🏻*\n https://chat.whatsapp.com/" + code,detectLinks: true
-    },{detectLinks: true})
-}))
-
 Module({ on: 'text', fromMe: false }, async (k) => {
     const isActivated = !process.env.AUTO_DEL
         ? true
@@ -103,164 +93,6 @@ Module({ on: 'text', fromMe: false }, async (k) => {
         return;
     }
 });
-
-const MEMORY_FILE = path.join(__dirname, "visitedLinks.json");
-const loadVisitedLinks = () => {
-  try {
-    if (fs.existsSync(MEMORY_FILE)) {
-      const data = fs.readFileSync(MEMORY_FILE, "utf-8");
-      return new Set(JSON.parse(data));
-    }
-  } catch {
-    return new Set();
-  }
-  return new Set();
-};
-const saveVisitedLinks = (set) => {
-  try {
-    fs.writeFileSync(MEMORY_FILE, JSON.stringify([...set]), "utf-8");
-  } catch (e) {
-    console.error("Hafıza kaydedilemedi:", e);
-  }
-};
-const visitedLinks = loadVisitedLinks();
-
-Module({
-    pattern: "toplukatıl ?(.*)",
-    fromMe: false,
-    use: "owner",
-    desc: "Davet bağlantılarını kullanarak birden fazla WhatsApp grubuna katılmayı sağlar",
-    usage: ".toplukatıl link1, link2, link3 veya .toplukatıl link1 link2 link3",
-  },
-  async (message, match) => {
-    const rgx = /(?:https?:\/\/)?chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})(?:\?[^\s,]*)*/g;
-    if (!match[1] || !match[1].trim()) {
-      return await message.sendReply(
-        `❌ *Lütfen grup bağlantısı girin!*\n\n` +
-        `*Kullanımı:*\n` +
-        `› .toplukatıl link1 link2\n` +
-        `› .toplukatıl link1, link2, link3\n` +
-        `› .toplukatıl link1,link2,link3`
-      );
-    }
-    let rawInput = match[1]
-      .replace(/,\s*/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    let links = rawInput.match(rgx);
-    if (!links || links.length === 0) {
-      return await message.sendReply("❌ *Geçerli WhatsApp grup bağlantısı bulunamadı!*");
-    }
-    links = [...new Set(links)];
-    const DELAY_MIN = 3000;
-    const DELAY_MAX = 6000;
-    const BATCH_SIZE = 21;
-    const REST_TIME = 900000;
-    const randomDelay = () => {
-      const delay = Math.floor(Math.random() * (DELAY_MAX - DELAY_MIN + 1)) + DELAY_MIN;
-      return new Promise((resolve) => setTimeout(resolve, delay));
-    };
-    const getErrorMessage = (error) => {
-      const msg = error?.message || "";
-      if (msg.includes("401"))  return "⛔ Bağlantı geçersiz veya süresi dolmuş";
-      if (msg.includes("403"))  return "🔒 Gruba katılım kısıtlanmış";
-      if (msg.includes("404"))  return "🔍 Grup bulunamadı";
-      if (msg.includes("408"))  return "✋ Zaten bu grubun üyesisiniz";
-      if (msg.includes("500"))  return "🔧 WhatsApp sunucu hatası";
-      if (msg.includes("rate")) return "⏳ Rate limit - çok hızlı istek";
-      return `❓ ${msg || "Bilinmeyen hata"}`;
-    };
-
-    let successCount = 0;
-    let failCount = 0;
-    let skipCount = 0;
-    let memorySkipCount = 0;
-    let results = [];
-    const filteredLinks = [];
-    for (let link of links) {
-      const codeMatch = link.match(
-        /(?:https?:\/\/)?chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})/
-      );
-      if (!codeMatch || !codeMatch[1]) continue;
-      const code = codeMatch[1];
-      if (visitedLinks.has(code)) {
-        memorySkipCount++;
-      } else {
-        filteredLinks.push({ link, code });
-      }
-    }
-    const totalBatches = Math.ceil(filteredLinks.length / BATCH_SIZE);
-    let startMsg =
-      `🔄 *İşlem Başlatıldı*\n\n` +
-      `📋 Toplam bağlantı: *${links.length}*\n`;
-    if (memorySkipCount > 0) {
-      startMsg += `🧠 Hafızadan atlanan: *${memorySkipCount}*\n`;
-    }
-    startMsg +=
-      `🔗 İşlenecek bağlantı: *${filteredLinks.length}*\n` +
-      `📦 Toplam part: *${totalBatches}*\n` +
-      `⏸️ Her *${BATCH_SIZE}* grup sonrası *${REST_TIME / 1000} saniye* dinlenilecek\n\n` +
-      `_Spam koruması için her işlem arasında bekleniyor..._`;
-
-    await message.sendReply(startMsg);
-    for (let i = 0; i < filteredLinks.length; i++) {
-      const { link, code } = filteredLinks[i];
-      try {
-        await message.client.groupAcceptInvite(code);
-        visitedLinks.add(code);
-        saveVisitedLinks(visitedLinks);
-        successCount++;
-        results.push(`✅ [${i + 1}] başarıyla girildi`);
-      } catch (error) {
-        if (error?.message?.includes("408")) {
-          visitedLinks.add(code);
-          saveVisitedLinks(visitedLinks);
-          skipCount++;
-          results.push(`♻️ [${i + 1}] zaten üyesiniz`);
-        } else {
-          failCount++;
-          results.push(`❌ [${i + 1}] ${getErrorMessage(error)}`);
-        }
-      }
-      const isLastLink = i === filteredLinks.length - 1;
-      const isBatchEnd = (i + 1) % BATCH_SIZE === 0;
-      if (!isLastLink) {
-        if (isBatchEnd) {
-          const currentBatch = Math.ceil((i + 1) / BATCH_SIZE);
-          const nextBatch = currentBatch + 1;
-          const nextBatchStart = i + 1;
-          const nextBatchEnd = Math.min(nextBatchStart + BATCH_SIZE, filteredLinks.length);
-          const nextBatchCount = nextBatchEnd - nextBatchStart;
-          await message.sendReply(
-            `⏸️ *${currentBatch}. part tamamlandı.*\n\n` +
-            `✅ Başarılı: *${successCount}*\n` +
-            `❌ Başarısız: *${failCount}*\n` +
-            `♻️ Zaten Üye Olunan: *${skipCount}*\n` +
-            `🧠 Hafızadan Atlanan: *${memorySkipCount}*\n\n` +
-            `📦 Sonraki part: *${nextBatch}. part* (*${nextBatchCount} bağlantı* işlenecek)\n\n` +
-            `⏳ _${REST_TIME / 1000} saniye dinleniliyor, ardından devam edilecek..._`
-          );
-          await new Promise((resolve) => setTimeout(resolve, REST_TIME));
-        } else {
-          await randomDelay();
-        }
-      }
-    }
-    let report =
-      `╔═══════════════════╗\n` +
-      `║   📊 İŞLEM RAPORU    ║\n` +
-      `╚═══════════════════╝\n\n` +
-      `✅ Başarılı: *${successCount}*\n` +
-      `❌ Başarısız: *${failCount}*\n` +
-      `♻️ Zaten Üye Olunan: *${skipCount}*\n` +
-      `🧠 Hafızadan Atlanan: *${memorySkipCount}*\n` +
-      `📋 Toplam: *${links.length}*\n\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `*📝 Detaylar:*\n` +
-      results.join("\n");
-    await message.sendReply(report);
-  }
-);
 
 Module({
     pattern: "üyetemizle ?(.*)",
@@ -1071,180 +903,6 @@ if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND)
     }
 });
 
-async function transcribeVoiceMessage(message, targetMessage) {
-  let processingMsg;
-  try {
-    const voiceMsg = targetMessage || message;
-    const isVoice = voiceMsg.audio ||
-      voiceMsg.ptt ||
-      voiceMsg.data?.message?.audioMessage ||
-      voiceMsg.reply_message?.audio ||
-      voiceMsg.reply_message?.ptt;
-    if (!isVoice) {
-      return;
-    }
-    if ((!config.GROQ_API_KEY || config.GROQ_API_KEY === '') && 
-        (!config.OPENAI_API_KEY || config.OPENAI_API_KEY === '')) {
-      return await message.sendReply("⚠️ _API Anahtarı bulunamadı! (Groq veya OpenAI)_");
-    }
-    processingMsg = await message.send("🎙️ _Ses analiz ediliyor..._");
-    const audioBuffer = await voiceMsg.download("buffer");
-    const tempFile = path.join(__dirname, `audio_${Date.now()}.ogg`);
-    fs.writeFileSync(tempFile, audioBuffer);
-    const boundary = `----WebKitFormBoundary${Date.now()}`;
-    const chunks = [];
-
-    chunks.push(Buffer.from(`--${boundary}\r\n`));
-    chunks.push(Buffer.from(`Content-Disposition: form-data; name="model"\r\n\r\n`));
-    chunks.push(Buffer.from(`whisper-large-v3-turbo\r\n`));
-    chunks.push(Buffer.from(`--${boundary}\r\n`));
-    chunks.push(Buffer.from(`Content-Disposition: form-data; name="language"\r\n\r\n`));
-    chunks.push(Buffer.from(`tr\r\n`));
-    chunks.push(Buffer.from(`--${boundary}\r\n`));
-    chunks.push(Buffer.from(`Content-Disposition: form-data; name="file"; filename="audio.ogg"\r\n`));
-    chunks.push(Buffer.from(`Content-Type: audio/ogg\r\n\r\n`));
-    chunks.push(audioBuffer);
-    chunks.push(Buffer.from(`\r\n`));
-    chunks.push(Buffer.from(`--${boundary}--\r\n`));
-
-    const body = Buffer.concat(chunks);
-    const useGroq = config.GROQ_API_KEY && config.GROQ_API_KEY !== '';
-    const makeRequest = (useOpenAI = false) => {
-      return new Promise((resolve, reject) => {
-        const options = useOpenAI ? {
-          hostname: 'api.openai.com',
-          port: 443,
-          path: '/v1/audio/transcriptions',
-          method: 'POST',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Authorization': `Bearer ${config.OPENAI_API_KEY}`,
-            'Content-Length': body.length
-          }
-        } : {
-          hostname: 'api.groq.com',
-          port: 443,
-          path: '/openai/v1/audio/transcriptions',
-          method: 'POST',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Authorization': `Bearer ${config.GROQ_API_KEY}`,
-            'Content-Length': body.length
-          }
-        };
-        const req = https.request(options, (res) => {
-          let data = '';
-          res.on('data', (chunk) => { data += chunk; });
-          res.on('end', () => {
-            if (res.statusCode !== 200) {
-              reject({ statusCode: res.statusCode, data, useOpenAI });
-            } else {
-              resolve({ data, useOpenAI });
-            }
-          });
-        });
-        req.on('error', (err) => {
-          reject({ error: err, useOpenAI });
-        });
-        req.write(body);
-        req.end();
-      });
-    };
-
-    let response;
-    try {
-      if (useGroq) {
-        response = await makeRequest(false);
-      } else {
-        response = await makeRequest(true);
-      }
-    } catch (groqError) {
-      if (!groqError.useOpenAI && config.OPENAI_API_KEY && config.OPENAI_API_KEY !== '') {
-        console.log("⚠️ Groq başarısız, OpenAI API'ye geçiliyor...");
-        try {
-          response = await makeRequest(true);
-          console.log("✅ OpenAI API başarılı!");
-        } catch (openaiError) {
-          console.error("❌ Her iki API de başarısız:", openaiError);
-          return await message.edit(
-            `⚠️ _API hatası: ${openaiError.statusCode || 'Bağlantı hatası'}_\n_${openaiError.data ? JSON.parse(openaiError.data).error?.message : openaiError.error?.message || 'Bilinmeyen hata'}_`,
-            message.jid, processingMsg.key
-          );
-        }
-      } else {
-        console.error("❌ Groq API hatası ve OpenAI anahtarı yok:", groqError);
-        return await message.edit(
-          `⚠️ _API hatası: ${groqError.statusCode || 'Bağlantı hatası'}_\n_${groqError.data ? JSON.parse(groqError.data).error?.message : groqError.error?.message || 'Bilinmeyen hata'}_`,
-          message.jid, processingMsg.key
-        );
-      }
-    }
-    try {
-      const result = JSON.parse(response.data);
-      let transcription = result.text;
-      if (!transcription || transcription.trim() === '') {
-        return await message.edit(
-          "❌ _Maalesef, sesi analiz edemedim veya sessizlik tespit ettim._",
-          message.jid, processingMsg.key
-        );
-      }
-      transcription = censorBadWords(transcription);
-      const apiUsed = response.useOpenAI ? "OpenAI" : "Groq";
-      return await message.edit(
-        `🎙️ *Seste şunları duydum:*\n\n_"${transcription}"_`,
-        message.jid, processingMsg.key
-      );
-    } catch (parseErr) {
-      console.error("Yanıt hatası:", parseErr, response.data);
-      return await message.edit("⚠️ _API yanıtı işlenirken hata oluştu. .dinle komutu ile deneyin._", message.jid, processingMsg.key);
-    }
-  } catch (err) {
-    console.error("dinle modülünde hata:", err);
-    if (processingMsg) {
-      return await message.edit("⚠️ Ses çevrilirken bir hata oluştu.", message.jid, processingMsg.key);
-    } else {
-      return await message.send("⚠️ Ses çevrilirken bir hata oluştu.");
-    }
-  }
-}
-
-Module({
-  pattern: "dinle",
-  fromMe: false,
-  desc: "Sesli mesajı metne dönüştürür. (Tek seferlik sesler de dahil)",
-  usage: ".dinle (bir ses mesajına yanıtlayarak)",
-  use: "group",
-},
-async (message, match) => {
-  const replied = message.reply_message;
-  if (!replied || (!replied.audio && !replied.ptt)) {
-    return await message.sendReply("❌ Lütfen bir ses mesajına yanıtlayarak yazın!");
-  }
-  return await transcribeVoiceMessage(message, replied);
-});
-
-Module({
-  on: 'message',
-  fromMe: false,
-  desc: "Ses mesajını otomatik olarak metne dönüştürür.",
-  use: "group",
-},
-async (message, match) => {
-  try {
-    const audioMsg = message.data?.message?.audioMessage;
-    if (!audioMsg) {
-      return;
-    }
-    if ((!config.GROQ_API_KEY || config.GROQ_API_KEY === '') && 
-        (!config.OPENAI_API_KEY || config.OPENAI_API_KEY === '')) {
-      return;
-    }
-    return await transcribeVoiceMessage(message, message);
-  } catch (err) {
-    console.error("Otomatik dinle hatası:", err);
-  }
-});
-
 async function sendBanAudio(message) {
   const fsp = fs.promises;
   const path = require('path');
@@ -1663,52 +1321,17 @@ Module({
   }
 );
 
-Module({
-  pattern: "bul ?(.*)", 
-  fromMe: false, 
-  desc: "Yapay zeka aracılığıyla çalan şarkının adını bulur.",
-  usage: "Ses dosyasına etiketleyerek .bul yazın.",
-  use: 'search'
-}, async (message, match) => {
-  if (!message.reply_message?.audio) return await message.sendReply("⚠️ Bir ses dosyasına etiketleyerek yazın!");
-  var {seconds} = message.quoted.message[Object.keys(message.quoted.message)[0]];
-  if (seconds > 60) return await message.sendReply('⚠️ *Ses çok uzun! .trim komutunu kullanıp sesi 60 saniyeye düşürmenizi öneririm.*');
-  await message.send("🧐 Şarkıyı dinliyorum...");
-  var audio = await message.reply_message.download('buffer');
-  var data = await findMusic(audio);
-  if (!data) return await message.sendReply("🤯 Eşleşen bir sonuç bulunamadı! 👩🏻‍🔧 Dilerseniz daha iyi bir analiz için 15 saniyenin üzerinde kaydederek tekrar deneyin.");
-  function getDuration(millis) {
-    var minutes = Math.floor(millis / 60000);
-    var seconds = ((millis % 60000) / 1000).toFixed(0);
-    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
-  }
-  
-  const Message = {
-text:`🎶 Başlık: *${data.title}*
-🎤 Sanatçılar: ${data.artists?.map(e => e.name + " ")}
-📆 Çıkış Tarihi: ${data.release_date}
-⏱️ Süre: ${getDuration(data.duration_ms)}
-💿 Albüm: ${data.album?.name}
-🕺🏻 Tür: ${data.genres?.map(e => e.name + " ")}
-🏢 Yapım Şirketi: ${data.label}
-🤔 Spotify: ${"spotify" in data.external_metadata ? "Mevcut" : "Mevcut Değil"}
-▶️ YouTube: *${"youtube" in data.external_metadata ? "https://youtu.be/" + data.external_metadata.youtube.vid : "Mevcut Değil"}*\n
-ℹ️ İndirmek isterseniz *".şarkı Şarkı İsmi"* şeklinde yazabilirsiniz.`,
-  };
-  await message.client.sendMessage(message.jid, Message);
-});
-
 const cityCodes = {
-  '01': 'Adana', '02': 'Adıyaman', '03': 'Afyonkarahisar', '04': 'Ağrı', '05': 'Amasya', 
-  '06': 'Ankara', '07': 'Antalya', '08': 'Artvin', '09': 'Aydın', '10': 'Balıkesir', 
-  '11': 'Bilecik', '12': 'Bingöl', '13': 'Bitlis', '14': 'Bolu', '15': 'Burdur', 
-  '16': 'Bursa', '17': 'Çanakkale', '18': 'Çankırı', '19': 'Çorum', '20': 'Denizli', 
-  '21': 'Diyarbakır', '22': 'Edirne', '23': 'Elazığ', '24': 'Erzincan', '25': 'Erzurum', 
-  '26': 'Eskişehir', '27': 'Gaziantep', '28': 'Giresun', '29': 'Gümüşhane', '30': 'Hakkari', 
-  '31': 'Hatay', '32': 'Isparta', '33': 'Mersin', '34': 'İstanbul', '35': 'İzmir', 
-  '36': 'Kars', '37': 'Kastamonu', '38': 'Kayseri', '39': 'Kırklareli', '40': 'Kırşehir', 
-  '41': 'Kocaeli', '42': 'Konya', '43': 'Kütahya', '44': 'Malatya', '45': 'Manisa', 
-  '46': 'Kahramanmaraş', '47': 'Mardin', '48': 'Muğla', '49': 'Muş', '50': 'Nevşehir', 
+  '01': 'Adana', '02': 'Adıyaman', '03': 'Afyonkarahisar', '04': 'Ağrı', '05': 'Amasya',
+  '06': 'Ankara', '07': 'Antalya', '08': 'Artvin', '09': 'Aydın', '10': 'Balıkesir',
+  '11': 'Bilecik', '12': 'Bingöl', '13': 'Bitlis', '14': 'Bolu', '15': 'Burdur',
+  '16': 'Bursa', '17': 'Çanakkale', '18': 'Çankırı', '19': 'Çorum', '20': 'Denizli',
+  '21': 'Diyarbakır', '22': 'Edirne', '23': 'Elazığ', '24': 'Erzincan', '25': 'Erzurum',
+  '26': 'Eskişehir', '27': 'Gaziantep', '28': 'Giresun', '29': 'Gümüşhane', '30': 'Hakkari',
+  '31': 'Hatay', '32': 'Isparta', '33': 'Mersin', '34': 'İstanbul', '35': 'İzmir',
+  '36': 'Kars', '37': 'Kastamonu', '38': 'Kayseri', '39': 'Kırklareli', '40': 'Kırşehir',
+  '41': 'Kocaeli', '42': 'Konya', '43': 'Kütahya', '44': 'Malatya', '45': 'Manisa',
+  '46': 'Kahramanmaraş', '47': 'Mardin', '48': 'Muğla', '49': 'Muş', '50': 'Nevşehir',
   '51': 'Niğde', '52': 'Ordu', '53': 'Rize', '54': 'Sakarya', '55': 'Samsun', '56': 'Siirt',
   '57': 'Sinop', '58': 'Sivas', '59': 'Tekirdağ', '60': 'Tokat', '61': 'Trabzon',
   '62': 'Tunceli', '63': 'Şanlıurfa', '64': 'Uşak', '65': 'Van', '66': 'Yozgat',
@@ -1717,7 +1340,8 @@ const cityCodes = {
   '77': 'Yalova', '78': 'Karabük', '79': 'Kilis', '80': 'Osmaniye', '81': 'Düzce'
 };
 
-const turkishCities = Object.values(cityCodes).map(city => city.toLowerCase());
+const turkishCities = Object.values(cityCodes).map((city) => city.toLowerCase());
+
 async function sendMessage(m, message) {
   try {
     await m.sendReply(message);
@@ -1725,19 +1349,22 @@ async function sendMessage(m, message) {
     console.error('Mesaj gönderme hatası:', error);
   }
 }
+
 function isTurkishCity(cityName) {
   return turkishCities.includes(cityName.toLowerCase());
 }
+
 function normalizeTurkishCharacters(text) {
   return text
-    .replace(/ö/g, 'o') .replace(/Ö/g, 'O') .replace(/ü/g, 'u') .replace(/Ü/g, 'U') .replace(/ş/g, 's') .replace(/Ş/g, 'S')
-    .replace(/ı/g, 'i') .replace(/İ/g, 'I') .replace(/ç/g, 'c') .replace(/Ç/g, 'C') .replace(/ğ/g, 'g') .replace(/Ğ/g, 'G');
+    .replace(/ö/g, 'o').replace(/Ö/g, 'O').replace(/ü/g, 'u').replace(/Ü/g, 'U').replace(/ş/g, 's').replace(/Ş/g, 'S')
+    .replace(/ı/g, 'i').replace(/İ/g, 'I').replace(/ç/g, 'c').replace(/Ç/g, 'C').replace(/ğ/g, 'g').replace(/Ğ/g, 'G');
 }
+
 function getTimeBasedEmoji(temp) {
-  const turkeyTime = new Date().toLocaleString("en-US", {timeZone: "Europe/Istanbul"});
+  const turkeyTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' });
   const turkeyDate = new Date(turkeyTime);
   const hour = turkeyDate.getHours();
-  
+
   if (hour >= 22 || hour < 5) {
     if (temp <= 0) return { start: '🌙', end: '❄️' };
     if (temp <= 10) return { start: '🌙', end: '🥶' };
@@ -1749,7 +1376,7 @@ function getTimeBasedEmoji(temp) {
     if (temp <= 10) return { start: '🌅', end: '🥶' };
     if (temp <= 20) return { start: '🌅', end: '☕' };
     return { start: '🌅', end: '☀️' };
-  } 
+  }
   if (hour >= 12 && hour < 19) {
     if (temp <= 0) return { start: '☀️', end: '❄️' };
     if (temp <= 10) return { start: '🌤️', end: '🧥' };
@@ -1763,6 +1390,8 @@ function getTimeBasedEmoji(temp) {
     if (temp <= 20) return { start: '🌆', end: '😌' };
     return { start: '🌆', end: '🔥' };
   }
+
+  return { start: '🌤️', end: '🌡️' };
 }
 
 Module({
@@ -1771,28 +1400,34 @@ Module({
   desc: 'Hava durumu bilgisi gönderir.',
   use: 'utility'
 }, async (m, match) => {
-  const restrictedGroupId = "905396978235-1601666238@g.us";
+  const restrictedGroupId = '905396978235-1601666238@g.us';
   if (m.jid === restrictedGroupId) {
-    await sendMessage(m, "❗ *Bu komut sadece sohbet grubunda kullanılabilir!*");
+    await sendMessage(m, '❗ *Bu komut sadece sohbet grubunda kullanılabilir!*');
     return;
   }
-  let queriedCity = match[1]?.trim();
+
+  const queriedCity = match[1]?.trim();
   if (!queriedCity) {
     await sendMessage(m, '❗ Lütfen bir şehir adı belirtiniz.');
     return;
   }
+
   const normalizedCity = normalizeTurkishCharacters(queriedCity);
-  const city = cityCodes[normalizedCity] || normalizedCity;
+  const plateCode = queriedCity.padStart(2, '0');
+  const city = cityCodes[queriedCity] || cityCodes[plateCode] || normalizedCity;
+
   try {
     const API_KEY = '3df525a18b9fc5c3a689ac0456be979c';
     const encodedCity = encodeURIComponent(city);
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodedCity}&appid=${API_KEY}&units=metric&lang=tr`;
     const response = await axios.get(apiUrl);
     const data = response.data;
+
     if (data.cod === '404' || data.cod === 404) {
       await sendMessage(m, `❌ Konum bulunamadı: ${queriedCity}\n💬 *Örnek: _.hava şehir veya ilçe veya mahalle_*`);
       return;
     }
+
     const { main, wind, weather } = data;
     const temp = Math.round(main.temp);
     const humidity = main.humidity;
@@ -1800,93 +1435,23 @@ Module({
     const description = weather[0].description;
     const cityName = data.name;
     const emojiPair = getTimeBasedEmoji(temp);
-    await sendMessage(m, `📍 *${cityName}* için hava durumu:\n${emojiPair.start} Sıcaklık: *${temp}°C* - ${description} ${emojiPair.end}\n💧 Nem: *%${humidity}*\n💨 Rüzgar: *${windSpeed} m/s*`);
+
+    await sendMessage(
+      m,
+      `📍 *${cityName}* için hava durumu:\n${emojiPair.start} Sıcaklık: *${temp}°C* - ${description} ${emojiPair.end}\n💧 Nem: *%${humidity}*\n💨 Rüzgar: *${windSpeed} m/s*`
+    );
   } catch (error) {
     if (error.response?.status === 404) {
-      await sendMessage(m, `❌ Belirtilen konum bulunamadı!\n💬 *Örnek: _.hava şehir veya ilçe veya mahalle_*`);
-    } else {
+      await sendMessage(m, '❌ Belirtilen konum bulunamadı!\n💬 *Örnek: _.hava şehir veya ilçe veya mahalle_*');
+      return;
+    }
+
+    if (isTurkishCity(queriedCity) || isTurkishCity(normalizedCity)) {
       await sendMessage(m, '⚠️ Hava durumu bilgisi alınırken bir hata oluştu. Tekrar deneyiniz.');
+      return;
     }
-  }
-});
 
-const currencyMap = {
-  'dolar': 'USD', 'tl': 'TRY', 'euro': 'EUR', 'sterlin': 'GBP', 'frank': 'CHF',
-  'yen': 'JPY', 'yuan': 'CNY', 'rupi': 'INR', 'ruble': 'RUB', 'real': 'BRL',
-  'kanada doları': 'CAD', 'avustralya doları': 'AUD', 'yeni zelanda doları': 'NZD',
-  'hong kong doları': 'HKD', 'singapur doları': 'SGD', 'güney afrika randı': 'ZAR',
-  'isviçre frangı': 'CHF', 'çin yuanı': 'CNY', 'japon yeni': 'JPY',
-  'hindistan rupisi': 'INR', 'güney kore wonu': 'KRW', 'meksika pezosu': 'MXN',
-  'norveç kronu': 'NOK', 'pakistan rupisi': 'PKR', 'rus rublesi': 'RUB',
-  'suudi arabistan riyali': 'SAR', 'türk lirası': 'TRY', 'amerikan doları': 'USD',
-};
-
-function parseAmount(input) {
-  let s = input.replace(/\s+/g, '');
-  const hasDot = s.includes('.');
-  const hasComma = s.includes(',');
-  if (hasDot && hasComma) {
-    if (s.lastIndexOf('.') > s.lastIndexOf(',')) {
-      s = s.replace(/,/g, '');
-    } else {
-      s = s.replace(/\./g, '').replace(/,/g, '.');
-    }
-  } else if (hasComma) {
-    s = s.replace(/,/g, '.');
-  }
-  const num = parseFloat(s);
-  return isNaN(num) ? null : num;
-}
-
-const createApiUrl = (fromCurrency, toCurrency, amount) =>
-  `https://v6.exchangerate-api.com/v6/9f2e3e44d65670cb05593bd9/pair/${fromCurrency}/${toCurrency}/${amount}`;
-
-Module({
-  pattern: 'kur ?(.*)',
-  fromMe: false,
-  desc: 'Belirli bir miktarın iki para birimi arasındaki döviz kuru dönüşümünü hesaplar.',
-  usage: '.kur 2,375.99 dolar tl',
-}, async (message, match) => {
-  if (message.jid === "905396978235-1601666238@g.us") {
-    return message.client.sendMessage(message.jid,
-      { text: "❗ *Bu komut sadece sohbet grubunda kullanılabilir!*" }
-    );
-  }
-  const userInput = (match[1] || '').trim();
-  if (!userInput) {
-    return message.sendReply('❗️ Lütfen geçerli bir giriş yapınız. Örnek: *.kur 1 dolar tl*');
-  }
-  const parts = userInput.split(/\s+/);
-  if (parts.length < 3) {
-    return message.sendReply('❗️ Lütfen geçerli bir giriş yapınız. Örnek: *.kur 1 dolar tl*');
-  }
-  const rawAmount = parts.shift();
-  const rawToCurrency = parts.pop();
-  const rawFromCurrency = parts.join(' ');
-  const amount = parseAmount(rawAmount);
-  const fromCurrency = currencyMap[rawFromCurrency.toLowerCase()] || rawFromCurrency.toUpperCase();
-  const toCurrency = currencyMap[rawToCurrency.toLowerCase()] || rawToCurrency.toUpperCase();
-  if (amount === null || !isFinite(amount) || !fromCurrency || !toCurrency) {
-    return message.sendReply('❗️ Lütfen geçerli bir giriş yapınız. Örneğin: *.kur 1 dolar tl*');
-  }
-  try {
-    const apiUrl = createApiUrl(fromCurrency, toCurrency, amount);
-    const response = await axios.get(apiUrl);
-    if (response.data.result === 'success') {
-      const converted = Number(response.data.conversion_result).toFixed(2);
-      const today = new Date();
-      const dateStr = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
-      return message.sendReply(
-        `📆 ${dateStr} itibariyle\n💱 *${amount} ${fromCurrency} = ${converted} ${toCurrency}*`
-      );
-    } else {
-      throw new Error('API dönüş hatası');
-    }
-  } catch (err) {
-    console.error('Döviz kuru dönüşümü yapılamadı:', err.message);
-    return message.sendReply(
-      '⚠️ Döviz kuru dönüşümü yapılamadı! Lütfen para birimlerini kontrol ediniz.'
-    );
+    await sendMessage(m, '⚠️ Geçersiz şehir adı ya da servis hatası. Lütfen tekrar deneyiniz.');
   }
 });
 
@@ -1896,672 +1461,82 @@ function parseSarrafiye(html) {
   let match;
   while ((match = rowRegex.exec(html)) !== null) {
     const name = match[1]
-      .replace(/<[^>]+>/g, "")
-      .replace(/\s+/g, " ")
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
       .trim();
     results[name] = {
       buy: match[2],
       sell: match[3],
-      change: match[4].replace("%", "").trim()
+      change: match[4].replace('%', '').trim(),
     };
   }
   return results;
 }
 
-Module({
-  pattern: "altın ?(.*)",
-  fromMe: false,
-  desc: "Güncel altın fiyatlarını gösterir",
-  use: "utility"
-}, async (message) => {
-  const loading = await message.send("🔄 _Altın fiyatlarına bakıyorum..._");
-  try {
-    const { data: html } = await axios.get("https://www.sarrafiye.net/piyasa/altin.html", {
-      timeout: 15000,
-      headers: {
-        "User-Agent": "Mozilla/5.0"
+Module(
+  {
+    pattern: 'altın ?(.*)',
+    fromMe: false,
+    desc: 'Güncel altın fiyatlarını gösterir',
+    use: 'utility',
+  },
+  async (message) => {
+    const loading = await message.send('🔄 _Altın fiyatlarına bakıyorum..._');
+    try {
+      const { data: html } = await axios.get('https://www.sarrafiye.net/piyasa/altin.html', {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+        },
+      });
+      const data = parseSarrafiye(html);
+      const kur = data['Kur'];
+      const gram = data['Gram Altın'];
+      const ceyrek = data['Çeyrek Altın'];
+      const yarim = data['Yarım Altın'];
+      const tam = data['Tam Ata Lira'] || data['Tam Altın'];
+      if (!kur && !gram && !ceyrek && !yarim && !tam) {
+        return await message.edit(
+          '⚠️ _Altın verilerine ulaşılamadı!_\n_Kaynak yapısı değişmiş olabilir._',
+          message.jid,
+          loading.key
+        );
       }
-    });
-    const data = parseSarrafiye(html);
-    const kur = data["Kur"];
-    const gram = data["Gram Altın"];
-    const ceyrek = data["Çeyrek Altın"];
-    const yarim = data["Yarım Altın"];
-    const tam = data["Tam Ata Lira"] || data["Tam Altın"];
-    if (!kur && !gram && !ceyrek && !yarim && !tam) {
-      return await message.edit(
-        "⚠️ _Altın verilerine ulaşılamadı!_\n_Kaynak yapısı değişmiş olabilir._",
+      let text = '💰 `GÜNCEL ALTIN FİYATLARI`\n\n';
+      function addBlock(title, emoji, item, currency = '₺') {
+        if (!item) return;
+        const symbol = item.change.startsWith('-') ? '📉' : '📈';
+        text += `${emoji} *${title}*\n`;
+        text += `   💵 Alış: *${item.buy} ${currency}*\n`;
+        text += `   💰 Satış: *${item.sell} ${currency}*\n`;
+        text += `   ${symbol} Değişim: %${item.change}\n\n`;
+      }
+      addBlock('Kur', '📊', kur);
+      addBlock('Gram Altın', '🟡', gram);
+      addBlock('Çeyrek Altın', '🪙', ceyrek);
+      addBlock('Yarım Altın', '💎', yarim);
+      addBlock('Tam Altın', '🏅', tam);
+      const now = new Date().toLocaleString('tr-TR', {
+        timeZone: 'Europe/Istanbul',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      text += `_📅 ${now}_`;
+      text += '\nℹ Kaynak: _Kuyumcu Altın Verileri_';
+      await message.edit(text.trim(), message.jid, loading.key);
+    } catch (err) {
+      console.error('Altın modülü hata:', err?.message || err);
+      await message.edit(
+        '⚠️ _Altın verileri alınırken hata oluştu._\n_Lütfen daha sonra tekrar deneyin._',
         message.jid,
         loading.key
       );
     }
-    let text = "💰 `GÜNCEL ALTIN FİYATLARI`\n\n";
-    function addBlock(title, emoji, item, currency = "₺") {
-      if (!item) return;
-      const symbol = item.change.startsWith("-") ? "📉" : "📈";
-      text += `${emoji} *${title}*\n`;
-      text += `   💵 Alış: *${item.buy} ${currency}*\n`;
-      text += `   💰 Satış: *${item.sell} ${currency}*\n`;
-      text += `   ${symbol} Değişim: %${item.change}\n\n`;
-    }
-    addBlock("Kur", "📊", kur);
-    addBlock("Gram Altın", "🟡", gram);
-    addBlock("Çeyrek Altın", "🪙", ceyrek);
-    addBlock("Yarım Altın", "💎", yarim);
-    addBlock("Tam Altın", "🏅", tam);
-    const now = new Date().toLocaleString("tr-TR", {
-      timeZone: "Europe/Istanbul",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-    text += `_📅 ${now}_`;
-    text += `\nℹ Kaynak: _Kuyumcu Altın Verileri_`;
-    await message.edit(text.trim(), message.jid, loading.key);
-  } catch (err) {
-    console.error("Altın modülü hata:", err?.message || err);
-    await message.edit(
-      "⚠️ _Altın verileri alınırken hata oluştu._\n_Lütfen daha sonra tekrar deneyin._",
-      message.jid,
-      loading.key
-    );
-  }
-});
-
-Module({pattern: 'etiket', use: 'group', fromMe: false, desc: 'Tüm üyeleri etiketler.'}, async (message, match) => {
-  const userIsAdmin = await isAdmin(message, message.sender);
-  if (!userIsAdmin) return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
-  if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
-  const target = message.jid;
-  const group = await message.client.groupMetadata(target);
-  const allMembers = group.participants.map(participant => participant.id);
-  let text = "✅ *Herkes başarıyla etiketlendi!*";
-  allMembers.forEach((jid, index) => {
-    text += `\n${index + 1}. @${jid.split('@')[0]}`;
-  });
-  await message.client.sendMessage(target, {
-    text: text,
-    contextInfo: { mentionedJid: allMembers }
-  });
-});
-
-Module({pattern: 'ytetiket', use: 'group', fromMe: false, desc: 'Tüm yöneticileri etiketler.'}, async (message, match) => {
-    var target = message.jid;
-    var group = await message.client.groupMetadata(target);
-    var admins = group.participants.filter(v => v.admin !== null).map(x => x.id);
-    let text = "🚨 *Yöneticiler:*";
-      admins.forEach(jid => {
-      text += `\n@${jid.split('@')[0]}`;
-    });
-    await message.client.sendMessage(target, {text: text, contextInfo: { mentionedJid: admins }});
-});
-
-const PIN_DURATIONS = {
-  "24s": 86400,
-  "7g": 604800,
-  "30g": 2592000,
-};
-
-const loadKaraListe = () => {
-  try {
-    const raw = config.DUYURU_KARA_LISTE || "";
-    return raw ? raw.split(",").map((j) => j.trim()).filter(Boolean) : [];
-  } catch {
-    return [];
-  }
-};
-const saveKaraListe = async (liste) => {
-  await setVar("DUYURU_LISTE_DISI", liste.join(","));
-};
-
-Module({
-    pattern: "duyuru ?(.*)",
-    fromMe: true,
-    desc: "Bot'un bulunduğu tüm gruplara duyuru iletir ve isteğe bağlı olarak sabitler.",
-    use: "owner",
-    usage:
-      ".duyuru <mesaj>\n" +
-      ".duyuru <mesaj> | sabitle:24s\n" +
-      ".duyuru karalist ekle <jid>\n" +
-      ".duyuru karalist çıkar <jid>\n" +
-      ".duyuru karalist liste\n" +
-      ".duyuru karalist bu",
-  },
-  async (message, match) => {
-    let adminAccess = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    const input = match[1]?.trim() || "";
-    const arg = input.toLowerCase();
-
-    if (arg.startsWith("grup")) {
-      const parts = input.split(" ");
-      const cmd = parts[1]?.toLowerCase();
-      const jid = parts[2]?.trim();
-      const liste = loadKaraListe();
-      if (cmd === "filtrele" && jid) {
-        if (liste.includes(jid))
-          return message.sendReply("_Bu grup zaten kara listede._");
-        liste.push(jid);
-        await saveKaraListe(liste);
-        return message.sendReply(`_✅ \`${jid}\` filtreleme listesine eklendi._`);
-      }
-      if (cmd === "sil" && jid) {
-        const yeni = liste.filter((g) => g !== jid);
-        await saveKaraListe(yeni);
-        return message.sendReply(`_✅ \`${jid}\` filtreleme listesinden çıkarıldı._`);
-      }
-      if (cmd === "liste") {
-        if (!liste.length)
-          return message.sendReply("_Kara liste boş._");
-        return message.sendReply(
-          `*📋 Duyuru Kara Listesi (${liste.length} grup):*\n` +
-            liste.map((g, i) => `${i + 1}. \`${g}\``).join("\n")
-        );
-      }
-      if (cmd === "bu") {
-        return message.sendReply(
-          `ℹ _Mevcut grup JID'i:_\n\`${message.jid}\``
-        );
-      }
-      return message.sendReply(
-        `🔻 *Grup filtresi kullanımı:*\n` +
-          `• \`.duyuru grup filtrele <jid>\`\n` +
-          `• \`.duyuru grup sil <jid>\`\n` +
-          `• \`.duyuru grup liste\`\n` +
-          `• \`.duyuru grup bu\` — bulunduğun grubun JID'ini göster`
-      );
-    }
-    let announceText = input;
-    let pinDuration = null;
-    const pipeIndex = input.lastIndexOf("|");
-    if (pipeIndex !== -1) {
-      const after = input.slice(pipeIndex + 1).trim().toLowerCase();
-      const pinMatch = after.match(/^sabitle:(24s|7g|30g)$/);
-      if (pinMatch) {
-        pinDuration = PIN_DURATIONS[pinMatch[1]];
-        announceText = input.slice(0, pipeIndex).trim();
-      }
-    }
-    const hasReply = !!message.reply_message;
-    const hasText = announceText.length > 0;
-    if (!hasText && !hasReply) {
-      return message.sendReply(
-        `📢 _Bot'un bulunduğu tüm gruplara duyuru iletir._\n\n` +
-          `*Kullanım:*\n` +
-          `• \`.duyuru <mesaj>\` — sadece gönder\n` +
-          `• \`.duyuru <mesaj> | sabitle:24s\` — gönder ve 24 saat sabitle\n` +
-          `• \`.duyuru <mesaj> | sabitle:7g\` — gönder ve 7 gün sabitle\n` +
-          `• \`.duyuru <mesaj> | sabitle:30g\` — gönder ve 30 gün sabitle\n` +
-          `• Bir mesaja yanıtla + \`.duyuru\` — o mesajı ilet\n\n` +
-          `*Liste Düzenleme:*\n` +
-          `• \`.duyuru grup filtrele <jid>\`\n` +
-          `• \`.duyuru grup sil <jid>\`\n` +
-          `• \`.duyuru grup liste\`\n` +
-          `• \`.duyuru grup bu\``
-      );
-    }
-    let allGroups;
-    try {
-      allGroups = await message.client.groupFetchAllParticipating();
-    } catch (err) {
-      console.error("[Duyuru] groupFetchAllParticipating hatası:", err);
-      return message.sendReply("_❌ Grup listesi alınamadı._");
-    }
-    const karaListe = loadKaraListe();
-    const groupJids = Object.keys(allGroups).filter(
-      (jid) => !karaListe.includes(jid)
-    );
-    if (!groupJids.length) {
-      return message.sendReply("_Hiç grup bulunamadı (veya tamamı liste dışına alınmış)._");
-    }
-    const pinLabel = pinDuration
-      ? `, ${
-          pinDuration === 86400
-            ? "24 saat"
-            : pinDuration === 604800
-            ? "7 gün"
-            : "30 gün"
-        } süreyle sabitlenecek`
-      : "";
-    const confirmMsg = await message.sendReply(
-      `_📢 Duyuru *${groupJids.length}* gruba gönderiliyor${pinLabel}…_` +
-        (karaListe.length ? ` _(${karaListe.length} grup atlandı)_` : "")
-    );
-    let sent = 0, pinned = 0, failed = 0;
-    for (const jid of groupJids) {
-      try {
-        let sentMsg;
-        if (hasReply) {
-          sentMsg = await message.client.sendMessage(jid, {
-            forward: message.quoted,
-          });
-          if (hasText) {
-            await message.client.sendMessage(jid, { text: announceText });
-          }
-        } else {
-          sentMsg = await message.client.sendMessage(jid, {
-            text: announceText,
-          });
-        }
-        sent++;
-        if (pinDuration && sentMsg?.key) {
-          try {
-            await message.client.sendMessage(jid, {
-              pin: sentMsg.key,
-              type: 1,
-              time: pinDuration,
-            });
-            pinned++;
-          } catch (pinErr) {
-            console.warn(`[Duyuru] Sabitleme başarısız ${jid}:`, pinErr?.message || pinErr);
-          }
-        }
-        if (sent % 10 === 0) {
-          await new Promise((r) => setTimeout(r, 8000 + Math.random() * 4000));
-        }
-        const delay = 1500 + Math.floor(Math.random() * 2000);
-        await new Promise((r) => setTimeout(r, delay));
-         } catch (err) {
-        console.error(`[Duyuru] ${jid} için başarısız:`, err?.message || err);
-        failed++;
-      }
-    }
-    let summary =
-      `*📢 Duyuru tamamlandı!*\n\n` +
-      `✅ _Gönderildi:_ *${sent}/${groupJids.length}*\n`;
-    if (karaListe.length) {
-      summary += `🚫 _Atlandı (kara liste):_ *${karaListe.length}*\n`;
-    }
-    if (pinDuration) {
-      summary += `📌 _Sabitlendi:_ *${pinned}/${sent}*\n`;
-    }
-    if (failed > 0) {
-      summary += `❌ _Başarısız:_ *${failed}*\n`;
-    }
-    await message.edit(summary, message.jid, confirmMsg.key);
   }
 );
-
-let generateWAMessageFromContent, proto;
-
-const baileysPromise = loadBaileys()
-  .then((baileys) => {
-    ({ generateWAMessageFromContent, proto } = baileys);
-  })
-  .catch((err) => {
-    console.error("Failed to load baileys for sabitle:", err.message);
-  });
-
-Module({
-    pattern: "sabitle ?(.*)",
-    fromMe: true,
-    desc: "Yanıtlanan mesajı belirli bir süre için sabitler",
-    use: "group",
-    usage:
-      ".sabitle 24s (24 saat)\n.sabitle 7g (7 gün)\n.sabitle 30g (30 gün)\n.sabitle (varsayılan: 7 gün)",
-  },
-  async (message, match) => {
-    if (!message.reply_message) {
-      return await message.sendReply(
-        "_❌ Lütfen sabitlemek istediğiniz mesaja yanıtlayarak yazın!_\n\n" +
-          "🔻 _Kullanım:_\n" +
-          "_.sabitle 24s_ → 24 saat\n" +
-          "_.sabitle 7g_ → 7 gün\n" +
-          "_.sabitle 30g_ → 30 gün\n" +
-          "_.sabitle_ → varsayılan 7 gün"
-      );
-    }
-    await baileysPromise;
-    if (!generateWAMessageFromContent || !proto) {
-      return await message.sendReply(
-        "_❌ Bot bileşenleri henüz yüklenmedi, lütfen biraz bekleyip tekrar deneyin._"
-      );
-    }
-    let durationSeconds;
-    let durationText;
-    const input = match[1] ? match[1].trim().toLowerCase() : "";
-    if (input === "24s" || input === "24saat" || input === "1g" || input === "1gün") {
-      durationSeconds = 86400;
-      durationText = "24 saat";
-    } else if (input === "30g" || input === "30gün" || input === "30gun") {
-      durationSeconds = 2592000;
-      durationText = "30 gün";
-    } else {
-      durationSeconds = 604800;
-      durationText = "7 gün";
-    }
-    try {
-      const quotedKey = {
-        remoteJid: message.jid,
-        fromMe:
-          message.reply_message.jid?.split("@")[0] ===
-          message.client.user?.id?.split(":")[0],
-        id: message.reply_message.id,
-        participant: message.reply_message.jid,
-      };
-      const pinMsg = {
-        pin: quotedKey,
-        type: 1,
-        time: durationSeconds,
-      };
-      await message.client.sendMessage(message.jid, pinMsg);
-      return await message.sendReply(
-        `_📌 Mesaj, başarıyla *${durationText}* süreyle sabitlendi!_`
-      );
-    } catch (error) {
-      console.error("Sabitle komutu hatası:", error);
-      return await message.sendReply(
-        "_❌ Mesaj sabitleme sırasında bir hata oluştu!_\n_Botun grup yöneticisi olduğundan emin olun._"
-      );
-    }
-  }
-);
-
-const BILDIRIM_JID = "120363258254647790@g.us";
-const getBildirimJid = () => BILDIRIM_JID || null;
-
-const KATEGORILER = {
-  istek:   { emoji: "🙏", label: "İstek"         },
-  sikayet: { emoji: "😤", label: "Şikayet"        },
-  hata:    { emoji: "🐛", label: "Hata Bildirimi" },
-  oneri:   { emoji: "💡", label: "Öneri"          },
-  talep:   { emoji: "📋", label: "Talep"          },
-};
-
-const normalizeKategori = (raw) => {
-  const map = {
-    istek:    "istek",
-    şikayet:  "sikayet",
-    sikayet:  "sikayet",
-    hata:     "hata",
-    öneri:    "oneri",
-    oneri:    "oneri",
-    talep:    "talep",
-  };
-  return map[raw.toLowerCase()] || null;
-};
-
-Module({
-    pattern: "bildir ?(.*)",
-    fromMe: false,
-    desc: "Bot hakkında istek, şikayet, hata, öneri veya talep iletir.",
-    type: "user",
-    usage:
-      ".bildir istek <mesaj>\n" +
-      ".bildir şikayet <mesaj>\n" +
-      ".bildir hata <mesaj>\n" +
-      ".bildir öneri <mesaj>\n" +
-      ".bildir talep <mesaj>",
-  },
-  async (message, match) => {
-    const input = match[1]?.trim() || "";
-    if (!input) {
-      return message.sendReply(
-        `📣 *Bot Bildirim Merkezi*\n\n` +
-        `_Bot hakkındaki her türlü görüşünü bize iletebilirsin!_\n\n` +
-        `*Kategoriler:*\n` +
-        `🙏🏻 \`.bildir istek <mesaj>\` — Özellik isteği\n` +
-        `😤 \`.bildir şikayet <mesaj>\` — Şikayet\n` +
-        `🐛 \`.bildir hata <mesaj>\` — Hata bildirimi\n` +
-        `💡 \`.bildir öneri <mesaj>\` — Fikir/Öneri\n` +
-        `📋 \`.bildir talep <mesaj>\` — Özel talep\n\n` +
-        `💬 _Örnek: \`.bildir hata Şarkı komutu çalışmıyor\`_`
-      );
-    }
-    const parts = input.split(" ");
-    const kategoriKey = normalizeKategori(parts[0]);
-    if (!kategoriKey) {
-      return message.sendReply(
-        `❓ *Geçersiz kategori:* \`${parts[0]}\`\n\n` +
-        `🔻 _Geçerli kategoriler:_\n` +
-        `🙏 istek · 😤 şikayet · 🐛 hata · 💡 öneri · 📋 talep`
-      );
-    }
-    const metin = parts.slice(1).join(" ").trim();
-    if (!metin) {
-      const { emoji, label } = KATEGORILER[kategoriKey];
-      return message.sendReply(
-        `${emoji} *${label}* için bir mesaj yazmalısın.\n\n` +
-        `_Örnek: \`.bildir ${parts[0]} Mesajınız buraya...\`_`
-      );
-    }
-    if (badWords.some((word) => metin.toLowerCase().includes(word.toLowerCase()))) {
-       return message.sendReply(
-        `🚫 *Bildiriminiz gönderilemedi!*\n\n` +
-        `_Mesajınız uygunsuz ifadeler içeriyor._ 🤬\n` +
-        `_Lütfen nezaket kurallarına uygun şekilde iletiniz._ 🙏🏻`
-      );
-    }
-    const hedefJid = getBildirimJid();
-    if (!hedefJid) {
-      return message.sendReply(
-        `⚙️ _Bildirim sistemi henüz yapılandırılmamış!_\n` +
-        `_Lütfen geliştiricimi bilgilendirin._`
-      );
-    }
-    const { emoji, label } = KATEGORILER[kategoriKey];
-    const gonderenJid = message.sender || message.jid;
-    const gonderenAd  = message.pushName || "Bilinmiyor";
-    const tarih = new Date().toLocaleString("tr-TR", {
-      timeZone: "Europe/Istanbul",
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    });
-    let grupBilgisi = `💬 *DM üzerinden iletildi*`;
-    if (message.isGroup) {
-      try {
-        const meta = await message.client.groupMetadata(message.jid);
-        grupBilgisi = `👥 *Grup:* ${meta.subject}\n🆔 *Grup JID:* \`${message.jid}\``;
-      } catch {
-        grupBilgisi = `👥 *Grup JID:* \`${message.jid}\``;
-      }
-    }
-    const bildirimMesaji =
-      `${emoji} *Yeni ${label} Bildirimi*\n` +
-      `${"─".repeat(30)}\n` +
-      `👤 *Gönderen:* @${gonderenJid.split("@")[0]}\n` +
-      `${grupBilgisi}\n` +
-      `🕐 *Tarih:* ${tarih}\n` +
-      `${"─".repeat(30)}\n` +
-      `${emoji} *Mesaj:*\n${metin}`;
-    try {
-      await message.client.sendMessage(hedefJid, {
-        text: bildirimMesaji,
-        mentions: [gonderenJid],
-      });
-      return message.sendReply(
-        `✅ *Bildiriminizi gönderdim, teşekkürler!*\n\n` +
-        `${emoji} *Kategori:* ${label}\n` +
-        `📝 *Mesajınız:* _${metin}_\n\n` +
-        `_En kısa sürede değerlendirilecektir._ 🙌🏻`
-      );
-    } catch (err) {
-      console.error("[Bildir] Mesaj gönderilemedi:", err?.message || err);
-      return message.sendReply(
-        `❌ _Bildirim gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin._`
-      );
-    }
-  }
-);
-
-Module({
-    on: 'text',
-    fromMe: false,
-}, async (k, g) => {
-    const isActivated = !process.env.AUTO_DEL ? true : process.env.AUTO_DEL.split(',').includes(k.jid);
-    if (/\bhttps?:\/\/\S+/gi.test(k.message) && isActivated) {
-        var F = k.message.match(/\bhttps?:\/\/\S+/gi);
-        let hasGroupLink = false;
-        for (let C in F) {
-            if (F[C].includes('chat.whatsapp.com/')) {
-                hasGroupLink = true;
-                break;
-            }
-        }
-        if (hasGroupLink) {
-            var K = await isAdmin(k);
-            var b = await isAdmin(k, k.sender);
-            if (!K) return;
-            if (b) return;
-            const groupMetadata = await k.client.groupMetadata(k.jid);
-            const groupName = groupMetadata.subject;
-            var senderNumber = k.sender.split('@')[0];
-            var infoMessage = `🚨 Saygıdeğer yöneticilerim;\n*${groupName}* grubunda şu şahsı *+${senderNumber}* suçüstü yakaladım! 😈\n\n💬 "${k.message}"`;
-            try {
-                await k.send('🚨 *Hey! Grup reklamı yapmamalısın.* 🤐');
-                await k.client.sendMessage(k.jid, { delete: k.data.key });
-                await k.client.groupParticipantsUpdate(k.jid, [k.sender], "remove");
-                await k.client.sendMessage("120363258254647790@g.us", {text: infoMessage});
-            } catch (error) {
-                console.error('Hata:', error);
-            }
-        }
-    }
-});
-
-Module({
-    pattern: "çevir ?(.*)",
-    fromMe: false,
-    desc: "Metni iki dil arasında çevirir. Örnek: .çevir en tr",
-    usage: ".çevir en tr",
-  },
-  async (message, match) => {
-    try {
-      const raw = (match?.[1] || "").trim();
-      const parts = raw.split(/\s+/);
-      if (parts.length < 2) {
-        return await message.sendReply("❗ Kullanımı:\n(Bir mesaja yanıtlayarak) .çevir en tr");
-      }
-      const src = parts[0];
-      const dst = parts[1];
-      let text = parts.slice(2).join(" ").trim();
-      if (!text) {
-        const replied =
-          message.reply_message?.text ||
-          message.reply_message?.caption ||
-          message.reply_message?.conversation;
-        if (replied) text = replied.trim();
-      }
-      if (!text) {
-        return await message.sendReply("❌ Çevrilecek metin bulunamadı!");
-      }
-      let translated = null;
-
-      // 1. Birincil: MyMemory
-      try {
-        const { data } = await axios.get(
-          "https://api.mymemory.translated.net/get",
-          { params: { q: text, langpair: `${src}|${dst}` }, timeout: 8000 }
-        );
-        translated = data?.responseData?.translatedText;
-      } catch (_) {}
-
-      // 2. Yedek: Nexray Translate
-      if (!translated) {
-        try {
-          const { data } = await axios.get(
-            "https://api.nexray.web.id/tools/translate",
-            { params: { text, lang: dst }, timeout: 8000 }
-          );
-          if (data?.status && data?.result) translated = data.result;
-        } catch (_) {}
-      }
-
-      if (!translated) {
-        return await message.sendReply("❌ Çeviri alınamadı.");
-      }
-      return await message.sendReply(
-        `🌍 *Çeviri (${src} → ${dst})*\n\n${translated}`
-      );
-    } catch (err) {
-      return await message.sendReply("❌ Hata oluştu.");
-    }
-  }
-);
-
-function extractTikTokUsername(input) {
-  if (!input) return null;
-  input = input.trim();
-  if (input.startsWith('@')) {
-    return input.slice(1).toLowerCase();
-  }
-  if (/^[a-zA-Z0-9._]{2,24}$/.test(input)) {
-    return input.toLowerCase();
-  }
-  try {
-    const match = input.match(/tiktok\.com\/@([^/?]+)/i);
-    if (match && match[1]) {
-      return match[1].toLowerCase();
-    }
-  } catch (_) {}
-  return null;
-}
-
-Module({
-  pattern: 'ttara ?(.*)',
-  fromMe: false,
-  desc: 'TikTok kullanıcı bilgilerini getirir. (Gizli hesaplar hariç)',
-  use: 'search'
-}, async (message, match) => {
-  try {
-    let input = (match?.[1] || '').trim();
-    if (!input) {
-      input =
-        message.reply_message?.text ||
-        message.reply_message?.caption ||
-        '';
-      input = input.trim();
-    }
-    if (!input) {
-      return await message.sendReply(
-        '⚠ _Lütfen bir TikTok @kullanıcı adı veya profil bağlantısı girin! (Gizli hesaplar hariç)_\n' +
-        '*Örnekler:*\n' +
-        '.ttara lades\n' +
-        '.ttara @lades\n' +
-        '.ttara https://www.tiktok.com/@lades'
-      );
-    }
-    const username = extractTikTokUsername(input);
-    if (!username) {
-      return await message.sendReply('❌ _Geçersiz TikTok kullanıcı adı!_');
-    }
-    const response = await axios.get(
-      `https://api.princetechn.com/api/stalk/tiktokstalk?apikey=prince&username=${encodeURIComponent(username)}`
-    );
-    const data = response.data;
-    if (!data || data.status !== 200 || !data.result) {
-      return await message.sendReply('⚠ _Kullanıcı bulunamadı!_');
-    }
-    const user = data.result;
-    let caption = `👤 Kullanıcı Adı: *@${user.username || 'Bilinmiyor'}*\n`;
-    caption += `🆔 Kullanıcı ID: *${user.id || 'Bilinmiyor'}*\n`;
-    caption += `📝 İsim: *${user.name || 'Bilinmiyor'}*\n`;
-    caption += `👥 Takipçi: *${(user.followers)}*\n`;
-    caption += `➕ Takip: *${(user.following)}*\n`;
-    caption += `❤️ Beğeni: *${(user.likes)}*\n\n`;
-    caption += `ℹ️ BİYOGRAFİ\n`;
-    caption += `*${user.bio || 'Biyografi yok'}*\n\n`;
-    if (user.verified) caption += `✅ *Doğrulanmış Hesap*\n`;
-    if (user.private) caption += `🔒 *Gizli Hesap*\n`;
-    if (user.verified || user.private) caption += `\n`;
-    caption += `🔗 *Profil:* https://www.tiktok.com/@${user.username}`;
-    if (user.avatar) {
-      await message.sendMessage(
-        { url: user.avatar },
-        "image",
-        { caption, quoted: message.data }
-      );
-    } else {
-      await message.sendReply(caption);
-    }
-  } catch (error) {
-    console.error('TikTok Arama Hatası:', error);
-    return await message.sendReply('❌ _Bilgiler getirilirken bir hata oluştu!_');
-  }
-});
 
 /*Module({
     pattern: 'ekle ?(.*)',

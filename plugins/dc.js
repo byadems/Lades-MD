@@ -291,7 +291,7 @@ let dareTasks = [
     const text = `${choices[choice - 1]}:\n${questions[randomIndex]}`;
 
     if (message.reply_message && message.quoted) {
-      await message.client.sendMessage(message.jid, { text }, { quoted: message.reply_message });
+      await message.client.sendMessage(message.jid, { text }, { quoted: message.quoted });
     } else {
       await message.sendReply(text);
     }
