@@ -45,8 +45,8 @@ function applyPostgresResilience(sequelizeInstance) {
   const bufferedMessageQueries = [];
   let queueActive = false;
 
-  const PG_BUFFER_FLUSH_MS = 10 * 60 * 1000;
-  const PG_BUFFER_MAX = 100;
+  const PG_BUFFER_FLUSH_MS = parseInt(process.env.PG_BUFFER_FLUSH_MS || String(30 * 60 * 1000), 10);
+  const PG_BUFFER_MAX = parseInt(process.env.PG_BUFFER_MAX || "300", 10);
 
   const _bufferFlushInterval = setInterval(async () => {
     if (bufferedMessageQueries.length > 0) {
@@ -431,11 +431,11 @@ const sequelize = (() => {
     logging: DEBUG,
     pool: isPostgres
       ? {
-          max: parseInt(process.env.PG_POOL_MAX || "10", 10),
-          min: parseInt(process.env.PG_POOL_MIN || "2", 10),
+          max: parseInt(process.env.PG_POOL_MAX || "3", 10),
+          min: parseInt(process.env.PG_POOL_MIN || "1", 10),
           acquire: 60000,
-          idle: 30000,
-          evict: 5000,
+          idle: 20000,
+          evict: 10000,
         }
       : {
           max: 3,

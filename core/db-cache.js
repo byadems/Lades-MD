@@ -15,9 +15,9 @@
 const config = require("../config");
 const { logger } = config;
 
-const STATS_FLUSH_INTERVAL = 5 * 60 * 1000;
-const ANTIDELETE_MAX_ENTRIES = 500;
-const MAX_CACHE_SIZE = 5000;
+const STATS_FLUSH_INTERVAL = parseInt(process.env.STATS_FLUSH_INTERVAL || String(15 * 60 * 1000), 10);
+const ANTIDELETE_MAX_ENTRIES = parseInt(process.env.ANTIDELETE_MAX || "200", 10);
+const MAX_CACHE_SIZE = parseInt(process.env.MAX_CACHE_SIZE || "2000", 10);
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
 

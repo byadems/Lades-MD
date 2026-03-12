@@ -37,8 +37,8 @@ const {
 } = require("./core/helpers");
 const { applyDatabaseCaching, shutdownCache } = require("./core/db-cache");
 
-const MEMORY_CHECK_INTERVAL = 5 * 60 * 1000;
-const HEAP_WARN_THRESHOLD_MB = 400;
+const MEMORY_CHECK_INTERVAL = 3 * 60 * 1000;
+const HEAP_WARN_THRESHOLD_MB = 300;
 
 let _memoryMonitorTimer = null;
 
