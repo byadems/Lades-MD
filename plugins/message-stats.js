@@ -33,33 +33,32 @@ function timeSince(date) {
   return Math.floor(seconds) + " saniye önce";
 }
 
-function parseDuration(duration) {
-  const regex = /^(\d+)([dwmy])$/i;
-  const match = duration.match(regex);
-  if (!match) return null;
-
-  const value = parseInt(match[1]);
-  const unit = match[2].toLowerCase();
-
+function parseDuration(value, unit) {
   const now = new Date();
-  switch (unit) {
-    case "d":
-      return new Date(now.getTime() - value * 24 * 60 * 60 * 1000);
-    case "w":
-      return new Date(now.getTime() - value * 7 * 24 * 60 * 60 * 1000);
-    case "m":
-      return new Date(now.getTime() - value * 30 * 24 * 60 * 60 * 1000);
-    case "y":
-      return new Date(now.getTime() - value * 365 * 24 * 60 * 60 * 1000);
-    default:
-      return null;
+  const short = /^\s*(\d+)\s*([dwmy])\s*$/i.exec(value || "");
+  if (short) {
+    value = short[1];
+    unit = short[2];
   }
+
+  const num = parseInt(value, 10);
+  if (isNaN(num)) return null;
+
+  const normalized = (unit || "").toLowerCase();
+  let ms = null;
+  if (["d", "g", "gün", "gun"].includes(normalized)) ms = num * 24 * 60 * 60 * 1000;
+  else if (["w", "hafta"].includes(normalized)) ms = num * 7 * 24 * 60 * 60 * 1000;
+  else if (["m", "ay"].includes(normalized)) ms = num * 30 * 24 * 60 * 60 * 1000;
+  else if (["y", "yıl", "yil"].includes(normalized)) ms = num * 365 * 24 * 60 * 60 * 1000;
+  if (!ms) return null;
+  return new Date(now.getTime() - ms);
 }
+
 
 Module(
   {
     pattern: "mesajlar ?(.*)",
-    fromMe: true,
+    fromMe: false,
     desc: "Grupta mesaj atan kullanıcıların mesaj sayılarını gösterir",
     usage:
       ".mesajlar (mesajı olan tüm üyeler)\n.mesajlar @etiket (belirli üye)",
@@ -136,8 +135,8 @@ Module(
 Module(
   {
     pattern: "üyetemizle ?(.*)",
-    fromMe: true,
-    desc: "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
+    fromMe: false,
+    desc: "Belirtilen süre boyunca mesaj atmayan üyeleri listeler veya çıkarır.",
     usage:
       ".üyetemizle 30d (30+ gündür pasif üyeler)\n.üyetemizle 10d kick (10+ gündür pasif üyeleri at)\n\nDesteklenen birimler: d (gün), w (hafta), m (ay), y (yıl)",
     use: "group",
@@ -160,13 +159,14 @@ Module(
         );
       }
 
-      const args = match[1].trim().split(" ");
+      const args = match[1].trim().split(/\s+/);
       const durationStr = args[0];
-      const shouldKick = args[1]?.toLowerCase() === "kick";
+      const durationUnit = args[1];
+      const shouldKick = args.includes("kick") || args.includes("çıkar");
 
-      const cutoffDate = parseDuration(durationStr);
+      const cutoffDate = parseDuration(durationStr, durationUnit);
       if (!cutoffDate) {
-        return await message.sendReply("_❌ Geçersiz süre formatı!_\n" + "_Examples:_ 30d, 2w, 3m, 1y"
+        return await message.sendReply("_❌ Geçersiz süre formatı!_\n" + "_Örnekler:_ 30d, 2w, 3m, 1y veya 30 gün, 2 hafta"
         );
       }
 
@@ -235,11 +235,11 @@ Module(
 
       if (inactiveMembers.length === 0) {
         return await message.sendReply(
-          `_Belirtilen süre için pasif üye bulunamadı (${durationStr})._`
+          `_Belirtilen süre için pasif üye bulunamadı (${durationStr}${durationUnit ? " " + durationUnit : ""})._`
         );
       }
 
-      let responseMsg = `👥 _Aktif olmayan üyeler (${durationStr}+):_ *${inactiveMembers.length}*\n\n`;
+      let responseMsg = `👥 _Aktif olmayan üyeler (${durationStr}${durationUnit ? " " + durationUnit : ""}+):_ *${inactiveMembers.length}*\n\n`;
 
       if (dataWarning) {
         responseMsg += `⚠️ _Uyarı: Veritabanında sadece ${timeSince(

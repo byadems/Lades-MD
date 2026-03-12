@@ -408,7 +408,7 @@ Module(
 Module(
   {
     pattern: "uyarılimit ?(.*)",
-    fromMe: true,
+    fromMe: false,
     desc: "Grup için uyarı sınırını ayarlar",
     usage: ".uyarılimit 5",
     use: "group",
