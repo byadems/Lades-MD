@@ -15,6 +15,7 @@ const config = require("../config");
 const axios = require("axios");
 const fileType = require("file-type");
 const { getTempPath, getTempSubdir } = require("../core/helpers");
+const { badWords } = require("./utils/censor");
 
 /** TTS için metni google-tts-api limitine (200 karakter) uygun hale getirir. */
 function prepareTtsText(text) {
@@ -542,6 +543,129 @@ Module(
     });
   }
 );
+
+Module(
+  {
+    pattern: "ses ?(.*)",
+    fromMe: false,
+    desc: Lang.TTS_DESC,
+    use: "utility",
+  },
+  async (message, match) => {
+    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
+
+    const query = match[1] || message.reply_message?.text;
+    if (!query) {
+      const usageText = `🎙️ *Sesli Mesaj Aracı*
+📝 *Kullanım:*
+.ses <metin>
+.ses /cinsiyet <metin>
+.ses /dil <metin>
+.ses /hız <metin>
+🔧 *Seçenekler:*
+- */sage* - Ses tonu seçimi
+- */erkek* veya */e* - Erkek sesi
+- */kadın* veya */k* - Kadın sesi
+- */tr, /en, /es* - Dil seçimi
+- */1.5, /2.0* - Hız ayarı (0.5-2.0)
+🎤 *Ses Tonları:*
+/nova, /alloy, /ash, /coral, /echo, /fable, /onyx, /sage, /shimmer
+📌 *Örnekler:*
+.ses Naber canım
+.ses /sage Nasıl gidiyor?
+.ses /erkek Nasılsın?
+.ses /k Hava çok güzel
+.ses /en /1.2 How are you
+.ses /e /1.5 Hızlı konuş
+💡 *Not:* Bir mesajı yanıtlayarak da kullanabilirsiniz.`;
+      return await message.sendReply(usageText);
+    }
+
+    let ttsMessage = query;
+    let LANG = "tr";
+    let SPEED = 0.9;
+    let VOICE = "coral";
+
+    if (/\/erkek\b|\/e\b/i.test(ttsMessage)) {
+      VOICE = "ash";
+      ttsMessage = ttsMessage.replace(/\/erkek\b|\/e\b/gi, "").trim();
+    } else if (/\/kadın\b|\/k\b/i.test(ttsMessage)) {
+      VOICE = "nova";
+      ttsMessage = ttsMessage.replace(/\/kadın\b|\/k\b/gi, "").trim();
+    }
+
+    const langMatch = ttsMessage.match(/\/(tr|en|es|fr|de|it|pt|ru|ja|ko|zh)\b/i);
+    if (langMatch) {
+      LANG = langMatch[1].toLowerCase();
+      ttsMessage = ttsMessage.replace(langMatch[0], "").trim();
+    }
+
+    const speedMatch = ttsMessage.match(/\/([0-9]+\.?[0-9]*)\b/);
+    if (speedMatch) {
+      const speed = parseFloat(speedMatch[1]);
+      if (speed >= 0.5 && speed <= 2.0) {
+        SPEED = speed;
+        ttsMessage = ttsMessage.replace(speedMatch[0], "").trim();
+      }
+    }
+
+    const voiceMatch = ttsMessage.match(/\/(nova|alloy|ash|coral|echo|fable|onyx|sage|shimmer)\b/i);
+    if (voiceMatch) {
+      VOICE = voiceMatch[1].toLowerCase();
+      ttsMessage = ttsMessage.replace(voiceMatch[0], "").trim();
+    }
+
+    ttsMessage = ttsMessage.replace(/\s+/g, " ").trim();
+    if (!ttsMessage) {
+      return await message.sendReply("❌ Seslendirilecek metin bulunamadı.");
+    }
+
+    function makeBadWordRegex(word) {
+      const pattern = word
+        .replace(/a/g, "[a4@]")
+        .replace(/i/g, "[i1!İî]")
+        .replace(/o/g, "[o0ö]")
+        .replace(/u/g, "[uü]")
+        .replace(/s/g, "[s5$ş]")
+        .replace(/c/g, "[cç]")
+        .replace(/g/g, "[gğ9]")
+        .replace(/e/g, "[e3]")
+        .replace(/\s+|\./g, "(\\s|\\.|-|_)*");
+      return new RegExp(`\\b${pattern}\\b`, "iu");
+    }
+
+    const filterRegexes = badWords.map(makeBadWordRegex);
+    const containsBadWord = filterRegexes.some((rx) => rx.test(ttsMessage));
+    if (containsBadWord) {
+      return await message.sendReply("🚫 OPS! Seslendirme hatası.");
+    }
+
+    try {
+      let audio;
+      try {
+        const ttsResult = await aiTTS(ttsMessage, VOICE, SPEED.toFixed(2));
+        if (ttsResult.url) {
+          audio = { url: ttsResult.url };
+        } else {
+          throw new Error(ttsResult.error || "YZ Ses Sunucu Hatası!");
+        }
+      } catch (e) {
+        console.log("YZ TTS hatası, Google TTS'e geçiliyor:", e.message);
+        audio = await gtts(ttsMessage, LANG);
+      }
+
+      await message.client.sendMessage(message.jid, {
+        audio,
+        mimetype: "audio/mpeg",
+        ptt: true,
+      });
+    } catch (error) {
+      console.error("TTS Hatası:", error);
+      await message.sendReply("_" + Lang.TTS_ERROR + "_");
+    }
+  }
+);
+
 Module(
   {
     pattern: "doc ?(.*)",

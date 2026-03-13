@@ -14,51 +14,55 @@ const handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
 const warnLimit = parseInt(WARN || "4");
 const sudoUsers = (SUDO || "").split(",");
 
+function getNumericId(jid = "") {
+  return String(jid).split("@")[0];
+}
+
 Module(
   {
-    pattern: "warn ?(.*)",
+    pattern: "uyar ?(.*)",
     fromMe: false,
-    desc: "Gruptaki bir kullanıcıyı uyarır. Sınıra ulaştığında atılır.",
-    usage: ".warn @user reason\n.warn reply reason",
+    desc: "Grup üyelerini uyarmaya yarar. Limit aşıldığında üye gruptan atılır.",
+    usage: ".uyar @üye sebep\n.uyar sebep",
     use: "group",
   },
   async (message, match) => {
-    if (!match[0].split(" ")[0]?.toLowerCase().endsWith("warn")) return;
+    if (!match[0].split(" ")[0]?.toLowerCase().endsWith("uyar")) return;
     if (!message.isGroup)
-      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("❌ _Bu komut sadece gruplarda kullanılabilir!_");
 
-    let adminAccess = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    if (!message.fromOwner && !adminAccess) return;
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin)
+      return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
 
     const botIsAdmin = await isAdmin(message);
     if (!botIsAdmin) {
-      return await message.sendReply("_⚠️ Uyarıları yönetmek için yönetici yetkilerine ihtiyacım var!_"
+      return await message.sendReply(
+        "❌ _Uyarabilmem için öncelikle yönetici olmam gerekiyor!_"
       );
     }
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply(`_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_\n\n` +
-          `*Kullanım:*\n` +
-          `• \`${handler}warn @user reason\`\n` +
-          `• \`${handler}warn reply reason\`\n` +
-          `• \`${handler}uyarı @user\` - Uyarıları kontrol et\n` +
-          `• \`${handler}rmwarn @user\` - Bir uyarıyı kaldır\n` +
-          `• \`${handler}resetwarn @user\` - Tüm uyarıları kaldır\n` +
-          `• \`${handler}warnlist\` - Tüm uyarılanları listele`
+      return await message.sendReply(
+        `❗ _Lütfen bir üyeyi etiketleyin veya mesajına yanıt verin!_\n\n` +
+          `🔻 *Kullanımı:* \n` +
+          `• \`${handler}uyar @üye sebep\` - Uyarmaya yarar\n` +
+          `• \`${handler}kaçuyarı @üye\` - Uyarı sayısını gösterir\n` +
+          `• \`${handler}uyarısil @üye\` - 1 uyarıyı siler\n` +
+          `• \`${handler}uyarısıfırla @üye\` - Tüm uyarıları sıfırlar\n` +
+          `• \`${handler}uyarılimit\` - Maksimum uyarı limitini belirler`
       );
     }
 
     const isTargetAdmin = await isAdmin(message, targetUser);
     if (isTargetAdmin) {
-      return await message.sendReply("_⚠️ Grup yöneticileri uyarılamaz!_");
+      return await message.sendReply("❗ _OPS! Yöneticiler uyarılamaz._");
     }
 
-    const targetNumericId = targetUser?.split("@")[0];
+    const targetNumericId = getNumericId(targetUser);
     if (sudoUsers.includes(targetNumericId)) {
-      return await message.sendReply("_🔍 Bot sahiplerini/yöneticileri uyaramazsınız!_");
+      return await message.sendReply("❗ _OPS! Bot geliştiricisi uyarılamaz._");
     }
 
     let rawReason = match[1] || "Sebep belirtilmedi";
@@ -68,10 +72,9 @@ Module(
 
     try {
       await setWarn(message.jid, targetUser, reason, message.sender);
-
       const warnData = await getWarn(message.jid, targetUser, warnLimit);
       const currentWarns = warnData.current;
-      const kalan = warnData.kalan;
+      const remaining = warnData.kalan ?? warnData.remaining;
 
       if (warnData.exceeded) {
         try {
@@ -80,418 +83,364 @@ Module(
             [targetUser],
             "remove"
           );
-
           await message.client.sendMessage(message.jid, {
-            text: `⚠ *Kullanıcı Gruptan Çıkarıldı!*\n\n` +
-              `- Kullanıcı: \`@${targetNumericId}\`\n` +
-              `- Sebep: \`${reason}\`\n` +
-              `- Uyarılar: \`${currentWarns}/${warnLimit} (SINIR AŞILDI)\`\n` +
-              `- İşlem: \`Gruptan çıkarıldı\`\n\n` +
-              `_Kullanıcı uyarı sınırını aştığı için atıldı._`,
+            text:
+              `⚠ *UYARI LİMİTİ AŞILDI!*\n\n` +
+              `👤 Üye: *@${targetNumericId}*\n` +
+              `🤔 Sebep: \`${reason}\`\n` +
+              `🔢 Uyarı Sayısı: \`${currentWarns}/${warnLimit} (LİMİT AŞILDI)\`\n` +
+              `👋🏻 İşlem: \`Gruptan çıkarılma\`\n\n` +
+              `🧹 _Maksimum uyarı sayısını aştığı için üye gruptan atıldı._ 😆`,
             mentions: [targetUser],
           });
         } catch (kickError) {
           await message.client.sendMessage(message.jid, {
-            text: `⚠ *Uyarı Sınırı Aşıldı!*\n\n` +
-              `- Kullanıcı: \`@${targetNumericId}\`\n` +
-              `- Uyarılar: \`${currentWarns}/${warnLimit}\`\n` +
-              `- Hata: \`Kullanıcı atılamadı\`\n\n` +
-              `_Lütfen kullanıcıyı elle çıkarın veya yönetici izinlerimi kontrol edin._`,
+            text:
+              `⚠ *UYARI LİMİTİ AŞILDI!*\n\n` +
+              `👤 Üye: *@${targetNumericId}*\n` +
+              `🔢 Uyarı Sayısı: \`${currentWarns}/${warnLimit}\`\n` +
+              `❌ Hata: \`Üye atılamadı!\`\n\n` +
+              `🛠️ _Lütfen üyeyi manuel çıkarın veya bot'un yönetici yetkisini kontrol edin._`,
             mentions: [targetUser],
           });
         }
       } else {
         await message.client.sendMessage(message.jid, {
-          text: `⚠ *Kullanıcı Uyarıldı!*\n\n` +
-            `- Kullanıcı: \`@${targetNumericId}\`\n` +
-            `- Sebep: \`${reason}\`\n` +
-            `- Uyarılar: \`${currentWarns}/${warnLimit}\`\n` +
-            `- Kalan: \`${kalan}\`\n\n` +
+          text:
+            `⚠ *UYARI!*\n\n` +
+            `👤 Üye: @${targetNumericId}\n` +
+            `🤔 Sebep: \`${reason}\`\n` +
+            `🔢 Uyarı Sayısı: \`${currentWarns}/${warnLimit}\`\n` +
+            `⏳ Kalan Hakkı: \`${remaining}\`\n\n` +
             `${
-              kalan === 1
-                ? "_Sonraki uyarı atılmayla sonuçlanacak!_"
-                : `_${kalan} uyarı daha kaldı._`
+              remaining === 1
+                ? "🫡 _Bir uyarı daha alırsa gruptan atılacak!_"
+                : `🫡 _${remaining} uyarı sonra gruptan atılacak._`
             }`,
           mentions: [targetUser],
         });
       }
     } catch (error) {
-      console.error("Uyarı hatası:", error);
-      await message.sendReply("_⚠️ Uyarı eklenemedi! Lütfen tekrar deneyin._");
+      console.error("Uyarı verme hatası:", error);
+      await message.sendReply("❌ _Uyarı verilemedi! Lütfen tekrar deneyin._");
     }
   }
 );
 
 Module(
   {
-    pattern: "uyarı ?(.*)",
+    pattern: "kaçuyarı ?(.*)",
     fromMe: false,
-    desc: "Bir kullanıcının uyarılarını kontrol eder",
-    usage: ".uyarı @user\n.uyarı reply",
+    desc: "Bir üyenin uyarılarını kontrol etmeyi sağlar.",
+    usage: ".kaçuyarı @üye",
     use: "group",
   },
-  async (message, match) => {
+  async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("❌ _Bu komut sadece gruplarda kullanılabilir!_");
 
-    let adminAccess = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    if (!message.fromOwner && !adminAccess) return;
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin)
+      return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
 
-    const targetUser =
-      message.mention?.[0] || message.reply_message?.jid || message.sender;
-    const targetNumericId = targetUser?.split("@")[0];
+    const targetUser = message.mention?.[0] || message.reply_message?.jid || message.sender;
+    const targetNumericId = getNumericId(targetUser);
 
     try {
-      const uyarı = await getWarn(message.jid, targetUser);
-
-      if (!uyarı || uyarı.length === 0) {
+      const warnings = await getWarn(message.jid, targetUser);
+      if (!warnings || warnings.length === 0) {
         return await message.client.sendMessage(message.jid, {
-          text: `✓ *Uyarı Yok*\n\n` +
-            `- Kullanıcı: \`@${targetNumericId}\`\n` +
-            `- Durum: \`Temiz sicil\`\n` +
-            `- Uyarılar: \`0/${warnLimit}\``,
+          text:
+            `✅ *UYARI BULUNAMADI!*\n\n` +
+            `👤 Üye: *@${targetNumericId}*\n` +
+            `ℹ️ Durumu: *SİCİLİ TEMİZ* 😎\n` +
+            `🔢 Uyarı Sayısı: \`0/${warnLimit}\``,
           mentions: [targetUser],
         });
       }
 
-      const currentWarns = uyarı.length;
-      const kalan = warnLimit - currentWarns;
+      const currentWarns = warnings.length;
+      const remaining = warnLimit - currentWarns;
 
-      let uyarıList = `📋 *Uyarı Geçmişi*\n\n`;
-      uyarıList += `- Kullanıcı: \`@${targetNumericId}\`\n`;
-      uyarıList += `- Toplam Uyarılar: \`${currentWarns}/${warnLimit}\`\n`;
-      uyarıList += `- Kalan: \`${kalan > 0 ? kalan : 0}\`\n\n`;
+      let warningsList = `📋 *UYARI GEÇMİŞİ*\n\n`;
+      warningsList += `👤 Üye: *@${targetNumericId}*\n`;
+      warningsList += `🔢 Toplam Uyarı: \`${currentWarns}/${warnLimit}\`\n`;
+      warningsList += `🥲 Kalan Hakkı: \`${remaining > 0 ? remaining : 0}\`\n\n`;
 
-      uyarı.slice(0, 5).forEach((warn, index) => {
+      warnings.slice(0, 5).forEach((warn, index) => {
         const date = new Date(warn.timestamp).toLocaleString();
-        const warnedByNumeric = warn.warnedBy?.split("@")[0];
-        uyarıList += `*${index + 1}.* ${warn.reason}\n`;
-        uyarıList += `   _Uyaran: @${warnedByNumeric}_\n`;
-        uyarıList += `   _Tarih: ${date}_\n\n`;
+        const warnedByNumeric = getNumericId(warn.warnedBy);
+        warningsList += `🤔 Sebep: *${index + 1}.* ${warn.reason}\n`;
+        warningsList += `   👀 _Uyarıyı Veren:_ @${warnedByNumeric}\n`;
+        warningsList += `   📅 _Tarih: *${date}*_\n\n`;
       });
 
-      if (uyarı.length > 5) {
-        uyarıList += `_... ve ${uyarı.length - 5} daha fazla uyarı_\n\n`;
+      if (warnings.length > 5) {
+        warningsList += `_... ve ${warnings.length - 5} uyarı daha görünüyor._ 🧐\n\n`;
       }
 
-      if (kalan <= 0) {
-        uyarıList += `⚠ _Kullanıcı uyarı sınırını aştı!_`;
-      } else if (kalan === 1) {
-        uyarıList += `⚠ _Sonraki uyarı atılmayla sonuçlanacak!_`;
+      if (remaining <= 0) {
+        warningsList += `🫢 _Kullanıcı uyarı limitini aştı!_`;
+      } else if (remaining === 1) {
+        warningsList += `🥲 _Bir sonraki uyarıda atılacak!_`;
       }
 
       await message.client.sendMessage(message.jid, {
-        text: uyarıList,
-        mentions: [targetUser, ...uyarı.slice(0, 5).map((w) => w.warnedBy)],
+        text: warningsList,
+        mentions: [targetUser, ...warnings.slice(0, 5).map((w) => w.warnedBy)],
       });
     } catch (error) {
       console.error("Uyarı kontrol hatası:", error);
-      await message.sendReply("_⚠️ Uyarılar alınamadı!_");
+      await message.sendReply("⚠️ _Uyarılar alınamadı! Tekrar deneyin._");
     }
   }
 );
 
 Module(
   {
-    pattern: "rmwarn ?(.*)",
+    pattern: "uyarısil ?(.*)",
     fromMe: false,
-    desc: "Kullanıcıdan bir uyarıyı siler",
-    usage: ".rmwarn @user\n.rmwarn reply",
+    desc: "Bir kullanıcının bir uyarısını kaldır",
+    usage: ".uyarısil @üye",
     use: "group",
   },
-  async (message, match) => {
+  async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("❌ _Bu komut sadece gruplarda kullanılabilir!_");
 
-    let adminAccess = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    if (!message.fromOwner && !adminAccess) return;
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin)
+      return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply("_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
+      return await message.sendReply(
+        "❗ _Lütfen bir üye etiketleyin veya mesajına yanıtlayın!_"
       );
     }
 
-    const targetNumericId = targetUser?.split("@")[0];
-
+    const targetNumericId = getNumericId(targetUser);
     try {
       const currentCount = await getWarnCount(message.jid, targetUser);
-
       if (currentCount === 0) {
         return await message.client.sendMessage(message.jid, {
-          text: "ℹ *Uyarı Yok*\n\n" +
-            "- Kullanıcı: `@" +
+          text:
+            "🥳 *Hiç uyarısı yok!*\n\n" +
+            "👤 Üye: `@" +
             targetNumericId +
             "`\n" +
-            "- Durum: `Kaldırılacak uyarı yok`",
+            "ℹ️ Durumu: `Silinecek uyarı bulunamadı`",
           mentions: [targetUser],
         });
       }
 
       const removed = await decrementWarn(message.jid, targetUser);
-
       if (removed) {
         const newCount = await getWarnCount(message.jid, targetUser);
         await message.client.sendMessage(message.jid, {
-          text: "✓ *Uyarı Kaldırıldı!*\n\n" +
-            "- Kullanıcı: `@" +
+          text:
+            "✅ *UYARI SİLİNDİ!*\n\n" +
+            "👤 Üye: *@" +
             targetNumericId +
-            "`\n" +
-            "- Kaldırıldı: `1 uyarı`\n" +
-            "- Kalan: `" +
+            "*\n" +
+            "⛔ Silinen: `1 uyarı`\n" +
+            "🔢 Kalan: `" +
             newCount +
             " uyarı`\n" +
-            "- Durum: `" +
-            (newCount === 0 ? "Temiz sicil" : "Hâlâ uyarıları var") +
-            "`",
+            "ℹ️ Durumu: *" +
+            (newCount === 0 ? "SİCİLİ TEMİZ 😎" : "Hâlâ uyarısı mevcut") +
+            "*",
           mentions: [targetUser],
         });
       } else {
-        await message.sendReply("_❌ Uyarı kaldırılamadı!_");
+        await message.sendReply("❌ *Uyarı silinemedi! Tekrar deneyin.*");
       }
     } catch (error) {
       console.error("Uyarı kaldırma hatası:", error);
-      await message.sendReply("_❌ Uyarı kaldırılamadı!_");
+      await message.sendReply("❌ *Uyarı silinemedi! Tekrar deneyin.*");
     }
   }
 );
 
 Module(
   {
-    pattern: "resetwarn ?(.*)",
+    pattern: "uyarısıfırla ?(.*)",
     fromMe: false,
-    desc: "Kullanıcının tüm uyarılarını sıfırlar",
-    usage: ".resetwarn @user\n.resetwarn reply",
+    desc: "Bir üyenin tüm uyarılarını sıfırlar.",
+    usage: ".uyarısıfırla @üye",
     use: "group",
   },
-  async (message, match) => {
+  async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("❌ _Bu komut sadece gruplarda kullanılabilir!_");
 
-    let adminAccess = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    if (!message.fromOwner && !adminAccess) {
-      return await message.sendReply("_🔒 Uyarıları sıfırlamak için yönetici ayrıcalıklarına ihtiyacınız var!_"
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin)
+      return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
+
+    const botIsAdmin = await isAdmin(message);
+    if (!botIsAdmin) {
+      return await message.sendReply(
+        "❌ _Uyarıları sıfırlayabilmem için öncelikle yönetici olmam gerekiyor!_"
       );
     }
 
     const targetUser = message.mention?.[0] || message.reply_message?.jid;
     if (!targetUser) {
-      return await message.sendReply("_💬 Lütfen bir kullanıcıdan bahsedin veya mesajını yanıtlayın!_"
+      return await message.sendReply(
+        "❗ _Lütfen bir üyeyi etiketleyin veya mesajına yanıt verin!_"
       );
     }
 
-    const targetNumericId = targetUser?.split("@")[0];
-
+    const targetNumericId = getNumericId(targetUser);
     try {
       const currentCount = await getWarnCount(message.jid, targetUser);
-
       if (currentCount === 0) {
         return await message.client.sendMessage(message.jid, {
-          text: "ℹ *Uyarı Yok*\n\n" +
-            "- Kullanıcı: `@" +
+          text:
+            "🤯 *UYARI BULUNAMADI!*\n\n" +
+            "👤 Üye: *@" +
             targetNumericId +
-            "`\n" +
-            "- Durum: `Sıfırlanacak uyarı yok`",
+            "*\n" +
+            "ℹ️ Durumu: `Sıfırlanacak uyarı yok`",
           mentions: [targetUser],
         });
       }
 
       const removed = await resetWarn(message.jid, targetUser);
-
       if (removed) {
         await message.client.sendMessage(message.jid, {
-          text: "✓ *Uyarılar Sıfırlandı!*\n\n" +
-            "- Kullanıcı: `@" +
+          text:
+            "✅ *Uyarılar Sıfırlandı!*\n\n" +
+            "👤 Üye: *@" +
             targetNumericId +
-            "`\n" +
-            "- Kaldırıldı: `" +
+            "*\n" +
+            "🔢 Sıfırlanan: `" +
             currentCount +
             " uyarı`\n" +
-            "- Durum: `Temiz sicil`",
+            "ℹ️ Durumu: *SİCİLİ TEMİZ* 😎",
           mentions: [targetUser],
         });
       } else {
-        await message.sendReply("_⚠️ Uyarılar sıfırlanamadı!_");
+        await message.sendReply("❌ *Uyarılar sıfırlanamadı! Tekrar deneyin.*");
       }
     } catch (error) {
       console.error("Uyarı sıfırlama hatası:", error);
-      await message.sendReply("_⚠️ Uyarılar sıfırlanamadı!_");
+      await message.sendReply("❌ *Uyarılar sıfırlanamadı! Tekrar deneyin.*");
     }
   }
 );
 
 Module(
   {
-    pattern: "warnlist",
+    pattern: "uyarıliste",
     fromMe: false,
-    desc: "Gruptaki tüm uyarılan kullanıcıları listeler",
-    usage: ".warnlist",
+    desc: "Grupta uyarı alan tüm üyeleri listeler",
+    usage: ".uyarıliste",
     use: "group",
   },
   async (message) => {
     if (!message.isGroup)
-      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
+      return await message.sendReply("🚫 _Bu komut sadece gruplarda kullanılabilir!_");
 
     let adminAccess = ADMIN_ACCESS
       ? await isAdmin(message, message.sender)
       : false;
     if (!message.fromOwner && !adminAccess) {
-      return await message.sendReply("_🔒 Uyarı listesini görüntülemek için yönetici yetkilerine ihtiyacınız var!_"
+      return await message.sendReply(
+        "⛔ _Üzgünüm! Öncelikle yönetici olmalısınız.__"
       );
     }
 
     try {
       const allWarnings = await getAllWarns(message.jid);
-
       if (Object.keys(allWarnings).length === 0) {
-        return await message.sendReply(`✓ *Temiz Grup!*\n\n` +
-            `- Bu grupta hiçbir kullanıcının uyarısı yok.\n` +
-            `_Herkes kurallara uyuyor!_`
+        return await message.sendReply(
+          `✅ *GRUP TEMİZ!*\n\n` +
+            `🎉 Bu grupta uyarı alan üye göremedim.\n` +
+            `💯 _Herkes kurallara uyuyor, böyle devam!_ 😎`
         );
       }
-
-      let warnList = `📋 *Grup Uyarı Listesi*\n\n`;
-      warnList += `- Uyarı Sınırı: \`${warnLimit}\`\n\n`;
 
       const sortedUsers = Object.entries(allWarnings).sort(
         ([, a], [, b]) => b.length - a.length
       );
 
-      let mentions = [];
+      let warnList = `📋 *Grup Uyarı Listesi*\n\n`;
+      warnList += `📊 _Toplam uyarılan üye sayısı: *${sortedUsers.length}*_\n\n`;
+      warnList += `⚠️ Uyarı limiti: \`${warnLimit}\`\n\n`;
 
+      let mentions = [];
       sortedUsers.forEach(([userJid, userWarnings], index) => {
         const userNumericId = userJid?.split("@")[0];
         const warnCount = userWarnings.length;
-        const kalan = warnLimit - warnCount;
+        const remaining = warnLimit - warnCount;
         const status =
-          kalan <= 0
-            ? "⚠ SINIR AŞILDI"
-            : kalan === 1
-            ? "⚠ SON UYARI"
-            : `✓ ${kalan} kalan`;
+          remaining <= 0
+            ? "🚫 LİMİT AŞILDI!"
+            : remaining === 1
+            ? "⚠️ SON UYARI"
+            : `🔢 ${remaining} hak kaldı`;
 
-        warnList += `*${index + 1}.* @${userNumericId}\n`;
-        warnList += `   _Uyarılar: \`${warnCount}/${warnLimit}\`_\n`;
-        warnList += `   _Durum: \`${status}\`_\n`;
+        warnList += `*${index + 1}.* 👤 @${userNumericId}\n`;
+        warnList += `   🧾 _Uyarılar: \`${warnCount}/${warnLimit}\`_\n`;
+        warnList += `   📌 _Durum: ${status}_\n`;
 
         if (userWarnings.length > 0) {
           const latestWarning = userWarnings[0];
-          warnList += `   _Son: \`${latestWarning.reason.substring(0, 30)}${
+          warnList += `   🕒 _Son Uyarı Sebebi: ${latestWarning.reason.substring(0, 30)}${
             latestWarning.reason.length > 30 ? "..." : ""
-          }\`_\n`;
+          }_\n`;
         }
         warnList += "\n";
-
         mentions.push(userJid);
       });
 
-      warnList += `_Toplam uyarılan kullanıcı: ${sortedUsers.length}_\n`;
-      warnList += `_Detaylı geçmiş için ${handler}uyarı @user kullanın_`;
-
+      warnList += `ℹ️ _Detaylı uyarı geçmişi için: ${handler}kaçuyarı @üye_`;
       await message.client.sendMessage(message.jid, {
         text: warnList,
         mentions,
       });
     } catch (error) {
-      console.error("Uyarı listeleme hatası:", error);
-      await message.sendReply("_❌ Uyarı listesi alınamadı!_");
+      console.error("Uyarı listesi hatası:", error);
+      await message.sendReply("❌ _Uyarı listesi alınırken bir hata oluştu!_");
     }
   }
 );
 
 Module(
   {
-    pattern: "setwarnlimit ?(.*)",
-    fromMe: true,
-    desc: "Grup için uyarı sınırını ayarlar",
-    usage: ".setwarnlimit 5",
+    pattern: "uyarılimit ?(.*)",
+    fromMe: false,
+    desc: "Grup için uyarı limitini ayarlar",
+    usage: ".uyarılimit 5",
     use: "group",
   },
   async (message, match) => {
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin)
+      return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
+
     const newLimit = parseInt(match[1]);
-
     if (!newLimit || newLimit < 1 || newLimit > 20) {
-      return await message.sendReply(`⚠ *Geçersiz Uyarı Sınırı*\n\n` +
-          `- Lütfen 1 ile 20 arasında bir sayı girin.\n` +
-          `- Mevcut sınır: \`${warnLimit}\`\n\n` +
-          `*Kullanım:* \`${handler}setwarnlimit 5\``
+      return await message.sendReply(
+        `⚠ *Geçersiz Uyarı Limiti!*\n\n` +
+          `- Lütfen 1 ile 20 arasında bir miktar girin.\n` +
+          `- Mevcut limit: \`${warnLimit}\`\n\n` +
+          `💬 *Kullanım:* \`${handler}uyarılimit 5\``
       );
     }
 
     try {
-      await message.sendReply(`✓ *Uyarı Sınırı Güncellendi!*\n\n` +
-          `- Yeni sınır: \`${newLimit} uyarı\`\n` +
-          `- Önceki sınır: \`${warnLimit}\`\n\n` +
-          `_Kullanıcılar artık ${newLimit} uyarı sonrasında atılacak._`
+      await message.sendReply(
+        `✅ *Uyarı Limiti Güncellendi!*\n\n` +
+          `- Yeni limit: \`${newLimit}\`\n` +
+          `- Önceki limit: \`${warnLimit}\`\n\n` +
+          `ℹ _Üyeler artık ${newLimit} uyarıdan sonra gruptan atılacak._`
       );
     } catch (error) {
-      console.error("Uyarı limiti ayarlama hatası:", error);
-      await message.sendReply("_❌ Uyarı sınırı güncellenemedi!_");
-    }
-  }
-);
-
-Module(
-  {
-    pattern: "warnstats",
-    fromMe: false,
-    desc: "Grup için uyarı istatistiklerini gösterir",
-    usage: ".warnstats",
-    use: "group",
-  },
-  async (message) => {
-    if (!message.isGroup)
-      return await message.sendReply("_ℹ️ Bu sadece gruplarda kullanılabilen bir komuttur!_");
-
-    let adminAccess = ADMIN_ACCESS
-      ? await isAdmin(message, message.sender)
-      : false;
-    if (!message.fromOwner && !adminAccess) {
-      return await message.sendReply("_🔒 Uyarı istatistiklerini görüntülemek için yönetici ayrıcalıklarına ihtiyacınız var!_"
-      );
-    }
-
-    try {
-      const allWarnings = await getAllWarns(message.jid);
-
-      const totalUsers = Object.keys(allWarnings).length;
-      const totalWarnings = Object.values(allWarnings).reduce(
-        (sum, uyarı) => sum + uyarı.length,
-        0
-      );
-
-      let atLimit = 0;
-      let nearLimit = 0;
-      let safe = 0;
-
-      Object.values(allWarnings).forEach((userWarnings) => {
-        const count = userWarnings.length;
-        if (count >= warnLimit) atLimit++;
-        else if (count >= warnLimit - 1) nearLimit++;
-        else safe++;
-      });
-
-      const stats =
-        `📊 *Grup Uyarı İstatistikleri*\n\n` +
-        `- Uyarı Sınırı: \`${warnLimit}\`\n` +
-        `- Toplam Uyarılan Kullanıcı: \`${totalUsers}\`\n` +
-        `- Verilen Toplam Uyarı: \`${totalWarnings}\`\n\n` +
-        `*Kullanıcı Durumu:*\n` +
-        `- ⚠ Sınırda: \`${atLimit}\`\n` +
-        `- ⚠ Sınıra Yakın: \`${nearLimit}\`\n` +
-        `- ✓ Güvende: \`${safe}\`\n\n` +
-        `_Detaylı liste için ${handler}warnlist kullanın_`;
-
-      await message.sendReply(stats);
-    } catch (error) {
-      console.error("Uyarı istatistik hatası:", error);
-      await message.sendReply("_❌ Uyarı istatistikleri alınamadı!_");
+      console.error("Uyarı limiti ayarlanırken hata oluştu:", error);
+      await message.sendReply("❌ _Uyarı limiti güncellenemedi! Tekrar deneyin._");
     }
   }
 );
