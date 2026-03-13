@@ -38,16 +38,31 @@ const EFFECTS = [
   { command: "triggered", desc: "Triggered overlay efekti uygular.", route: "overlay/triggered" },
 ];
 
+function buildCategoryLines(prefix, items) {
+  const lines = [`🔹 *${prefix}*`];
+  items.forEach((item) => {
+    lines.push(`• .${item.command} → ${item.desc}`);
+  });
+  return lines;
+}
+
+const filterEffects = EFFECTS.filter((item) => item.route.startsWith("filter/"));
+const miscEffects = EFFECTS.filter((item) => item.route.startsWith("misc/"));
+const overlayEffects = EFFECTS.filter((item) => item.route.startsWith("overlay/"));
+
 const list =
   "```" +
   [
-    "╔════════════════",
-    "║ 📸 FOTOĞRAF DÜZENLEME KOMUTLARI 🎨",
-    "╚═══════════════ Herhangi bir fotoğrafa yanıt vererek kullanabilirsiniz.",
+    "╔══════════════════════════════════════╗",
+    "║   📸 FOTOĞRAF DÜZENLEME KOMUTLARI   ║",
+    "╚══════════════════════════════════════╝",
+    "Herhangi bir fotoğrafa yanıt vererek kullanabilirsiniz.",
     "",
-    "🔹 *Filtreler:* .blur .pixelate .blue .blurple .blurple2 .brightness .color .green .bw .invert .2invert .red .golden .threshold",
-    "🔹 *Misc:* .rainbow .horny .simpcard .circle .heart",
-    "🔹 *Overlay:* .gay .glass .wasted .passed .jail .comrade .triggered",
+    ...buildCategoryLines("Filtreler", filterEffects),
+    "",
+    ...buildCategoryLines("Misc Efektler", miscEffects),
+    "",
+    ...buildCategoryLines("Overlay Efektler", overlayEffects),
   ].join("\n") +
   "\n```";
 
