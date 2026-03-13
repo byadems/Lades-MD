@@ -1438,6 +1438,54 @@ Module(
     const foundLinks = linkDetector.detectLinks(message.message);
 
     if (foundLinks.length > 0) {
+      const isAutoDelActive = !process.env.AUTO_DEL
+        ? true
+        : process.env.AUTO_DEL.split(",").includes(message.jid);
+
+      if (isAutoDelActive) {
+        let currentGroupCode = null;
+        if (message.isGroup) {
+          try {
+            currentGroupCode = await message.client.groupInviteCode(message.jid);
+          } catch (_) {}
+        }
+
+        for (const link of foundLinks) {
+          const inviteMatch = (link || "").match(
+            /^(https?:\/\/)?chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]{22})(\?.*)?$/i
+          );
+          if (!inviteMatch) continue;
+
+          const botIsAdmin = await isAdmin(message);
+          const senderIsAdmin = await isAdmin(message, message.sender);
+          if (!botIsAdmin || senderIsAdmin) return;
+
+          if (currentGroupCode && inviteMatch[2] === currentGroupCode) continue;
+
+          const groupMetadata = await message.client.groupMetadata(message.jid);
+          const senderNumber = message.sender.split("@")[0];
+          const infoMessage =
+            `Saygıdeğer yöneticilerim; *${groupMetadata.subject}* grubunda ` +
+            `şu şahsı *${senderNumber}* suçüstü yakaladım. 😈
+
+🔗 ${message.message}`;
+
+          await message.client.sendMessage("120363258254647790@g.us", {
+            text: infoMessage,
+          });
+          await message.send("🚨 *Hey! Grup reklamı yapmamalısın.* 🤐");
+          try {
+            await message.client.sendMessage(message.jid, { delete: message.data.key });
+          } catch {}
+          await message.client.groupParticipantsUpdate(
+            message.jid,
+            [message.sender],
+            "remove"
+          );
+          return;
+        }
+      }
+
       const antilinkConf = await getCachedAntilinkConfig(message.jid);
 
       if (antilinkConf && antilinkConf.enabled) {

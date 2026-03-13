@@ -1,9 +1,11 @@
 const { getString } = require("./utils/lang");
 const Lang = getString("group");
 const { loadBaileys } = require("../core/helpers");
+let delay, generateWAMessageFromContent, proto;
+
 const baileysPromise = loadBaileys()
   .then((baileys) => {
-    ({ delay } = baileys);
+    ({ delay, generateWAMessageFromContent, proto } = baileys);
   })
   .catch((err) => {
     console.error("Baileys yüklenemedi:", err.message);
@@ -15,6 +17,7 @@ const config = require("../config");
 const { Module } = require("../main");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 const {
   fetchFromStore,
   getFullMessage,
@@ -22,6 +25,43 @@ const {
 } = require("../core/store");
 const { setVar } = require("./manage");
 var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+
+
+async function sendBanAudio(message) {
+  const fsp = fs.promises;
+  const tempDir = path.join(__dirname, "temp");
+  const audioPath = path.join(tempDir, "ban.mp3");
+
+  try {
+    if (!fs.existsSync(tempDir)) {
+      await fsp.mkdir(tempDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(audioPath)) {
+      const response = await axios.get("https://dl.sndup.net/bq7y/Ban.mp3", {
+        responseType: "stream",
+      });
+
+      await new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(audioPath);
+        response.data.pipe(writer);
+        writer.on("finish", resolve);
+        writer.on("error", reject);
+      });
+    }
+
+    const stream = fs.createReadStream(audioPath);
+    try {
+      await message.send({ stream }, "audio");
+    } finally {
+      stream.destroy();
+    }
+  } catch (err) {
+    console.error("Ban sesini gönderirken hata:", err);
+    await message.sendReply("⚠️ _Ban sesi gönderilemedi, işlem devam ediyor._");
+  }
+}
+
 
 Module(
   {
@@ -122,6 +162,115 @@ Module(
     }
   }
 );
+
+Module(
+  {
+    pattern: "at ?(.*)",
+    fromMe: false,
+    desc: Lang.KICK_DESC,
+    use: "group",
+  },
+  async (message, match) => {
+    if (!message.isGroup) {
+      return await message.sendReply(Lang.GROUP_COMMAND);
+    }
+
+    const userIsAdmin = await isAdmin(message, message.sender);
+    if (!userIsAdmin) {
+      return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
+    }
+
+    const botIsAdmin = await isAdmin(message);
+    if (!botIsAdmin) {
+      return await message.sendReply("❌ _Bot'un üyeleri atabilmesi için yönetici olması gerekiyor!_");
+    }
+
+    let usersToKick = [];
+    if (message.mention && message.mention.length > 0) {
+      usersToKick = message.mention;
+    } else if (message.reply_message) {
+      const replyUser =
+        message.reply_message.participant ||
+        message.reply_message.sender ||
+        message.reply_message.jid;
+      if (replyUser) {
+        usersToKick = [replyUser];
+      }
+    }
+
+    if (!usersToKick.length) {
+      return await message.sendReply(
+        "❌ _Lütfen bir üye etiketleyin veya bir mesaja yanıt verin!_"
+      );
+    }
+
+    const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
+    let canKickAnyone = false;
+    let adminUsers = [];
+
+    for (const user of usersToKick) {
+      if (user === botId) {
+        continue;
+      }
+      try {
+        const isTargetAdmin = await isAdmin(message, user);
+        if (isTargetAdmin) {
+          adminUsers.push(user);
+        } else {
+          canKickAnyone = true;
+        }
+      } catch (error) {
+        console.error("Admin kontrolü hatası:", user, error);
+        canKickAnyone = true;
+      }
+    }
+
+    if (!canKickAnyone) {
+      if (adminUsers.length > 0) {
+        return await message.sendReply(
+          `❌ _Belirtilen kişi${adminUsers.length > 1 ? "lar" : ""} yönetici olduğu için atılamaz!_`
+        );
+      }
+      return await message.sendReply("❌ _Bot kendisini gruptan atamaz!_");
+    }
+
+    await sendBanAudio(message);
+
+    for (const user of usersToKick) {
+      try {
+        if (user === botId) {
+          await message.sendReply("❌ _Bot kendisini gruptan atamaz!_");
+          continue;
+        }
+        const isTargetAdmin = await isAdmin(message, user);
+        if (isTargetAdmin) {
+          await message.sendReply(
+            `❌ ${mentionjid(user)} _bir yönetici olduğu için atılamaz!_`,
+            { mentions: [user] }
+          );
+          continue;
+        }
+
+        await message.client.sendMessage(message.jid, {
+          text: mentionjid(user) + Lang.KICKED,
+          mentions: [user],
+        });
+        await message.client.groupParticipantsUpdate(message.jid, [user], "remove");
+
+        if (usersToKick.length > 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        }
+      } catch (error) {
+        console.error("Üye atılırken hata:", error);
+        await message.sendReply(`❌ ${mentionjid(user)} _atılırken bir hata oluştu!_`, {
+          mentions: [user],
+        });
+      }
+    }
+  }
+);
+
+
 Module(
   {
     pattern: "add ?(.*)",
@@ -1108,7 +1257,7 @@ const loadKaraListe = () => {
   }
 };
 const saveKaraListe = async (liste) => {
-  await setVar("DUYURU_LISTE_DISI", liste.join(","));
+  await setVar("DUYURU_KARA_LISTE", liste.join(","));
 };
 
 Module(
@@ -1134,10 +1283,11 @@ Module(
     const input = match[1]?.trim() || "";
     const arg = input.toLowerCase();
 
-    if (arg.startsWith("grup")) {
+    if (arg.startsWith("grup") || arg.startsWith("karalist")) {
       const parts = input.split(" ");
-      const cmd = parts[1]?.toLowerCase();
-      const jid = parts[2]?.trim();
+      const cmdOffset = parts[0]?.toLowerCase() === "karalist" ? 0 : 1;
+      const cmd = parts[cmdOffset + 1]?.toLowerCase();
+      const jid = parts[cmdOffset + 2]?.trim();
       const liste = loadKaraListe();
       if (cmd === "filtrele" && jid) {
         if (liste.includes(jid)) return message.sendReply("_Bu grup zaten kara listede._");
@@ -1293,6 +1443,13 @@ Module(
       );
     }
 
+    await baileysPromise;
+    if (!generateWAMessageFromContent || !proto) {
+      return await message.sendReply(
+        "_❌ Bot bileşenleri henüz yüklenmedi, lütfen biraz bekleyip tekrar deneyin._"
+      );
+    }
+
     const input = match[1] ? match[1].trim().toLowerCase() : "";
     let durationSeconds;
     let durationText;
@@ -1396,44 +1553,123 @@ Module(
   }
 );
 
+
+function parseSarrafiye(html) {
+  const results = {};
+  const rowRegex = /<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>([\d.,]+)<\/td>\s*<td[^>]*>([\d.,]+)<\/td>\s*<td[^>]*>(.*?)<\/td>/gi;
+  let match;
+  while ((match = rowRegex.exec(html)) !== null) {
+    const name = match[1]
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    results[name] = {
+      buy: match[2],
+      sell: match[3],
+      change: match[4].replace("%", "").trim(),
+    };
+  }
+  return results;
+}
+
 Module(
-  { pattern: 'etiket', use: 'group', fromMe: false, desc: 'Tüm üyeleri etiketler.' },
+  {
+    pattern: "altın ?(.*)",
+    fromMe: false,
+    desc: "Güncel altın fiyatlarını gösterir",
+    use: "utility",
+  },
   async (message) => {
-    const userIsAdmin = await isAdmin(message, message.sender);
-    if (!userIsAdmin) return await message.sendReply('❌ _Üzgünüm! Öncelikle yönetici olmalısınız._');
-    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
+    const loading = await message.send("🔄 _Altın fiyatlarına bakıyorum..._");
 
-    const target = message.jid;
-    const group = await message.client.groupMetadata(target);
-    const allMembers = group.participants.map((participant) => participant.id);
-    let text = '✅ *Herkes başarıyla etiketlendi!*';
+    try {
+      const { data: html } = await axios.get("https://www.sarrafiye.net/piyasa/altin.html", {
+        timeout: 15000,
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+        },
+      });
+      const data = parseSarrafiye(html);
+      const kur = data["Kur"];
+      const gram = data["Gram Altın"];
+      const ceyrek = data["Çeyrek Altın"];
+      const yarim = data["Yarım Altın"];
+      const tam = data["Tam Ata Lira"] || data["Tam Altın"];
 
-    allMembers.forEach((jid, index) => {
-      text += `\n${index + 1}. @${jid.split('@')[0]}`;
-    });
+      if (!kur && !gram && !ceyrek && !yarim && !tam) {
+        return await message.edit(
+          "⚠️ _Altın verilerine ulaşılamadı!_\n_Kaynak yapısı değişmiş olabilir._",
+          message.jid,
+          loading.key
+        );
+      }
 
-    await message.client.sendMessage(target, {
-      text,
-      contextInfo: { mentionedJid: allMembers },
-    });
+      let text = "💰 `GÜNCEL ALTIN FİYATLARI`\n\n";
+      function addBlock(title, emoji, item, currency = "₺") {
+        if (!item) return;
+        const symbol = item.change.startsWith("-") ? "📉" : "📈";
+        text += `${emoji} *${title}*\n`;
+        text += `   💵 Alış: *${item.buy} ${currency}*\n`;
+        text += `   💰 Satış: *${item.sell} ${currency}*\n`;
+        text += `   ${symbol} Değişim: %${item.change}\n\n`;
+      }
+
+      addBlock("Kur", "📊", kur);
+      addBlock("Gram Altın", "🟡", gram);
+      addBlock("Çeyrek Altın", "🪙", ceyrek);
+      addBlock("Yarım Altın", "💎", yarim);
+      addBlock("Tam Altın", "🏅", tam);
+
+      const now = new Date().toLocaleString("tr-TR", {
+        timeZone: "Europe/Istanbul",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      text += `_📅 ${now}_`;
+      text += "\nℹ Kaynak: _Kuyumcu Altın Verileri_";
+
+      await message.edit(text.trim(), message.jid, loading.key);
+    } catch (err) {
+      console.error("Altın modülü hata:", err?.message || err);
+      await message.edit(
+        "⚠️ _Altın verileri alınırken hata oluştu._\n_Lütfen daha sonra tekrar deneyin._",
+        message.jid,
+        loading.key
+      );
+    }
   }
 );
 
-Module(
-  { pattern: 'ytetiket', use: 'group', fromMe: false, desc: 'Tüm yöneticileri etiketler.' },
-  async (message) => {
-    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
 
-    const target = message.jid;
-    const group = await message.client.groupMetadata(target);
-    const admins = group.participants.filter((v) => v.admin !== null).map((x) => x.id);
-    let text = '🚨 *Yöneticiler:*';
+Module({pattern: 'etiket', use: 'group', fromMe: false, desc: 'Tüm üyeleri etiketler.'}, async (message, match) => {
+  const userIsAdmin = await isAdmin(message, message.sender);
+  if (!userIsAdmin) return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
+  if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
+  const target = message.jid;
+  const group = await message.client.groupMetadata(target);
+  const allMembers = group.participants.map(participant => participant.id);
+  let text = "✅ *Herkes başarıyla etiketlendi!*";
+  allMembers.forEach((jid, index) => {
+    text += `
+${index + 1}. @${jid.split('@')[0]}`;
+  });
+  await message.client.sendMessage(target, {
+    text: text,
+    contextInfo: { mentionedJid: allMembers }
+  });
+});
 
-    admins.forEach((jid) => {
-      text += `\n@${jid.split('@')[0]}`;
+Module({pattern: 'ytetiket', use: 'group', fromMe: false, desc: 'Tüm yöneticileri etiketler.'}, async (message, match) => {
+    var target = message.jid;
+    var group = await message.client.groupMetadata(target);
+    var admins = group.participants.filter(v => v.admin !== null).map(x => x.id);
+    let text = "🚨 *Yöneticiler:*";
+      admins.forEach(jid => {
+      text += `
+@${jid.split('@')[0]}`;
     });
-
-    await message.client.sendMessage(target, { text, contextInfo: { mentionedJid: admins } });
-  }
-);
-
+    await message.client.sendMessage(target, {text: text, contextInfo: { mentionedJid: admins }});
+});

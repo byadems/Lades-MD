@@ -615,7 +615,9 @@ Module(
   async (message, match) => {
     if (!message.reply_message?.audio)
       return await message.sendReply("⚠️ Bir ses dosyasına etiketleyerek yazın!");
-    if (message.reply_message.duration > 60)
+
+    var { seconds } = message.quoted.message[Object.keys(message.quoted.message)[0]];
+    if (seconds > 60)
       return await message.sendReply(
         "⚠️ *Ses çok uzun! .trim komutunu kullanıp sesi 60 saniyeye düşürmenizi öneririm.*"
       );
