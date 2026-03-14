@@ -17,7 +17,7 @@ function TimeCalculator(a) {
 const { Module } = require("../main");
 Module(
   {
-    pattern: "age ?(.*)",
+    pattern: "yaşhesap ?(.*)",
     desc: "Yaş hesaplayıcı",
     use: "utility",
   },
@@ -39,7 +39,7 @@ Module(
 );
 Module(
   {
-    pattern: "cntd ?(.*)",
+    pattern: "gerisayım ?(.*)",
     desc: "Tarihi Sayar",
     use: "utility",
   },

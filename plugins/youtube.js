@@ -86,16 +86,16 @@ Module(
 
 Module(
   {
-    pattern: "yts ?(.*)",
+    pattern: "ytara ?(.*)",
     fromMe: fromMe,
     desc: "YouTube araması (detaylı bilgi ile)",
-    usage: ".yts <query>",
+    usage: ".ytara <sorgu>",
     use: "download",
   },
   async (message, match) => {
     const query = match[1];
     if (!query) {
-      return await message.sendReply("_⚠️ Lütfen aranacak kelimeyi girin!_\n_Örnek: .yts ncs music_"
+      return await message.sendReply("_⚠️ Lütfen aranacak kelimeyi girin!_\n_Örnek: .ytara ncs music_"
       );
     }
 
@@ -134,10 +134,10 @@ Module(
 
 Module(
   {
-    pattern: "ytv ?(.*)",
+    pattern: "ytvideo ?(.*)",
     fromMe: fromMe,
     desc: "Video kalitesi seçimi ile YouTube videosu indir",
-    usage: ".ytv <link>",
+    usage: ".ytvideo <bağlantı>",
     use: "download",
   },
   async (message, match) => {
@@ -148,7 +148,7 @@ Module(
     }
 
     if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
-      return await message.sendReply("_⚠️ Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .ytv https://youtube.com/watch?v=xxxxx_"
+      return await message.sendReply("_⚠️ Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .ytvideo https://youtube.com/watch?v=xxxxx_"
       );
     }
 
@@ -352,10 +352,10 @@ Module(
 
 Module(
   {
-    pattern: "yta ?(.*)",
+    pattern: "ytses ?(.*)",
     fromMe: fromMe,
     desc: "YouTube sesini belge olarak indir",
-    usage: ".yta <link>",
+    usage: ".ytses <bağlantı>",
     use: "download",
   },
   async (message, match) => {
@@ -366,7 +366,7 @@ Module(
     }
 
     if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
-      return await message.sendReply("_⚠️ Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .yta https://youtube.com/watch?v=xxxxx_"
+      return await message.sendReply("_⚠️ Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .ytses https://youtube.com/watch?v=xxxxx_"
       );
     }
 

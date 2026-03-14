@@ -278,86 +278,7 @@ Module(
 
 Module(
   {
-    pattern: "ai ?(.*)",
-    desc: "AI araçları: görsel oluşturma, görsel düzenleme",
-    usage: ".ai görsel <açıklama> | .ai yzdüzenle <talimat> (görsele yanıt)",
-    use: "edit",
-  },
-  async (message, match) => {
-    const argRaw = (match[1] || "").trim();
-    const arg = argRaw.toLowerCase();
-
-    if (!argRaw) {
-      return await message.sendReply(
-        "_🤖 *AI Komutları_\n\n" +
-        "• _.ai görsel <açıklama>_ – Metinden görsel oluşturur\n" +
-        "• _.ai yzdüzenle <talimat>_ – Görsele yanıt verip GPT Vision ile düzenler\n\n" +
-        "_Örnek: .ai görsel gün batımında deniz_\n" +
-        "_Örnek: .ai yzdüzenle cilt rengini siyah yap_"
-      );
-    }
-
-    if (arg.startsWith("görsel")) {
-      const prompt = argRaw.slice(6).trim() || message.reply_message?.text?.trim();
-      if (!prompt)
-        return await message.sendReply("_🖼️ Görsel açıklaması girin._\n_Örnek: .ai görsel gün batımında deniz manzarası_");
-
-      try {
-        const processingMsg = await message.sendReply("_🎨 Görsel oluşturuluyor..._");
-        const resultBuffer = await nexray.deepImg(prompt);
-        if (resultBuffer && resultBuffer.length) {
-          await message.sendReply(resultBuffer, "image", {
-            caption: `_*${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}*_`,
-          });
-          await message.edit("_✅ Görsel oluşturuldu!_", message.jid, processingMsg.key);
-        } else {
-          await message.edit("_❌ Görsel oluşturulamadı. Lütfen farklı bir açıklama deneyin._", message.jid, processingMsg.key);
-        }
-      } catch (error) {
-        console.error("AI görsel hatası:", error);
-        await message.sendReply("_❌ Bir hata oluştu. Lütfen tekrar deneyin._");
-      }
-      return;
-    }
-
-    if (arg.startsWith("yzdüzenle") || arg.startsWith("düzenle")) {
-      if (!message.reply_message || !message.reply_message.image)
-        return await message.sendReply("_🖼️ Düzenlemek için bir görsele yanıt verin._");
-
-      const prompt = (arg.startsWith("yzdüzenle") ? argRaw.slice(9) : argRaw.slice(7)).trim();
-      if (!prompt)
-        return await message.sendReply("_📝 Düzenleme talimatı girin._\n_Örnek: .ai yzdüzenle cilt rengini siyah yap_");
-
-      try {
-        const processingMsg = await message.sendReply("_🎨 Görsel GPT Vision ile düzenleniyor..._");
-        const imgBuffer = await message.reply_message.download("buffer");
-        const mimetype = message.reply_message.mimetype || "image/jpeg";
-        const resultBuffer = await nexray.gptImage(imgBuffer, prompt, mimetype);
-        if (resultBuffer && resultBuffer.length) {
-          await message.sendReply(resultBuffer, "image", {
-            caption: `_*${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}*_`,
-          });
-          await message.edit("_✅ Görsel düzenlendi!_", message.jid, processingMsg.key);
-        } else {
-          await message.edit("_❌ Düzenleme başarısız. Lütfen farklı bir talimat deneyin._", message.jid, processingMsg.key);
-        }
-      } catch (error) {
-        console.error("AI yzdüzenle hatası:", error);
-        await message.sendReply("_❌ Bir hata oluştu. Lütfen tekrar deneyin._");
-      }
-      return;
-    }
-
-    await message.sendReply(
-      "_⚠️ Bilinmeyen alt komut._\n\n" +
-      "_Kullanım: .ai görsel <açıklama> | .ai yzdüzenle <talimat>_"
-    );
-  }
-);
-
-Module(
-  {
-    pattern: "black",
+    pattern: "siyahvideo",
     desc: "Sesi siyah videoya dönüştürür",
     use: "edit",
   },
@@ -412,7 +333,7 @@ Module(
 );
 Module(
   {
-    pattern: "avmix",
+    pattern: "birleştir",
     desc: Lang.AVMIX_DESC,
     use: "edit",
   },
@@ -522,7 +443,7 @@ Module(
 );
 Module(
   {
-    pattern: "slowmo",
+    pattern: "ağırçekim",
     desc: "Videoyu pürüzsüz ağır çekime dönüştürür",
     use: "edit",
   },
@@ -547,7 +468,7 @@ Module(
 );
 Module(
   {
-    pattern: "circle",
+    pattern: "oval",
     desc: "Çıkartma/fotoğrafı yuvarlak olarak kırpar",
     use: "edit",
   },
@@ -654,7 +575,7 @@ Module(
 );
 Module(
   {
-    pattern: "rotate ?(.*)",
+    pattern: "döndür ?(.*)",
     desc: "Videoyu döndürür (sol/sağ)",
   },
   async (message, match) => {

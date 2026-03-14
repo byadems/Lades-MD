@@ -25,7 +25,7 @@ Module(
 );
 Module(
   {
-    pattern: "edit ?(.*)",
+    pattern: "düzenle ?(.*)",
     fromMe: true,
     use: "whatsapp",
   },
@@ -37,7 +37,7 @@ Module(
 );
 Module(
   {
-    pattern: "send ?(.*)",
+    pattern: "msjat ?(.*)",
     fromMe: true,
     desc: "Yanıtlanan mesajı belirtilen jid'e iletir",
     use: "whatsapp",
@@ -59,7 +59,7 @@ Module(
 );
 Module(
   {
-    pattern: "forward ?(.*)",
+    pattern: "msjyönlendir ?(.*)",
     fromMe: true,
     desc: "Yanıtlanan mesajı belirtilen jid'e iletir",
     use: "whatsapp",
@@ -81,7 +81,7 @@ Module(
 );
 Module(
   {
-    pattern: "retry ?(.*)",
+    pattern: "tekrar ?(.*)",
     fromMe: isPrivateMode,
     desc: "Yanıtlanan komutu tekrar çalıştırmayı dener",
     use: "misc",
@@ -148,7 +148,7 @@ Module(
 );
 Module(
   {
-    pattern: "delete",
+    pattern: "msjsil",
     fromMe: true,
     desc: "Mesajı herkesten siler. Yönetici silmesini destekler",
   },
