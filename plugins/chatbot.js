@@ -1012,7 +1012,7 @@ Module({
       await message.edit("✅ _Anime stili uygulandı!_", message.jid, sent.key);
       await message.client.sendMessage(message.jid, {
         image: animeBuffer
-      }, { quoted: message.data });
+      }, { quoted: message.reply_message?.data || message.data });
     } catch (err) {
       console.error("ANİME ÇİZME HATASI:", err.response?.data || err.message);
       if (sent) {
