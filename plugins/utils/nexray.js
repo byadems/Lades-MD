@@ -266,6 +266,49 @@ async function downloadYtMp4(url) {
   return null;
 }
 
+/**
+ * YouTube ses indirme (MP3)
+ * @param {string} url - YouTube URL
+ * @returns {Promise<{url?: string, title?: string}|null>}
+ */
+async function downloadYtMp3(url) {
+  try {
+    const res = await axios.get(`${BASE}/downloader/ytmp3`, {
+      params: { url },
+      timeout: 90000,
+    });
+    const data = res.data;
+    if (data?.status && data?.result) {
+      const r = data.result;
+      return { url: r.url || r.download_url, title: r.title };
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray ytmp3]", e?.message);
+  }
+  return null;
+}
+
+/**
+ * YouTube arama
+ * @param {string} query - Arama terimi
+ * @returns {Promise<any[]|null>}
+ */
+async function searchYoutube(query) {
+  try {
+    const res = await axios.get(`${BASE}/search/youtube`, {
+      params: { q: String(query).trim() },
+      timeout: TIMEOUT,
+    });
+    const data = res.data;
+    if (data?.status && Array.isArray(data?.result)) {
+      return data.result;
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray ytsearch]", e?.message);
+  }
+  return null;
+}
+
 module.exports = {
   colorize,
   gptImage,
@@ -277,4 +320,6 @@ module.exports = {
   downloadTwitter,
   downloadSpotify,
   downloadYtMp4,
+  downloadYtMp3,
+  searchYoutube,
 };
