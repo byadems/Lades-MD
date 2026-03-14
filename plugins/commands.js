@@ -9,7 +9,7 @@ const { uploadToImgbb } = require("./utils/upload");
 const { setVar } = require("./manage");
 const { getTotalUserCount } = require("../core/store");
 const { parseAliveMessage, sendAliveMessage } = require("./utils/alive-parser");
-const { badWords } = require("./utils/censor");
+const { badWords, censorBadWords } = require("./utils/censor");
 
 const isPrivateMode = MODE === "private";
 
@@ -662,13 +662,10 @@ Module(
       );
     }
 
-    if (badWords.some((word) => metin.toLowerCase().includes(word.toLowerCase()))) {
-      return message.sendReply(
-        `🚫 *Bildiriminiz gönderilemedi!*\n\n` +
-          `_Mesajınız uygunsuz ifadeler içeriyor._ 🤬\n` +
-          `_Lütfen nezaket kurallarına uygun şekilde iletiniz._ 🙏🏻`
-      );
-    }
+    const kufurIceriyor = badWords.some((word) =>
+      metin.toLowerCase().includes(word.toLowerCase())
+    );
+    const iletilecekMetin = kufurIceriyor ? censorBadWords(metin) : metin;
 
     const hedefJid = getBildirimJid();
     if (!hedefJid) {
@@ -706,7 +703,7 @@ Module(
       `${grupBilgisi}\n` +
       `🕐 *Tarih:* ${tarih}\n` +
       `${"─".repeat(30)}\n` +
-      `${emoji} *Mesaj:*\n${metin}`;
+      `${emoji} *Mesaj:*\n${iletilecekMetin}`;
 
     try {
       await message.client.sendMessage(hedefJid, {
@@ -714,9 +711,12 @@ Module(
         mentions: [gonderenJid],
       });
       return message.sendReply(
-        `✅ *Bildiriminizi gönderdim, teşekkürler!*\n\n` +
+          `✅ *Bildiriminizi gönderdim, teşekkürler!*\n\n` +
           `${emoji} *Kategori:* ${label}\n` +
-          `📝 *Mesajınız:* _${metin}_\n\n` +
+          `📝 *Mesajınız:* _${iletilecekMetin}_\n` +
+          (kufurIceriyor
+            ? `🚫➡️✅ *Not:* Uygunsuz ifadeler sansürlenerek iletildi.\n\n`
+            : `\n`) +
           `_En kısa sürede değerlendirilecektir._ 🙌🏻`
       );
     } catch (err) {
