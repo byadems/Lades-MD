@@ -354,6 +354,7 @@ Module(
       if (match[1]) {
         match = match[1].toLowerCase();
         switch (match) {
+          case "hepsini onayla":
           case "approve all": {
             await message.sendReply(
               `_${approvalJids.length} katılımcı onaylandı._`
@@ -368,6 +369,7 @@ Module(
             }
             break;
           }
+          case "hepsini reddet":
           case "reject all": {
             await message.sendReply(
               `_${approvalJids.length} katılımcı reddedildi._`
@@ -383,7 +385,7 @@ Module(
             break;
           }
           default: {
-            return await message.sendReply("_❌ Geçersiz giriş_\n_Örn: .requests approve all_\n_.requests reject all_"
+            return await message.sendReply("_❌ Geçersiz giriş_\n_Örn: .istekler hepsini onayla_\n_.istekler hepsini reddet_"
             );
           }
         }
@@ -394,11 +396,11 @@ Module(
       const requestType = (type_, requestor) => {
         switch (type_) {
           case "linked_group_join":
-            return "community";
+            return "topluluk";
           case "invite_link":
-            return "invite link";
+            return "davet bağlantısı";
           case "non_admin_add":
-            return `added by +${requestor.split("@")[0]}`;
+            return `+${requestor.split("@")[0]} tarafından eklendi`;
         }
       };
       for (let x in approvalList) {
@@ -559,9 +561,9 @@ Module(
         let duration = match[1].endsWith("h")
           ? h2m(match[1].match(/\d+/)[0])
           : m2m(match[1].match(/\d+/)[0]);
-        match = match[1].endsWith("h") ? match[1] + "ours" : match[1] + "mins";
+        let displayMatch = match[1].endsWith("h") ? match[1].replace("h", " saat") : match[1].replace("m", " dakika");
         await message.client.groupSettingUpdate(message.jid, "announcement");
-        await message.send(`_${match} boyunca sessize alındı_`);
+        await message.send(`_${displayMatch} boyunca sessize alındı_`);
         await require("timers/promises").setTimeout(duration);
         return await message.client.groupSettingUpdate(
           message.jid,

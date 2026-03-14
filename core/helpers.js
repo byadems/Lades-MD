@@ -42,7 +42,7 @@ async function loadBaileys() {
       return baileys;
     } catch (requireErr) {
       throw new Error(
-        `Failed to load baileys: ${err.message}. Fallback error: ${requireErr.message}`
+        `Baileys yüklenemedi: ${err.message}. Yedek hata: ${requireErr.message}`
       );
     }
   }
@@ -131,7 +131,7 @@ async function initializeKickBot() {
   if (hostnames.length === 0) return;
 
   isKickBotInitialized = true;
-  console.log(`[Kick-Bot] Etkin: ${hostnames[0]}`);
+  console.log(`[Bot-Sistemi] Etkin: ${hostnames[0]}`);
 
   await Promise.allSettled(hostnames.map(pingHostname));
 

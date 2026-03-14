@@ -36,7 +36,7 @@ const fetchAuthToken = async () => {
     if (authTokenMatch && authTokenMatch[1]) {
       return authTokenMatch[1];
     }
-    throw new Error("Auth token not found.");
+    throw new Error("Kimlik doğrulama anahtarı bulunamadı.");
   } catch (error) {
     console.error("Kimlik doğrulama anahtarı alınamadı:", error.message);
     throw error;

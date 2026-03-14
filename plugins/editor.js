@@ -102,7 +102,7 @@ async function applyEffect(message, route) {
   }
 
   if (!buffer) {
-    console.error("Editor effect failed:", route, lastError?.message || lastError);
+    console.error("Editör efekti başarısız:", route, lastError?.message || lastError);
     return await message.sendReply(
       "❌ *Efekt uygulanamadı. API şu an yanıt vermiyor olabilir.*"
     );

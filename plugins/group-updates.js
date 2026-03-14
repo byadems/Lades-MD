@@ -61,7 +61,7 @@ Module(
     await message.client.sendMessage(
       message.jid,
       {
-        text: `_Sticked command ${match[1]} to this sticker! Reconnecting..._`,
+        text: `_✨ ${match[1]} komutu bu çıkartmaya yapıştırıldı! Yeniden bağlanılıyor..._`,
       },
       {
         quoted: message.quoted,
@@ -262,7 +262,7 @@ Module(
       }
       if (match[1] === "allow") {
         return await message.sendReply(
-          `_Allowed prefixes are: ${ALLOWED} (applies to all gruplar)_`
+          `_İzin verilen alan kodları: ${ALLOWED} (tüm gruplar için geçerlidir)_`
         );
       }
       if (match[1] === "off") {
@@ -350,9 +350,9 @@ Module(
       await message.client.sendMessage(message.jid, {
         text: `_*[${
           message.action == "promote" ? "🔔 Yükseltme algılandı" : "🔔 Düşürme algılandı"
-        }]*_\n\n@${message.from.split("@")[0]} ${message.action}d @${
+        }]*_\n\n@${message.from.split("@")[0]} @${
           message.participant[0].id.split("@")[0]
-        }`,
+        } kişisini ${message.action == "promote" ? "yükseltti" : "düşürdü"}`,
         mentions: admin_jids,
       });
     }

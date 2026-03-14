@@ -36,12 +36,12 @@ const BotVariable = sequelize.define('BotVariable', {
         primaryKey: true,
         allowNull: false,
         unique: true,
-        comment: 'The name of the bot variable (e.g., HANDLERS, BOT_NAME)'
+        comment: 'Bot değişkeninin adı (örn. HANDLERS, BOT_NAME)'
     },
     value: {
         type: DataTypes.TEXT,
         allowNull: true,
-        comment: 'The value of the bot variable'
+        comment: 'Bot değişkeninin değeri'
     },
 
 }, {

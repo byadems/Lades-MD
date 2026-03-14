@@ -53,13 +53,13 @@ function formatDuration(ms) {
   const days = Math.floor(hours / 24);
 
   if (days > 0) {
-    return `${days}d ${hours % 24}h ${minutes % 60}m`;
+    return `${days}g ${hours % 24}s ${minutes % 60}dk`;
   } else if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`;
+    return `${hours}s ${minutes % 60}dk`;
   } else if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`;
+    return `${minutes}dk ${seconds % 60}sn`;
   } else {
-    return `${seconds}s`;
+    return `${seconds}sn`;
   }
 }
 
@@ -235,7 +235,7 @@ Module(
       if (message.reply_message && message.reply_message.text) {
         const repliedText = message.reply_message.text.toLowerCase();
         if (
-          repliedText.includes("is currently afk") ||
+          repliedText.includes("şu anda afk") ||
           repliedText.includes("🌙")
         ) {
           return;

@@ -205,7 +205,7 @@ async function postWithRetry(url, payload, opts = {}) {
     throw lastErr;
   }
 
-  const e = new Error("Max attempts reached");
+  const e = new Error("Maksimum deneme sayısına ulaşıldı");
   e.isMaxAttempts = true;
   throw e;
 }
@@ -352,7 +352,7 @@ async function getAIResponse(message, chatJid, imageBuffer = null, retryCount = 
     }
 
     if (lastError?.response) {
-      return `_❌ API Error: ${JSON.stringify(lastError.response.data || lastError.message)}_`;
+      return `_❌ API Hatası: ${JSON.stringify(lastError.response.data || lastError.message)}_`;
     }
     return "_❌ Ağ hatası! 🛜 Lütfen bağlantınızı kontrol edin ve tekrar deneyin._";
   }
@@ -574,9 +574,9 @@ Module(
         if (target === "grup" || target === "dm") {
           await clearAllContexts(target);
           return await message.sendReply(
-            `*_💭 Contexts Cleared for All ${target === "grup" ? "Grup" : "DM"}_*\n\n` +
-              `_Conversation histories have been reset for all ${target === "grup" ? "grup" : "DM"}._\n` +
-              `_Next messages will start fresh conversations._`
+            `*_💭 Geçmiş Temizlendi (${target === "grup" ? "Grup" : "DM"})_*\n\n` +
+              `_Konuşma geçmişleri tüm ${target === "grup" ? "gruplar" : "DM'ler"} için sıfırlandı._\n` +
+              `_Sonraki mesajlar yeni konuşmalar başlatacak._`
           );
         } else {
           clearContext(chatJid);
@@ -607,25 +607,25 @@ Module(
         }
 
         const statusText =
-          `*_🤖 Chatbot Status_*\n\n` +
-          `📊 _Status:_ \`${isEnabled ? "Enabled ✅" : "Disabled ❌"}\`\n` +
+          `*_🤖 Sohbet Botu Durumu_*\n\n` +
+          `📊 _Durum:_ \`${isEnabled ? "Aktif ✅" : "Kapalı ❌"}\`\n` +
           (isEnabled && enabledReason
-            ? `📋 _Enabled via:_ \`${enabledReason}\`\n`
+            ? `📋 _Etkinleştirme:_ \`${enabledReason === "Individual setting" ? "Bireysel ayar" : enabledReason === "Global groups setting" ? "Genel grup ayarı" : "Genel DM ayarı"}\`\n`
             : "") +
-          `🌐 _Global Groups:_ \`${
-            globalGroups ? "Enabled ✅" : "Disabled ❌"
+          `🌐 _Genel Gruplar:_ \`${
+            globalGroups ? "Aktif ✅" : "Kapalı ❌"
           }\`\n` +
-          `💬 _Global DMs:_ \`${globalDMs ? "Enabled ✅" : "Disabled ❌"}\`\n` +
-          `🤖 _Current Model:_ \`${currentModel}\`\n` +
-          `📈 _Model Fallback Level:_ \`${modelIndex + 1}/${models.length}\`\n` +
-          `💭 _Context Messages:_ \`${contextSize}\`\n` +
-          `🎯 _System Prompt:_ \`${globalSystemPrompt}\`\n` +
-          `🔑 _API Key:_ \`${config.GEMINI_API_KEY ? "Configured ✅" : "Missing ❌"}\`\n\n` +
-          `*_Available Models:_*\n` +
+          `💬 _Genel DM'ler:_ \`${globalDMs ? "Aktif ✅" : "Kapalı ❌"}\`\n` +
+          `🤖 _Mevcut Model:_ \`${currentModel}\`\n` +
+          `📈 _Model Yedekleme Seviyesi:_ \`${modelIndex + 1}/${models.length}\`\n` +
+          `💭 _Hafızadaki Mesajlar:_ \`${contextSize}\`\n` +
+          `🎯 _Sistem İstem:_ \`${globalSystemPrompt}\`\n` +
+          `🔑 _API Anahtarı:_ \`${config.GEMINI_API_KEY ? "Yapılandırıldı ✅" : "Eksik ❌"}\`\n\n` +
+          `*_Mevcut Modeller:_*\n` +
           models
             .map(
               (model, index) =>
-                `${index + 1}. \`${model}\` ${index === modelIndex ? "← Current" : ""}`
+                `${index + 1}. \`${model}\` ${index === modelIndex ? "← Mevcut" : ""}`
             )
             .join("\n");
 

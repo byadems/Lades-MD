@@ -25,7 +25,7 @@ async function getRemoteVersion() {
     const response = await axios.get(remotePackageJsonUrl);
     return response.data.version;
   } catch (error) {
-    throw new Error("Failed to fetch remote version");
+    throw new Error("Uzak sürüm bilgisi alınamadı");
   }
 }
 

@@ -522,7 +522,7 @@ Module(
           audio = { url: ttsResult.url };
         } else {
           throw new Error(
-            ttsResult && ttsResult.error ? ttsResult.error : "AI TTS failed"
+            ttsResult && ttsResult.error ? ttsResult.error : "YZ Seslendirme başarısız"
           );
         }
       } catch (e) {

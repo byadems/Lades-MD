@@ -1,7 +1,7 @@
 {
   "name": "lades-md",
   "version": "6.2.26",
-  "description": "A multi functional wa bot.",
+  "description": "Çok fonksiyonlu bir WhatsApp botu.",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
