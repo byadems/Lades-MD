@@ -51,14 +51,14 @@ const retrieveCommandDetails = (commandName) => {
 
 Module(
   {
-    pattern: "info ?(.*)",
+    pattern: "komut ?(.*)",
     fromMe: isPrivateMode,
     desc: "Komut bilgisini verir",
   },
   async (message, args) => {
     const commandName = args[1]?.trim();
     if (!commandName) {
-      return await message.sendReply("_⚠️ Lütfen bir komut adı girin. Örnek: .info insta_"
+      return await message.sendReply("_⚠️ Lütfen bir komut adı girin. Örnek: .komut insta_"
       );
     }
 
@@ -87,7 +87,7 @@ Module(
 
 Module(
   {
-    pattern: "list ?(.*)",
+    pattern: "liste ?(.*)",
     fromMe: isPrivateMode,
     excludeFromCommands: true,
   },
@@ -175,7 +175,7 @@ const manage = {
 
 Module(
   {
-    pattern: "alive",
+    pattern: "kontrol",
     fromMe: isPrivateMode,
     desc: "Botun çevrimiçi olup olmadığını kontrol eder.",
   },
@@ -307,7 +307,7 @@ _Merhaba $user!_
 
 Module(
   {
-    pattern: "menu",
+    pattern: "menü",
     fromMe: isPrivateMode,
     use: "utility",
     desc: "Bot komut menüsünü gösterir.",
@@ -419,7 +419,7 @@ ${cmdmenu}`;
 );
 Module(
   {
-    pattern: "games ?(.*)",
+    pattern: "oyunlar ?(.*)",
     fromMe: isPrivateMode,
     desc: "Mevcut tüm oyunları listeler",
   },
@@ -480,7 +480,7 @@ _Bot bilgisi şu şekilde saklanır: \`ad;sahip;görselbağlantısı\`_
 *İpuçları:*
 - _Yerel varsayılan görsel için \`varsayılan\` kullanın_
 - _Değişiklikler otomatik kaydedilir_
-- _Güncel bilgiyi görmek için \`.menu\` kullanın_`;
+- _Güncel bilgiyi görmek için \`.menü\` kullanın_`;
 
     return await message.sendReply(infoText);
   }

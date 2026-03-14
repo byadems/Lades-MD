@@ -133,7 +133,7 @@ Module(
 
 Module(
   {
-    pattern: "automute ?(.*)",
+    pattern: "otosohbetkapat ?(.*)",
     fromMe: false,
     warn: "Hindistan standart saatine (IST) göre çalışır",
     use: "group",
@@ -174,7 +174,7 @@ Module(
 
 Module(
   {
-    pattern: "autounmute ?(.*)",
+    pattern: "otosohbetaç ?(.*)",
     fromMe: false,
     warn: "Hindistan standart saatine (IST) göre çalışır",
     use: "group",
@@ -245,7 +245,7 @@ Module(
 
 Module(
   {
-    pattern: "antifake ?(.*)",
+    pattern: "antinumara ?(.*)",
     fromMe: false,
     use: "group",
   },

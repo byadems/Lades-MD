@@ -62,7 +62,7 @@ const Lang = getString("converters");
 
 Module(
   {
-    pattern: "img ?(.*)",
+    pattern: "görsel ?(.*)",
     use: "search",
     desc: "Google Görseller'de resim arar ve istenen sayıda sonucu gönderir.",
   },
@@ -131,7 +131,7 @@ Module(
 
 Module(
   {
-    pattern: "sticker ?(.*)",
+    pattern: "çıkartma ?(.*)",
     use: "edit",
     desc: Lang.STICKER_DESC,
   },
@@ -396,7 +396,7 @@ Module(
 );
 Module(
   {
-    pattern: "bass ?(.*)",
+    pattern: "basartır ?(.*)",
     use: "edit",
     desc: Lang.BASS_DESC,
   },
@@ -434,7 +434,7 @@ Module(
 );
 Module(
   {
-    pattern: "photo ?(.*)",
+    pattern: "foto ?(.*)",
     use: "edit",
     desc: Lang.PHOTO_DESC,
   },
@@ -452,7 +452,7 @@ Module(
 );
 Module(
   {
-    pattern: "attp ?(.*)",
+    pattern: "yazıçıkartma ?(.*)",
     use: "utility",
     desc: "Metinden hareketli çıkartmaya",
   },
@@ -668,7 +668,7 @@ Module(
 
 Module(
   {
-    pattern: "doc ?(.*)",
+    pattern: "belge ?(.*)",
     use: "edit",
     desc: "Yanıtlanan medyayı belge (document) formatına dönüştürür",
   },
@@ -1088,7 +1088,7 @@ Module(
 );
 Module(
   {
-    pattern: "compress ?(.*)",
+    pattern: "sıkıştır ?(.*)",
     use: "edit",
     desc: "Video/resmi yüzdeyle sıkıştırın. Kullanım: .compress 50 (%50 sıkıştırma)",
   },

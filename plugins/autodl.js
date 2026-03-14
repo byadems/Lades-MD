@@ -542,7 +542,7 @@ Module({ on: "text", fromMe }, async (message) => {
 
 Module(
   {
-    pattern: "autodl ?(.*)",
+    pattern: "otodl ?(.*)",
     fromMe: true,
     desc: "URL izleyici otomatik indirme - sohbetlerde veya küresel olarak etkinleştirin",
     usage:

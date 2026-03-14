@@ -135,7 +135,7 @@ Module(
 
 Module(
   {
-    pattern: "getvar ?(.*)",
+    pattern: "değişkengetir ?(.*)",
     fromMe: true,
     desc: "Bot değişkeninin değerini getir",
     usage: ".getvar MY_VAR",
@@ -158,7 +158,7 @@ Module(
 
 Module(
   {
-    pattern: "delvar ?(.*)",
+    pattern: "değişkensil ?(.*)",
     fromMe: true,
     desc: "Bot değişkenini sil",
     usage: ".delvar MY_VAR",
@@ -237,7 +237,7 @@ Module(
 
 Module(
   {
-    pattern: "allvar",
+    pattern: "değişkenler",
     fromMe: true,
     desc: "Tüm bot değişkenlerini getir",
     use: "owner",
@@ -273,7 +273,7 @@ Module(
 
 Module(
   {
-    pattern: "language ?(.*)",
+    pattern: "dil ?(.*)",
     fromMe: true,
     desc: "Bot dilini bazı komutlar için değiştir",
     use: "settings",
@@ -291,7 +291,7 @@ Module(
 
 Module(
   {
-    pattern: "settings ?(.*)",
+    pattern: "ayarlar ?(.*)",
     fromMe: true,
     desc: "Ek WhatsApp bot seçeneklerini aktifleştirmek için ayarlar.",
     use: "owner",
@@ -321,7 +321,7 @@ Module(
 
 Module(
   {
-    pattern: "mode ?(.*)",
+    pattern: "mod ?(.*)",
     fromMe: true,
     desc: "Bot modunu genel (public) ve özel (private) olarak değiştirin",
     use: "settings",
@@ -342,7 +342,7 @@ Module(
 
 Module(
   {
-    pattern: "antidelete ?(.*)",
+    pattern: "antisilme ?(.*)",
     fromMe: true,
     desc: "Mesaj silme engelini aktifleştirir",
     use: "settings",
@@ -453,7 +453,7 @@ Module(
 
 Module(
   {
-    pattern: "getsudo ?(.*)",
+    pattern: "sudolar ?(.*)",
     fromMe: true,
     use: "owner",
   },
@@ -487,7 +487,7 @@ Module(
 
 Module(
   {
-    pattern: "delsudo ?(.*)",
+    pattern: "sudosil ?(.*)",
     fromMe: true,
     desc: "Yöneticiyi (sudo) siler",
   },
@@ -731,7 +731,7 @@ Module(
 
 Module(
   {
-    pattern: "antidemote ?(.*)",
+    pattern: "antiyetkidüşürme ?(.*)",
     fromMe: true,
     desc: "Yetki alınmasını tespit eder ve yapanın yetkisini alıp, mağdura yetkiyi verir.",
     use: "group",
@@ -767,7 +767,7 @@ Module(
 
 Module(
   {
-    pattern: "antipromote ?(.*)",
+    pattern: "antiyetkiverme ?(.*)",
     fromMe: true,
     desc: "Yetki verilmesini tespit eder ve yapanın ile yeni yetkilinin yetkilerini alır.",
     use: "group",
@@ -805,7 +805,7 @@ Module(
 
 Module(
   {
-    pattern: "antilink ?(.*)",
+    pattern: "antibağlantı ?(.*)",
     fromMe: false,
     desc: "Gelişmiş antilink (link engelleme) sistemi (uyarı/at/sil modlu)",
     use: "group",
@@ -1065,7 +1065,7 @@ Module(
 
 Module(
   {
-    pattern: "antiword ?(.*)",
+    pattern: "antikelime ?(.*)",
     fromMe: false,
     desc: "Yasaklı kelime (antiword) engelini aktifleştirir, gönderen atılır",
     use: "group",
@@ -1136,7 +1136,7 @@ Module(
 
 Module(
   {
-    pattern: "callreject ?(.*)",
+    pattern: "aramaengel ?(.*)",
     fromMe: true,
     desc: "Kapsamlı arama reddetme yönetim sistemi",
     usage:
