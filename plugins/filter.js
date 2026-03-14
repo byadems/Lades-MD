@@ -8,9 +8,9 @@ Module(
   {
     pattern: "filtre ?(.*)",
     fromMe: false,
-    desc: "Otomatik yanıt filtreleri oluşturun. Kullanım: .filter tetikleyici | yanıt",
+    desc: "Otomatik yanıt filtreleri oluşturur. Kullanım: .filtre tetikleyici | yanıt",
     usage:
-      ".filter merhaba | Merhaba! | chat\n.filter yardım | Size yardım edebilirim | global\n.filter güle | Güle güle! | group | exact",
+      ".filtre merhaba | Merhaba! | chat\n.filtre yardım | Size yardım edebilirim | global\n.filtre güle | Güle güle! | group | exact",
     use: "utility",
   },
   async (message, match) => {
@@ -22,13 +22,13 @@ Module(
     const input = match[1]?.trim();
     if (!input) {
       return await message.sendReply(`*📝 Filtre Komutları:*\n\n` +
-          `• \`${handler}filter tetikleyici | yanıt\` - Sohbet filtresi oluştur\n` +
-          `• \`${handler}filter tetikleyici | yanıt | global\` - Genel filtre oluştur\n` +
-          `• \`${handler}filter tetikleyici | yanıt | group\` - Sadece grup filtresi\n` +
-          `• \`${handler}filter tetikleyici | yanıt | dm\` - Sadece DM filtresi\n` +
-          `• \`${handler}filter tetikleyici | yanıt | chat | exact\` - Sadece tam eşleşme\n` +
-          `• \`${handler}filter tetikleyici | yanıt | chat | case\` - Büyük/küçük harf duyarlı\n` +
-          `• \`${handler}filters\` - Tüm filtreleri listele\n` +
+          `• \`${handler}filtre tetikleyici | yanıt\` - Sohbet filtresi oluştur\n` +
+          `• \`${handler}filtre tetikleyici | yanıt | global\` - Genel filtre oluştur\n` +
+          `• \`${handler}filtre tetikleyici | yanıt | group\` - Sadece grup filtresi\n` +
+          `• \`${handler}filtre tetikleyici | yanıt | dm\` - Sadece DM filtresi\n` +
+          `• \`${handler}filtre tetikleyici | yanıt | chat | exact\` - Sadece tam eşleşme\n` +
+          `• \`${handler}filtre tetikleyici | yanıt | chat | case\` - Büyük/küçük harf duyarlı\n` +
+          `• \`${handler}filtreler\` - Tüm filtreleri listele\n` +
           `• \`${handler}delfilter tetikleyici\` - Filtreyi sil\n` +
           `• \`${handler}togglefilter tetikleyici\` - Filtreyi aç/kapat\n\n` +
           `*Kapsamlar:*\n` +

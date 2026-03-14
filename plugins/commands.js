@@ -58,7 +58,7 @@ Module(
   async (message, args) => {
     const commandName = args[1]?.trim();
     if (!commandName) {
-      return await message.sendReply("_⚠️ Lütfen bir komut adı girin. Örnek: .info insta_"
+      return await message.sendReply("_⚠️ Lütfen bir komut adı girin. Örnek: .komut insta_"
       );
     }
 
@@ -175,7 +175,7 @@ const manage = {
 
 Module(
   {
-    pattern: "test",
+    pattern: "kontrol",
     fromMe: isPrivateMode,
     desc: "Botun çevrimiçi olup olmadığını kontrol eder.",
   },
@@ -480,7 +480,7 @@ _Bot bilgisi şu şekilde saklanır: \`ad;sahip;görselbağlantısı\`_
 *İpuçları:*
 - _Yerel varsayılan görsel için \`varsayılan\` kullanın_
 - _Değişiklikler otomatik kaydedilir_
-- _Güncel bilgiyi görmek için \`.menu\` kullanın_`;
+- _Güncel bilgiyi görmek için \`.menü\` kullanın_`;
 
     return await message.sendReply(infoText);
   }

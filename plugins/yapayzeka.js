@@ -11,6 +11,7 @@ const {
   uploadToImgbb,
   uploadToCatbox,
 } = require("./utils");
+const nexray = require("./utils/nexray");
 const { callGenerativeAI } = require("./utils/misc");
 
 const API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
@@ -736,12 +737,89 @@ Module(
 Module({
     pattern: "yz ?(.*)",
     fromMe: false,
-    desc: "Gemini - Yapay Zeka'sına mesaj veya görsel ile soru sorun.",
+    desc: "Yapay zeka komutları: sohbet, görsel üretme ve görsel düzenleme.",
+    usage: ".yz <soru> | .yz görsel <açıklama> | .yz düzenle <talimat> (görsele yanıt)",
     type: "ai",
   },
   async (message, match) => {
     let imageParts = [];
-    let prompt = match[1]?.trim() || "";
+    const rawInput = match[1]?.trim() || "";
+    const loweredInput = rawInput.toLowerCase();
+    let prompt = rawInput;
+
+    if (!rawInput) {
+      return await message.sendReply(
+        "_🤖 *YZ Komutları*_\n\n" +
+        "• _.yz <soru>_ – Yapay zekaya soru sorar\n" +
+        "• _.yz görsel <açıklama>_ – Metinden görsel oluşturur\n" +
+        "• _.yz düzenle <talimat>_ – Yanıtlanan görseli talimata göre düzenler\n\n" +
+        "_Örnek: .yz görsel gece neon şehir_\n" +
+        "_Örnek: .yz düzenle arka planı cyberpunk yap_"
+      );
+    }
+
+    if (loweredInput.startsWith("görsel")) {
+      const imagePrompt = rawInput.slice(6).trim() || message.reply_message?.text?.trim();
+      if (!imagePrompt) {
+        return await message.sendReply("_🖼️ Görsel açıklaması girin._\n_Örnek: .yz görsel gün batımı sahil_ ");
+      }
+
+      try {
+        const processingMsg = await message.sendReply("_🎨 Görsel oluşturuluyor..._");
+        const resultBuffer = await nexray.deepImg(imagePrompt);
+        if (resultBuffer && resultBuffer.length) {
+          await message.sendReply(resultBuffer, "image", {
+            caption: `_*${imagePrompt.slice(0, 80)}${imagePrompt.length > 80 ? "..." : ""}*_`,
+          });
+          await message.edit("_✅ Görsel oluşturuldu!_", message.jid, processingMsg.key);
+        } else {
+          await message.edit("_❌ Görsel oluşturulamadı. Farklı bir açıklama deneyin._", message.jid, processingMsg.key);
+        }
+      } catch (error) {
+        console.error("YZ görsel üretme hatası:", error);
+        await message.sendReply("_❌ Görsel üretiminde hata oluştu. Lütfen tekrar deneyin._");
+      }
+      return;
+    }
+
+    if (loweredInput.startsWith("düzenle")) {
+      const editPrompt = rawInput.slice(7).trim();
+
+      if (!message.reply_message || !message.reply_message.image) {
+        return await message.sendReply(
+          "_🖼️ Düzenleme için bir görsele yanıt verin._\n\n" +
+          "*Görsel düzenleme seçenekleri:*\n" +
+          "• _.yz düzenle <talimat>_ (YZ ile gelişmiş düzenleme)\n" +
+          "• _.renklendir_ (S/B görseli renklendirir)\n" +
+          "• _.apsil_ (arka planı kaldırır)\n" +
+          "• _.upscale_ (görsel kalitesini artırır)"
+        );
+      }
+
+      if (!editPrompt) {
+        return await message.sendReply("_📝 Düzenleme talimatı girin._\n_Örnek: .yz düzenle gökyüzünü mor yap_ ");
+      }
+
+      try {
+        const processingMsg = await message.sendReply("_🎨 Görsel düzenleniyor..._");
+        const imgBuffer = await message.reply_message.download("buffer");
+        const mimetype = message.reply_message.mimetype || "image/jpeg";
+        const resultBuffer = await nexray.gptImage(imgBuffer, editPrompt, mimetype);
+
+        if (resultBuffer && resultBuffer.length) {
+          await message.sendReply(resultBuffer, "image", {
+            caption: `_*${editPrompt.slice(0, 80)}${editPrompt.length > 80 ? "..." : ""}*_`,
+          });
+          await message.edit("_✅ Görsel düzenlendi!_", message.jid, processingMsg.key);
+        } else {
+          await message.edit("_❌ Görsel düzenleme başarısız oldu. Farklı bir talimat deneyin._", message.jid, processingMsg.key);
+        }
+      } catch (error) {
+        console.error("YZ görsel düzenleme hatası:", error);
+        await message.sendReply("_❌ Görsel düzenleme sırasında hata oluştu. Lütfen tekrar deneyin._");
+      }
+      return;
+    }
 
     if (message.reply_message) {
       if (message.reply_message.image) {

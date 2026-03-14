@@ -211,7 +211,7 @@ Module(
     pattern: "hikaye ?(.*)",
     fromMe: isFromMe,
     desc: "Instagram hikaye (story) indirici",
-    usage: ".story kullanıcı adı veya bağlantı",
+    usage: ".hikaye kullanıcı adı veya bağlantı",
     use: "download",
   },
   async (message, match) => {
