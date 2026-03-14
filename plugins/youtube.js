@@ -550,15 +550,14 @@ Module(
           await message.edit("_🔎 Alternatif yöntemle aranıyor..._", message.jid, downloadMsg.key);
         }
 
-        let finalUrl = input;
-        if (!/\bhttps?:\/\/\S+/gi.test(input)) {
-           const nResults = await nexray.searchYoutube(input);
-           if (!nResults || nResults.length === 0) throw new Error("Nexray search failed");
-           finalUrl = nResults[0].url;
+        let result;
+        if (/\bhttps?:\/\/\S+/gi.test(input)) {
+           result = await nexray.downloadYtMp3(input);
+        } else {
+           result = await nexray.ytPlayAud(input);
         }
 
-        const result = await nexray.downloadYtMp3(finalUrl);
-        if (!result || !result.url) throw new Error("Nexray download failed");
+        if (!result || !result.url) throw new Error("Nexray failed");
 
         const safeTitle = censorBadWords(result.title);
         await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);

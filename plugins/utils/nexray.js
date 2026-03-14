@@ -289,22 +289,45 @@ async function downloadYtMp3(url) {
 }
 
 /**
- * YouTube arama
+ * YouTube Play (Arama + İndirme tek seferde) - Ses
  * @param {string} query - Arama terimi
- * @returns {Promise<any[]|null>}
+ * @returns {Promise<{url?: string, title?: string}|null>}
  */
-async function searchYoutube(query) {
+async function ytPlayAud(query) {
   try {
-    const res = await axios.get(`${BASE}/search/youtube`, {
+    const res = await axios.get(`${BASE}/downloader/ytplayaud`, {
       params: { q: String(query).trim() },
-      timeout: TIMEOUT,
+      timeout: 90000,
     });
     const data = res.data;
-    if (data?.status && Array.isArray(data?.result)) {
-      return data.result;
+    if (data?.status && data?.result) {
+      const r = data.result;
+      return { url: r.download_url || r.url, title: r.title };
     }
   } catch (e) {
-    if (process.env.DEBUG) console.error("[Nexray ytsearch]", e?.message);
+    if (process.env.DEBUG) console.error("[Nexray ytPlayAud]", e?.message);
+  }
+  return null;
+}
+
+/**
+ * YouTube Play (Arama + İndirme tek seferde) - Video
+ * @param {string} query - Arama terimi
+ * @returns {Promise<{url?: string, title?: string}|null>}
+ */
+async function ytPlayVid(query) {
+  try {
+    const res = await axios.get(`${BASE}/downloader/ytplayvid`, {
+      params: { q: String(query).trim() },
+      timeout: 90000,
+    });
+    const data = res.data;
+    if (data?.status && data?.result) {
+      const r = data.result;
+      return { url: r.download_url || r.url, title: r.title };
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray ytPlayVid]", e?.message);
   }
   return null;
 }
@@ -321,5 +344,7 @@ module.exports = {
   downloadSpotify,
   downloadYtMp4,
   downloadYtMp3,
+  ytPlayAud,
+  ytPlayVid,
   searchYoutube,
 };
