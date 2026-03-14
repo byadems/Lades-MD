@@ -30,10 +30,12 @@ const CATEGORY_TR = {
 };
 
 const extractCommandName = (pattern) => {
-  // \\W ş,ğ,ü gibi Türkçe karakterleri eşleştirmez; \\p{L} kullanıyoruz
-  const str = pattern?.toString() || "";
-  const match = str.match(/[^\p{L}\p{N}]*([\p{L}\p{N}\s]+?)(?=\s*\?|\s*\(|$)/u);
-  return match && match[1] ? match[1].trim() : "";
+  const raw = pattern instanceof RegExp ? pattern.source : String(pattern || "");
+  const start = raw.search(/[\p{L}\p{N}]/u);
+  if (start === -1) return "";
+  const cmdPart = raw.slice(start);
+  const match = cmdPart.match(/^[\p{L}\p{N}]+/u);
+  return match && match[0] ? match[0].trim() : "";
 };
 
 const retrieveCommandDetails = (commandName) => {

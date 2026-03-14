@@ -559,8 +559,12 @@ Module(
     if (match) {
       const { commands } = require("../main");
       const extractCommandName = (pattern) => {
-        const match = pattern?.toString().match(/(\W*)([A-Za-z1234567890 ]*)/);
-        return match && match[2] ? match[2].trim() : "";
+        const raw = pattern instanceof RegExp ? pattern.source : String(pattern || "");
+        const start = raw.search(/[\p{L}\p{N}]/u);
+        if (start === -1) return "";
+        const cmdPart = raw.slice(start);
+        const match = cmdPart.match(/^[\p{L}\p{N}]+/u);
+        return match && match[0] ? match[0].trim() : "";
       };
       const availableCommands = commands
         .filter((x) => x.pattern)
