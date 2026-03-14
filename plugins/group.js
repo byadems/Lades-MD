@@ -1432,6 +1432,10 @@ Module(
       ".sabitle 24s (24 saat)\n.sabitle 7g (7 gün)\n.sabitle 30g (30 gün)\n.sabitle (varsayılan: 7 gün)",
   },
   async (message, match) => {
+    if (!message.isGroup) {
+      return await message.sendReply("_❌ Bu komut sadece gruplarda kullanılabilir._");
+    }
+
     if (!message.reply_message) {
       return await message.sendReply(
         "_❌ Lütfen sabitlemek istediğiniz mesaja yanıtlayarak yazın!_\n\n" +
@@ -1447,6 +1451,13 @@ Module(
     if (!generateWAMessageFromContent || !proto) {
       return await message.sendReply(
         "_❌ Bot bileşenleri henüz yüklenmedi, lütfen biraz bekleyip tekrar deneyin._"
+      );
+    }
+
+    const botIsAdmin = await isAdmin(message);
+    if (!botIsAdmin) {
+      return await message.sendReply(
+        "_❌ Mesaj sabitlemek için botun bu grupta yönetici olması gerekiyor._"
       );
     }
 
@@ -1483,7 +1494,7 @@ Module(
     } catch (error) {
       console.error("Sabitle komutu hatası:", error);
       return await message.sendReply(
-        "_❌ Mesaj sabitleme sırasında bir hata oluştu!_\n_Botun grup yöneticisi olduğundan emin olun._"
+        "_❌ Mesaj sabitleme sırasında bir hata oluştu!_"
       );
     }
   }
