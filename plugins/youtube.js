@@ -255,9 +255,8 @@ Module(
             audioSizeInfo = ` ~ _${formatBytes(audioSize)}_`;
           }
         }
-        qualityText += `*${
-          uniqueQualities.length + 1
-        }.* _*Sadece Ses*_${audioSizeInfo}\n`;
+        qualityText += `*${uniqueQualities.length + 1
+          }.* _*Sadece Ses*_${audioSizeInfo}\n`;
       }
 
       qualityText += "\n_İndirmek için bir numara ile yanıtlayın_";
@@ -349,7 +348,7 @@ Module(
           await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
           return;
         }
-      } catch (_) {}
+      } catch (_) { }
       console.error("Video indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
@@ -453,7 +452,7 @@ Module(
     if (input.toLowerCase().startsWith("ara")) {
       const query = input.slice(4).trim();
       if (!query) return await message.sendReply("_⚠️ Lütfen aranacak kelimeyi girin!_");
-      
+
       try {
         const searchMsg = await message.sendReply("_🔍 YouTube'da aranıyor..._");
         const results = await nexray.searchYoutube(query);
@@ -495,7 +494,7 @@ Module(
       }
 
       if (url) {
-        downloadMsg = await message.sendReply("_🔻 İndiriliyor..._");
+        downloadMsg = await message.sendReply("_🔻 İndirilip yükleniyor..._");
         const result = await downloadAudio(url);
         audioPath = result.path;
 
@@ -503,13 +502,11 @@ Module(
         audioPath = mp3Path;
 
         const safeTitle = censorBadWords(result.title);
-        await message.edit(`_🔺 Yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
-
-        const stream = fs.createReadStream(audioPath);
-        await message.sendReply({ stream }, "audio", {
+        await message.client.sendMessage(message.jid, {
+          audio: { stream: fs.createReadStream(audioPath) },
           mimetype: "audio/mp4",
-        });
-        stream.destroy();
+          fileName: `${safeTitle}.mp3`,
+        }, { quoted: message.data });
 
         return await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
       } else {
@@ -522,7 +519,7 @@ Module(
 
         const video = results[0];
         const safeTitle = censorBadWords(video.title);
-        await message.edit(`_🔻 İndiriliyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
+        await message.edit("_🔍 Aranıyor..._", message.jid, downloadMsg.key);
 
         const result = await downloadAudio(video.url);
         audioPath = result.path;
@@ -530,20 +527,20 @@ Module(
         const mp3Path = await convertM4aToMp3(audioPath);
         audioPath = mp3Path;
 
-        await message.edit(`_🔺 Yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
+        await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
 
-        const stream = fs.createReadStream(audioPath);
-        await message.sendReply({ stream }, "audio", {
+        await message.client.sendMessage(message.jid, {
+          audio: { stream: fs.createReadStream(audioPath) },
           mimetype: "audio/mp4",
-        });
-        stream.destroy();
+          fileName: `${safeTitle}.mp3`,
+        }, { quoted: message.data });
 
         return await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
       }
     } catch (error) {
       if (config.DEBUG) console.error("Çalma hatası, yedek yöntem deneniyor:", error.message);
       if (audioPath && fs.existsSync(audioPath)) {
-        try { fs.unlinkSync(audioPath); } catch (_) {}
+        try { fs.unlinkSync(audioPath); } catch (_) { }
       }
 
       try {
@@ -553,8 +550,15 @@ Module(
           await message.edit("_🔎 Alternatif yöntemle aranıyor..._", message.jid, downloadMsg.key);
         }
 
-        const result = await nexray.downloadYtMp3(input);
-        if (!result || !result.url) throw new Error("Nexray fallback failed");
+        let finalUrl = input;
+        if (!/\bhttps?:\/\/\S+/gi.test(input)) {
+           const nResults = await nexray.searchYoutube(input);
+           if (!nResults || nResults.length === 0) throw new Error("Nexray search failed");
+           finalUrl = nResults[0].url;
+        }
+
+        const result = await nexray.downloadYtMp3(finalUrl);
+        if (!result || !result.url) throw new Error("Nexray download failed");
 
         const safeTitle = censorBadWords(result.title);
         await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
@@ -576,7 +580,7 @@ Module(
       }
     } finally {
       if (audioPath && fs.existsSync(audioPath)) {
-        try { fs.unlinkSync(audioPath); } catch (_) {}
+        try { fs.unlinkSync(audioPath); } catch (_) { }
       }
     }
   }
@@ -630,24 +634,20 @@ Module(
         try {
           const safeTitle = censorBadWords(selectedVideo.title);
           downloadMsg = await message.sendReply(
-            `_⬇️ *${safeTitle}* indiriliyor..._`
+            `_🔻 İndirilip yükleniyor..._ *${safeTitle}*`
           );
 
           const result = await nexray.downloadYtMp3(selectedVideo.url);
           if (!result || !result.url) throw new Error("Nexray failed");
 
-          await message.edit(
-            `_📤 Ses gönderiliyor..._ *${safeTitle}*`,
-            message.jid,
-            downloadMsg.key
-          );
-
-          await message.sendReply({ url: result.url }, "audio", {
-            mimetype: "audio/mp4",
-          });
+          await message.client.sendMessage(message.jid, {
+            audio: { url: result.url },
+            mimetype: "audio/mpeg",
+            fileName: `${safeTitle}.mp3`,
+          }, { quoted: message.data });
 
           await message.edit(
-            `_✅ İndirme tamamlandı!_ *${safeTitle}*`,
+            `_✅ Hazır!_ *${safeTitle}*`,
             message.jid,
             downloadMsg.key
           );
@@ -655,7 +655,7 @@ Module(
           console.error("Şarkı indirme hatası:", error);
           if (downloadMsg) {
             await message.edit(
-              "_❌ İndirme başarısız!_",
+              "_⚠️ İndirme başarısız! Lütfen tekrar deneyin._",
               message.jid,
               downloadMsg.key
             );
@@ -734,7 +734,7 @@ Module(
             if (!result || !result.url) throw new Error("Nexray failed");
 
             await message.edit(
-              `_📤 Ses gönderiliyor..._ *${censorBadWords(result.title)}*`,
+              `_🔻 İndirilip yükleniyor..._ *${censorBadWords(result.title)}*`,
               message.jid,
               downloadMsg.key
             );
@@ -746,7 +746,7 @@ Module(
             }, { quoted: message.data });
 
             await message.edit(
-              `_✅ İndirme tamamlandı!_`,
+              `_✅ Hazır!_`,
               message.jid,
               downloadMsg.key
             );
@@ -769,7 +769,7 @@ Module(
 
             const safeTitle = censorBadWords(result.title);
             await message.edit(
-              `_📤 Video gönderiliyor..._ *${safeTitle}*`,
+              `_🔻 İndirilip yükleniyor......_ *${safeTitle}*`,
               message.jid,
               downloadMsg.key
             );
@@ -781,7 +781,7 @@ Module(
             }, { quoted: message.data });
 
             await message.edit(
-              `_✅ İndirme tamamlandı!_`,
+              `_✅ Hazır!_`,
               message.jid,
               downloadMsg.key
             );
@@ -856,7 +856,7 @@ Module(
             audioPath = mp3Path;
 
             await message.edit(
-              "_📤 Ses gönderiliyor..._",
+              "_🔻 İndirilip yükleniyor..._",
               message.jid,
               downloadMsg.key
             );
@@ -871,7 +871,7 @@ Module(
             stream.destroy();
 
             await message.edit(
-              "_✅ İndirme tamamlandı!_",
+              "_✅ Hazır!_",
               message.jid,
               downloadMsg.key
             );
@@ -912,7 +912,7 @@ Module(
             videoPath = result.path;
 
             await message.edit(
-              "_📤 Video yükleniyor..._",
+              "_🔻 İndirilip yükleniyor..._",
               message.jid,
               downloadMsg.key
             );
@@ -939,7 +939,7 @@ Module(
             }
 
             await message.edit(
-              "_✅ İndirme tamamlandı!_",
+              "_✅ Hazır!_",
               message.jid,
               downloadMsg.key
             );
@@ -1022,7 +1022,7 @@ Module(
       if (!result || !result.url) throw new Error("Nexray failed");
 
       await message.edit(
-        `_📤 Ses gönderiliyor..._ *${censorBadWords(result.title)}*`,
+        `_🔻 İndirilip yükleniyor..._ *${censorBadWords(result.title)}*`,
         message.jid,
         downloadMsg.key
       );
@@ -1034,21 +1034,26 @@ Module(
       }, { quoted: message.data });
 
       await message.edit(
-        `_✅ İndirme tamamlandı!_`,
+        `_✅ Hazır!_`,
         message.jid,
         downloadMsg.key
       );
     } catch (error) {
+      console.error("Spotify indirme hatası:", error);
       try {
         const fallback = await nexray.downloadSpotify(url);
         if (fallback?.url) {
-          if (!downloadMsg) downloadMsg = await message.sendReply("_⬇️ Yedek yöntemle indiriliyor..._");
-          await message.edit("_📤 Ses gönderiliyor..._", message.jid, downloadMsg.key);
-          await message.sendReply({ url: fallback.url }, "audio");
-          await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
+          if (!downloadMsg) downloadMsg = await message.sendReply("_🔎 Alternatif yöntemle aranıyor..._");
+          await message.edit("_🔻 İndirilip yükleniyor..._", message.jid, downloadMsg.key);
+          await message.client.sendMessage(message.jid, {
+            audio: { url: fallback.url },
+            mimetype: "audio/mpeg",
+            fileName: `${censorBadWords(fallback.title || "Spotify")}.mp3`,
+          }, { quoted: message.data });
+          await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
           return;
         }
-      } catch (_) {}
+      } catch (_) { }
       console.error("Spotify indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
