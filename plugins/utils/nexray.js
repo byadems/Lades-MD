@@ -295,14 +295,13 @@ async function downloadYtMp3(url) {
  */
 async function ytPlayAud(query) {
   try {
-    const res = await axios.get(`${BASE}/downloader/ytplayaud`, {
-      params: { q: String(query).trim() },
-      timeout: 90000,
-    });
-    const data = res.data;
-    if (data?.status && data?.result) {
-      const r = data.result;
-      return { url: r.download_url || r.url, title: r.title };
+    const searchRes = await searchYoutube(query);
+    if (searchRes && searchRes.length > 0) {
+      const firstResult = searchRes[0];
+      const dlRes = await downloadYtMp3(firstResult.url);
+      if (dlRes && dlRes.url) {
+        return { url: dlRes.url, title: dlRes.title || firstResult.title };
+      }
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray ytPlayAud]", e?.message);
