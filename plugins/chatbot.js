@@ -321,7 +321,7 @@ async function getAIResponse(message, chatJid, imageBuffer = null, retryCount = 
         modelStates.set(chatJid, nextModelIndex);
         modelCooldowns.set(chatJid, Date.now() + 3000);
         console.log(`🔄 Modele geçiş: ${models[nextModelIndex]} | Sohbet: ${chatJid} | Hata: ${status}`);
-        
+
         await sleep(2000);
         return await getAIResponse(message, chatJid, imageBuffer);
       } else {
@@ -337,7 +337,7 @@ async function getAIResponse(message, chatJid, imageBuffer = null, retryCount = 
         modelStates.set(chatJid, nextModelIndex);
         modelCooldowns.set(chatJid, Date.now() + retryAfterMs + 500);
         console.log(`🔄 Modele geçiş: ${models[nextModelIndex]} | Sohbet: ${chatJid} | Hata: ${status}`);
-        
+
         await sleep(retryAfterMs + 1000);
         return await getAIResponse(message, chatJid, imageBuffer);
       } else {
@@ -437,42 +437,40 @@ Module(
         `*_🤖 Yapay Zeka Botu Yapılandırması_*\n\n` +
         `📊 _Mevcut Durum:_ \`${isEnabled ? "Aktif" : "Devre Dışı"}\`\n` +
         `🔑 _API Anahtarı:_ \`${hasApiKey ? "Ekli ✅" : "Eksik ❌"}\`\n` +
-        `🌐 _Gruplarda:_ \`${
-          globalGroups ? "Aktif ✅" : "Devre Dışı ❌"
+        `🌐 _Gruplarda:_ \`${globalGroups ? "Aktif ✅" : "Devre Dışı ❌"
         }\`\n` +
         `💬 _DM'de:_ \`${globalDMs ? "Aktif ✅" : "Devre Dışı ❌"}\`\n` +
         `🤖 Seçili Model:_ \`${currentModel}\`\n` +
         `💭 _Sohbet Hafızası:_ \`${contextSize}\`\n` +
-        `🎯 _Varsayılan İstem:_ \`${globalSystemPrompt.substring(0, 100)}${
-          globalSystemPrompt.length > 100 ? "..." : ""
+        `🎯 _Varsayılan İstem:_ \`${globalSystemPrompt.substring(0, 100)}${globalSystemPrompt.length > 100 ? "..." : ""
         }\`\n\n` +
         (hasApiKey
           ? `*_Komutlar:_*\n` +
-            `- \`.yzayar aç\` - _Mevcut sohbette Yapay Zeka'yı etkinleştirir_\n` +
-            `- \`.yzayar kapat\` - _Mevcut sohbette Yapay Zeka'yı kapatır\n` +
-            `- \`.yzayar aç grup\` - _Tüm gruplarda Yapay Zeka'yı etkinleştirir_\n` +
-            `- \`.yzayar aç dm\` - _DM için Yapay Zeka'yı etkinleştirir_\n` +
-            `- \`.yzayar kapat grup\` - _Tüm gruplarda Yapay Zeka'yı kapatır\n` +
-            `- \`.yzayar kapat dm\` - _DM için Yapay Zeka'yı kapatır\n` +
-            `- \`.yzayar seç "istem"\` - _Varsayılan istemi ayarlar_\n` +
-            `- \`.yzayar temizle\` - _Tüm sohbet geçmişini siler_\n` +
-            `- \`.yzayar durum\` - _Ayrıntılı olarak yapılandırmayı gösterir_\n\n` +
-            `🤔 *_Peki, nasıl çalışır?_*\n` +
-            `- _Bot'a gönderilen direkt mesajlar Yapay Zeka'yı çalıştırır_\n` +
-            `- _Bahsetmeler (@bot) Yapay Zeka'yı çalıştırır_\n` +
-            `- _Bot mesajlarına verilen yanıtlar Yapay Zeka'yı çalıştırır_\n` +
-            `- _Görsel Analizi için mesajı yanıtlamak Yapay Zeka'yı çalıştırır_\n` +
-            `- _Sohbet geçmişini otomatik olarak korur_\n` +
-            `- _Hız limitlerine bağlı olarak modelleri otomatik olarak değiştirir_`
+          `- \`.yzayar aç\` - _Mevcut sohbette Yapay Zeka'yı etkinleştirir_\n` +
+          `- \`.yzayar kapat\` - _Mevcut sohbette Yapay Zeka'yı kapatır\n` +
+          `- \`.yzayar aç grup\` - _Tüm gruplarda Yapay Zeka'yı etkinleştirir_\n` +
+          `- \`.yzayar aç dm\` - _DM için Yapay Zeka'yı etkinleştirir_\n` +
+          `- \`.yzayar kapat grup\` - _Tüm gruplarda Yapay Zeka'yı kapatır\n` +
+          `- \`.yzayar kapat dm\` - _DM için Yapay Zeka'yı kapatır\n` +
+          `- \`.yzayar seç "istem"\` - _Varsayılan istemi ayarlar_\n` +
+          `- \`.yzayar temizle\` - _Tüm sohbet geçmişini siler_\n` +
+          `- \`.yzayar durum\` - _Ayrıntılı olarak yapılandırmayı gösterir_\n\n` +
+          `🤔 *_Peki, nasıl çalışır?_*\n` +
+          `- _Bot'a gönderilen direkt mesajlar Yapay Zeka'yı çalıştırır_\n` +
+          `- _Bahsetmeler (@bot) Yapay Zeka'yı çalıştırır_\n` +
+          `- _Bot mesajlarına verilen yanıtlar Yapay Zeka'yı çalıştırır_\n` +
+          `- _Görsel Analizi için mesajı yanıtlamak Yapay Zeka'yı çalıştırır_\n` +
+          `- _Sohbet geçmişini otomatik olarak korur_\n` +
+          `- _Hız limitlerine bağlı olarak modelleri otomatik olarak değiştirir_`
           : `*_⚠️ Kurulum Gerekli!_*\n` +
-            `_Yapay Zeka'yı kullanmak için API anahtarı gereklidir._\n\n` +
-            `*_API anahtarı edinmek için:_*\n` +
-            `- _Bağlantıya tıklayın: https://aistudio.google.com/app/apikey_\n` +
-            `- _Google hesabınızla oturum açın_\n` +
-            `- _API Anahtarı Oluşturun_\n\n` +
-            `*_API anahtarınızı ayarlamak içinse:_*\n` +
-            `\`.setvar GEMINI_API_KEY=your_api_key_here\`\n\n` +
-            `_Anahtarı ayarladıktan sonra aktifleştirmek için \`.yzayar aç\` yazın._`);
+          `_Yapay Zeka'yı kullanmak için API anahtarı gereklidir._\n\n` +
+          `*_API anahtarı edinmek için:_*\n` +
+          `- _Bağlantıya tıklayın: https://aistudio.google.com/app/apikey_\n` +
+          `- _Google hesabınızla oturum açın_\n` +
+          `- _API Anahtarı Oluşturun_\n\n` +
+          `*_API anahtarınızı ayarlamak içinse:_*\n` +
+          `\`.setvar GEMINI_API_KEY=your_api_key_here\`\n\n` +
+          `_Anahtarı ayarladıktan sonra aktifleştirmek için \`.yzayar aç\` yazın._`);
 
       return await message.sendReply(helpText);
     }
@@ -486,15 +484,15 @@ Module(
         if (!config.GEMINI_API_KEY) {
           return await message.sendReply(
             `*_❌ GEMINI_API_KEY Eklenmemiş!_*\n\n` +
-              `_Gemini API anahtarı olmadan Yapay Zeka etkinleştirilemez._\n\n` +
-              `*_API anahtarı edinmek için:_*\n` +
-              `- _Bağlantıya tıklayın: https://aistudio.google.com/app/apikey_\n` +
-              `- _Google hesabınızla oturum açın_\n` +
-              `- _API Anahtarı Oluşturun_\n` +
-              `- _Oluşturulan API anahtarını kopyalayın._\n\n` +
-              `*_API anahtarınızı ayarlamak içinse:_*\n` +
-              `\`.setvar GEMINI_API_KEY=sizin_api_anahtarınız\`\n\n` +
-              `_Şu kısmı \`sizin_api_anahtarınız\` gerçek API anahtarınızla değiştirin._`
+            `_Gemini API anahtarı olmadan Yapay Zeka etkinleştirilemez._\n\n` +
+            `*_API anahtarı edinmek için:_*\n` +
+            `- _Bağlantıya tıklayın: https://aistudio.google.com/app/apikey_\n` +
+            `- _Google hesabınızla oturum açın_\n` +
+            `- _API Anahtarı Oluşturun_\n` +
+            `- _Oluşturulan API anahtarını kopyalayın._\n\n` +
+            `*_API anahtarınızı ayarlamak içinse:_*\n` +
+            `\`.setvar GEMINI_API_KEY=sizin_api_anahtarınız\`\n\n` +
+            `_Şu kısmı \`sizin_api_anahtarınız\` gerçek API anahtarınızla değiştirin._`
           );
         }
 
@@ -502,28 +500,28 @@ Module(
           await setVar("AI_ALL_GRUP", "true");
           return await message.sendReply(
             `*_🤖 Tüm gruplar için Yapay Zeka aktifleştirildi!_*\n\n` +
-              `✅ _Yapay Zeka artık tüm gruplarda yanıt verecek._\n` +
-              `🤖 _Model:_ \`${models[0]}\`\n` +
-              `📍 _Çalışma Koşulu:_ _Yalnızca bahsetmeler ve mesaj yanıtları_\n\n` +
-              `_Yeniden devre dışı bırakmak için \`.yzayar kapat grup\` yazın._`
+            `✅ _Yapay Zeka artık tüm gruplarda yanıt verecek._\n` +
+            `🤖 _Model:_ \`${models[0]}\`\n` +
+            `📍 _Çalışma Koşulu:_ _Yalnızca bahsetmeler ve mesaj yanıtları_\n\n` +
+            `_Yeniden devre dışı bırakmak için \`.yzayar kapat grup\` yazın._`
           );
         } else if (target === "dm") {
           await setVar("AI_ALL_DM", "true");
           return await message.sendReply(
             `*_🤖 DM için Yapay Zeka Aktifleştirildi!_*\n\n` +
-              `✅ _Yapay Zeka artık doğrudan tüm mesajlara yanıt verecek._\n` +
-              `🤖 _Model:_ \`${models[0]}\`\n` +
-              `📍 _Çalışma Koşulu:_ _Tüm Mesajlar_\n\n` +
-              `_Yeniden devre dışı bırakmak için \`.yzayar kapat dm\` yazın._`
+            `✅ _Yapay Zeka artık doğrudan tüm mesajlara yanıt verecek._\n` +
+            `🤖 _Model:_ \`${models[0]}\`\n` +
+            `📍 _Çalışma Koşulu:_ _Tüm Mesajlar_\n\n` +
+            `_Yeniden devre dışı bırakmak için \`.yzayar kapat dm\` yazın._`
           );
         } else {
           await enableChatbot(chatJid);
           return await message.sendReply(
             `*_🤖 Yapay Zeka Aktif!_*\n\n` +
-              `📍 _Sohbet:_ \`${chatJid.includes("@g.us") ? "Group" : "DM"}\`\n` +
-              `🤖 _Model:_ \`${models[0]}\`\n` +
-              `💭 _Sohbet Geçmişi:_ _Yeni Başlangıç_\n\n` +
-              `_Artık direkt mesajlara, bahsetmelere ve mesaj yanıtlarına cevap vereceğim!_`
+            `📍 _Sohbet:_ \`${chatJid.includes("@g.us") ? "Group" : "DM"}\`\n` +
+            `🤖 _Model:_ \`${models[0]}\`\n` +
+            `💭 _Sohbet Geçmişi:_ _Yeni Başlangıç_\n\n` +
+            `_Artık direkt mesajlara, bahsetmelere ve mesaj yanıtlarına cevap vereceğim!_`
           );
         }
 
@@ -532,24 +530,24 @@ Module(
           await setVar("AI_ALL_GRUP", "false");
           return await message.sendReply(
             `*_🤖 Tüm gruplar için Yapay Zeka devre dışı bırakıldı!_*\n\n` +
-              `❌ _Yapay Zeka artık hiçbir grupta yanıt vermeyecek._\n` +
-              `📝 _Kişisel grup ayarları korunacaktır._\n\n` +
-              `_Yeniden aktifleştirmek için \`.yzayar aç grup\` yazın._`
+            `❌ _Yapay Zeka artık hiçbir grupta yanıt vermeyecek._\n` +
+            `📝 _Kişisel grup ayarları korunacaktır._\n\n` +
+            `_Yeniden aktifleştirmek için \`.yzayar aç grup\` yazın._`
           );
         } else if (target === "dm") {
           await setVar("AI_ALL_DM", "false");
           return await message.sendReply(
             `🤖 *_DM için Yapay Zeka devre dışı bırakıldı!_*\n\n` +
-              `❌ _Yapay Zeka artık DM üzerinden yanıt vermeyecek._\n` +
-              `📝 _Kişisel DM ayarları korunacaktır._\n` +
-              `_Yeniden aktifleştirmek için \`.yzayar aç dm\` yazın._`
+            `❌ _Yapay Zeka artık DM üzerinden yanıt vermeyecek._\n` +
+            `📝 _Kişisel DM ayarları korunacaktır._\n` +
+            `_Yeniden aktifleştirmek için \`.yzayar aç dm\` yazın._`
           );
         } else {
           await disableChatbot(chatJid);
           return await message.sendReply(
             `*_🤖 Yapay Zeka artık devre dışı!_*\n\n` +
-              `_Bu sohbette Yapay Zeka devre dışı bırakıldı._\n` +
-              `_Sohbet geçmişi ise temizlendi._`
+            `_Bu sohbette Yapay Zeka devre dışı bırakıldı._\n` +
+            `_Sohbet geçmişi ise temizlendi._`
           );
         }
 
@@ -558,16 +556,16 @@ Module(
         if (!promptMatch) {
           return await message.sendReply(
             `_Lütfen istemi tırnak içinde belirtin._\n\n` +
-              `*_Örnek:_*\n` +
-              `\`.yzayar seç "Sen konuşma konusunda uzmanlaşmış, yardımsever bir asistansın."\``
+            `*_Örnek:_*\n` +
+            `\`.yzayar seç "Sen konuşma konusunda uzmanlaşmış, yardımsever bir asistansın."\``
           );
         }
         const newPrompt = promptMatch[1];
         await saveSystemPrompt(newPrompt);
         return await message.sendReply(
           `*_🎯 Varsayılan İstem Güncellendi!_*\n\n` +
-            `📝 _Yeni İstem:_ \`${newPrompt}\`\n\n` +
-            `_Bu tüm yeni sohbetler için geçerli olacaktır._`
+          `📝 _Yeni İstem:_ \`${newPrompt}\`\n\n` +
+          `_Bu tüm yeni sohbetler için geçerli olacaktır._`
         );
 
       case "temizle":
@@ -575,15 +573,15 @@ Module(
           await clearAllContexts(target);
           return await message.sendReply(
             `*_💭 Geçmiş Temizlendi (${target === "grup" ? "Grup" : "DM"})_*\n\n` +
-              `_Konuşma geçmişleri tüm ${target === "grup" ? "gruplar" : "DM'ler"} için sıfırlandı._\n` +
-              `_Sonraki mesajlar yeni konuşmalar başlatacak._`
+            `_Konuşma geçmişleri tüm ${target === "grup" ? "gruplar" : "DM'ler"} için sıfırlandı._\n` +
+            `_Sonraki mesajlar yeni konuşmalar başlatacak._`
           );
         } else {
           clearContext(chatJid);
           return await message.sendReply(
             `*_💭 Geçmiş Temizlendi!_*\n\n` +
-              `_Konuşma geçmişi sıfırlandı._\n` +
-              `_Sonraki mesaj yeni bir konuşma başlatacak._`
+            `_Konuşma geçmişi sıfırlandı._\n` +
+            `_Sonraki mesaj yeni bir konuşma başlatacak._`
           );
         }
 
@@ -612,8 +610,7 @@ Module(
           (isEnabled && enabledReason
             ? `📋 _Etkinleştirme:_ \`${enabledReason}\`\n`
             : "") +
-          `🌐 _Genel Gruplar:_ \`${
-            globalGroups ? "Aktif ✅" : "Kapalı ❌"
+          `🌐 _Genel Gruplar:_ \`${globalGroups ? "Aktif ✅" : "Kapalı ❌"
           }\`\n` +
           `💬 _Genel DM'ler:_ \`${globalDMs ? "Aktif ✅" : "Kapalı ❌"}\`\n` +
           `🤖 _Mevcut Model:_ \`${currentModel}\`\n` +
@@ -735,12 +732,12 @@ Module(
 );
 
 Module({
-    pattern: "yz ?(.*)",
-    fromMe: false,
-    desc: "Yapay zekaya sadece metin sorusu sorar. Görsele yanıtlanırsa görseli analiz eder.",
-    usage: ".yz <soru> | (görsele yanıtlayıp) .yz",
-    type: "ai",
-  },
+  pattern: "yz ?(.*)",
+  fromMe: false,
+  desc: "Yapay zekaya sadece metin sorusu sorar. Görsele yanıtlanırsa görseli analiz eder.",
+  usage: ".yz <soru> | (görsele yanıtlayıp) .yz",
+  type: "ai",
+},
   async (message, match) => {
     const rawInput = match[1]?.trim() || "";
     let prompt = "";
@@ -763,11 +760,15 @@ Module({
       }
     } else {
       return await message.sendReply(
-        "_⚠️ Kullanım:_\n" +
-        "• _.yz <soru>_\n" +
-        "• _Bir görsele yanıtlayıp_ _.yz_\n" +
-        "• _.yzgörsel <açıklama>_\n" +
-        "• _.yzdüzenle <talimat>_ (görsele yanıt)"
+        "✨ *Yapay Zeka (Lades AI) Kullanım Rehberi*\n\n" +
+        "🤖 *Soru Sorma:*\n" +
+        "└ `.yz yemek tarifi` — Herhangi bir konuda soru sorabilirsiniz.\n\n" +
+        "🖼️ *Görsel Analizi:*\n" +
+        "└ Bir görsele yanıt vererek `.yz` yazarsanız görseli analiz eder ve açıklarım.\n\n" +
+        "🎨 *Görsel Üretimi:*\n" +
+        "└ `.yzgörsel uzayda kedi` — Yazdığınız metinden görsel oluştururum.\n\n" +
+        "🖌️ *Görsel Düzenlemesi:*\n" +
+        "└ Bir görsele yanıt vererek `.yzdüzenle yağlı boya yap` yazarsanız görseli düzenlerim.\n\n"
       );
     }
 
@@ -794,12 +795,12 @@ Module({
 );
 
 Module({
-    pattern: "yzgörsel ?(.*)",
-    fromMe: false,
-    desc: "Metinden görsel üretir.",
-    usage: ".yzgörsel <açıklama>",
-    type: "ai",
-  },
+  pattern: "yzgörsel ?(.*)",
+  fromMe: false,
+  desc: "Metinden görsel üretir.",
+  usage: ".yzgörsel <açıklama>",
+  type: "ai",
+},
   async (message, match) => {
     const imagePrompt = match[1]?.trim() || message.reply_message?.text?.trim();
     if (!imagePrompt) {
@@ -825,12 +826,12 @@ Module({
 );
 
 Module({
-    pattern: "yzdüzenle ?(.*)",
-    fromMe: false,
-    desc: "Yanıtlanan görseli talimata göre GPT ile düzenler.",
-    usage: ".yzdüzenle <talimat> (görsele yanıt)",
-    type: "ai",
-  },
+  pattern: "yzdüzenle ?(.*)",
+  fromMe: false,
+  desc: "Yanıtlanan görseli talimata göre GPT ile düzenler.",
+  usage: ".yzdüzenle <talimat> (görsele yanıt)",
+  type: "ai",
+},
   async (message, match) => {
     const editPrompt = match[1]?.trim() || "";
 
@@ -871,11 +872,11 @@ Module({
 );
 
 Module({
-    pattern: "soruçöz ?(.*)",
-    fromMe: false,
-    desc: "Sınav sorularını YZ yardımıyla çözer",
-    type: "ai",
-  },
+  pattern: "soruçöz ?(.*)",
+  fromMe: false,
+  desc: "Sınav sorularını YZ yardımıyla çözer",
+  type: "ai",
+},
   async (message, match) => {
     let extra = match[1]?.trim() || "";
     let imageParts = [];
@@ -954,11 +955,11 @@ Module({
 );
 
 Module({
-    pattern: "animeçiz ?(.*)",
-    fromMe: false,
-    desc: "Fotoğrafı Yapay Zeka ile anime stiline dönüştürür.",
-    type: "ai",
-  },
+  pattern: "animeçiz ?(.*)",
+  fromMe: false,
+  desc: "Fotoğrafı Yapay Zeka ile anime stiline dönüştürür.",
+  type: "ai",
+},
   async (message, match) => {
     if (!message.reply_message?.image) {
       return await message.sendReply("❗ *Lütfen bir fotoğrafa yanıt vererek `.animeçiz` yazın.*");

@@ -36,53 +36,6 @@ function formatViews(views) {
   return views?.toString() || "Belirtilmedi";
 }
 
-Module(
-  {
-    pattern: "song ?(.*)",
-    fromMe: fromMe,
-    desc: "YouTube'da ara ve ses indir",
-    usage: ".song <arama terimi> | .şarkı <arama terimi veya bağlantı>",
-    use: "download",
-  },
-  async (message, match) => {
-    const query = match[1];
-    if (!query) {
-      return await message.sendReply("_⚠️ Lütfen aranacak kelimeyi girin!_\n_Örnek: .song sezen aksu_"
-      );
-    }
-
-    try {
-      const searchMsg = await message.sendReply("_🔍 YouTube'da aranıyor..._");
-      const results = await searchYoutube(query, 10);
-
-      if (!results || results.length === 0) {
-        return await message.edit(
-          "_❌ Sonuç bulunamadı!_",
-          message.jid,
-          searchMsg.key
-        );
-      }
-
-      let resultText = "🎵 YouTube Arama Sonuçları\n\n";
-      resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
-
-      results.forEach((video, index) => {
-        resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
-        resultText += `   _Süre:_ \`${
-          video.duration
-        }\` | _Görüntülenme:_ \`${formatViews(video.views)}\`\n`;
-        resultText += `   _Kanal:_ ${video.channel.name}\n\n`;
-      });
-
-      resultText += "_Ses indirmek için bir numara (1-10) ile yanıtlayın_";
-
-      await message.edit(resultText, message.jid, searchMsg.key);
-    } catch (error) {
-      console.error("Şarkı arama hatası:", error);
-      await message.sendReply("_❌ Arama başarısız oldu. Lütfen daha sonra tekrar deneyin._");
-    }
-  }
-);
 
 Module(
   {
@@ -425,8 +378,8 @@ Module(
   {
     pattern: "şarkı ?(.*)",
     fromMe: fromMe,
-    desc: "YouTube araması veya bağlantısı üzerinden ses oynat (yedek yöntem otomatik)",
-    usage: ".şarkı <şarkı adı veya bağlantı> | .song <şarkı adı>",
+    desc: "YouTube'dan ses indirir (veya 'ara' argümanı ile listeleyerek seçer)",
+    usage: ".şarkı <sorgu/link> | .şarkı ara <sorgu>",
     use: "download",
   },
   async (message, match) => {
@@ -434,6 +387,36 @@ Module(
     if (!input) {
       return await message.sendReply("_⚠️ Lütfen şarkı adı veya bağlantısı yazın!_\n_Örnek: .şarkı Duman - Bu Akşam_"
       );
+    }
+
+    // Handle "ara" subcommand - redirect to song/şarkıara logic
+    if (input.toLowerCase().startsWith("ara ")) {
+      const query = input.slice(4).trim();
+      if (!query) return await message.sendReply("_⚠️ Lütfen aranacak kelimeyi girin!_");
+      
+      try {
+        const searchMsg = await message.sendReply("_🔍 YouTube'da aranıyor..._");
+        const results = await searchYoutube(query, 10);
+
+        if (!results || results.length === 0) {
+          return await message.edit("_❌ Sonuç bulunamadı!_", message.jid, searchMsg.key);
+        }
+
+        let resultText = "🎵 YouTube Arama Sonuçları\n\n";
+        resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
+
+        results.forEach((video, index) => {
+          resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
+          resultText += `   _Süre:_ \`${video.duration}\` | _Görüntülenme:_ \`${formatViews(video.views)}\`\n`;
+          resultText += `   _Kanal:_ ${video.channel.name}\n\n`;
+        });
+
+        resultText += "_Ses indirmek için bir numara (1-10) ile yanıtlayın_";
+        return await message.edit(resultText, message.jid, searchMsg.key);
+      } catch (error) {
+        console.error("Şarkı arama hatası:", error);
+        return await message.sendReply("_❌ Arama başarısız oldu._");
+      }
     }
 
     let downloadMsg;

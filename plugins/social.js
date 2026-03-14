@@ -31,10 +31,10 @@ Module(
     use: "download",
   },
   async (message, match) => {
-    let mediaLinks = match[1] || message.reply_message?.text;
-    if (mediaLinks.startsWith("ll")) return;
+    let mediaLinks = (match[1] || message.reply_message?.text || "").trim();
     if (!mediaLinks)
       return await message.sendReply("_*⚠️ Instagram bağlantı(lar)ı gerekli*_");
+    if (mediaLinks.startsWith("ll")) return;
 
     // extract all urls from the text
     const allUrls = mediaLinks.match(/\bhttps?:\/\/\S+/gi) || [];
