@@ -479,59 +479,48 @@ Module(
     }
 
     let downloadMsg;
-    let audioPath;
+    const extractedUrl = /\bhttps?:\/\/\S+/gi.test(input)
+      ? input.match(/\bhttps?:\/\/\S+/gi)?.[0]
+      : null;
+
+    const normalizedUrl = extractedUrl &&
+      (extractedUrl.includes("youtube.com") || extractedUrl.includes("youtu.be"))
+      ? (extractedUrl.includes("youtube.com/shorts/")
+        ? (() => {
+            const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
+            return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
+          })()
+        : extractedUrl)
+      : null;
+
     try {
-      let url = null;
-      if (/\bhttps?:\/\/\S+/gi.test(input)) {
-        const urlMatch = input.match(/\bhttps?:\/\/\S+/gi);
-        if (urlMatch && (urlMatch[0].includes("youtube.com") || urlMatch[0].includes("youtu.be"))) {
-          url = urlMatch[0];
-          if (url.includes("youtube.com/shorts/")) {
-            const shortId = url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
-            if (shortId) url = `https://www.youtube.com/watch?v=${shortId}`;
-          }
-        }
-      }
-
-      if (url) {
+      if (normalizedUrl) {
         downloadMsg = await message.sendReply("_🔻 İndirilip yükleniyor..._");
-        const result = await downloadAudio(url);
-        audioPath = result.path;
-
-        const mp3Path = await convertM4aToMp3(audioPath);
-        audioPath = mp3Path;
+        const result = await nexray.downloadYtMp3(normalizedUrl);
+        if (!result || !result.url) throw new Error("Nexray failed");
 
         const safeTitle = censorBadWords(result.title);
         await message.client.sendMessage(message.jid, {
-          audio: { stream: fs.createReadStream(audioPath) },
-          mimetype: "audio/mp4",
+          audio: { url: result.url },
+          mimetype: "audio/mpeg",
           fileName: `${safeTitle}.mp3`,
         }, { quoted: message.data });
 
         return await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
       } else {
         downloadMsg = await message.sendReply("_🔍 Aranıyor..._");
-        const results = await searchYoutube(input, 1);
-
-        if (!results || results.length === 0) {
+        const result = await nexray.ytPlayAud(input);
+        if (!result || !result.url) {
           return await message.edit("_❌ Sonuç bulunamadı!_", message.jid, downloadMsg.key);
         }
 
-        const video = results[0];
-        const safeTitle = censorBadWords(video.title);
-        await message.edit("_🔍 Aranıyor..._", message.jid, downloadMsg.key);
-
-        const result = await downloadAudio(video.url);
-        audioPath = result.path;
-
-        const mp3Path = await convertM4aToMp3(audioPath);
-        audioPath = mp3Path;
+        const safeTitle = censorBadWords(result.title || input);
 
         await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
 
         await message.client.sendMessage(message.jid, {
-          audio: { stream: fs.createReadStream(audioPath) },
-          mimetype: "audio/mp4",
+          audio: { url: result.url },
+          mimetype: "audio/mpeg",
           fileName: `${safeTitle}.mp3`,
         }, { quoted: message.data });
 
@@ -539,9 +528,6 @@ Module(
       }
     } catch (error) {
       if (config.DEBUG) console.error("Çalma hatası, yedek yöntem deneniyor:", error.message);
-      if (audioPath && fs.existsSync(audioPath)) {
-        try { fs.unlinkSync(audioPath); } catch (_) { }
-      }
 
       try {
         if (!downloadMsg) {
@@ -551,8 +537,8 @@ Module(
         }
 
         let result;
-        if (/\bhttps?:\/\/\S+/gi.test(input)) {
-           result = await nexray.downloadYtMp3(input);
+        if (normalizedUrl) {
+           result = await nexray.downloadYtMp3(normalizedUrl);
         } else {
            result = await nexray.ytPlayAud(input);
         }
@@ -576,10 +562,6 @@ Module(
         } else {
           await message.sendReply("_⚠️ İndirme başarısız! Lütfen tekrar deneyin._");
         }
-      }
-    } finally {
-      if (audioPath && fs.existsSync(audioPath)) {
-        try { fs.unlinkSync(audioPath); } catch (_) { }
       }
     }
   }
