@@ -1425,7 +1425,7 @@ Module(
 Module(
   {
     pattern: "sabitle ?(.*)",
-    fromMe: true,
+    fromMe: false,
     desc: "Yanıtlanan mesajı belirli bir süre için sabitler",
     use: "group",
     usage:
@@ -1457,7 +1457,7 @@ Module(
     const botIsAdmin = await isAdmin(message);
     if (!botIsAdmin) {
       return await message.sendReply(
-        "_❌ Mesaj sabitlemek için botun bu grupta yönetici olması gerekiyor._"
+        "_❌ Bu grupta yönetici değilim!_"
       );
     }
 
