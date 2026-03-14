@@ -9,6 +9,7 @@ Module(
     use: "whatsapp",
   },
   async (m, t) => {
+    if (!m.reply_message) return await m.sendReply("_💬 Bir mesajı yanıtlayın!_");
     let msg = {
       remoteJid: m.reply_message?.jid,
       id: m.reply_message.id,
@@ -30,8 +31,14 @@ Module(
     use: "whatsapp",
   },
   async (m, t) => {
-    if (t[1] && m.reply_message?.text && m.quoted.key.fromMe) {
+    if (!m.reply_message) return await m.sendReply("_💬 Düzenlenecek mesajı yanıtlayın!_");
+    if (!t[1]) return await m.sendReply("_💬 Yeni metni girin!_");
+    
+    if (m.quoted.key.fromMe) {
       await m.edit(t[1], m.jid, m.quoted.key);
+      await m.sendReply("_✅ Mesaj düzenlendi!_");
+    } else {
+      await m.sendReply("_❌ Sadece kendi mesajlarınızı düzenleyebilirsiniz!_");
     }
   }
 );
@@ -153,17 +160,23 @@ Module(
     desc: "Mesajı herkesten siler. Yönetici silmesini destekler",
   },
   async (m, t) => {
+    if (!m.reply_message) return await m.sendReply("_💬 Silinecek mesajı yanıtlayın!_");
+    
     let adminAccesValidated = ADMIN_ACCESS ? await isAdmin(m, m.sender) : false;
-    if (!m.reply_message) return;
     if (m.fromOwner || adminAccesValidated) {
       m.jid = m.quoted.key.remoteJid;
-      if (m.quoted.key.fromMe)
-        return await m.client.sendMessage(m.jid, { delete: m.quoted.key });
+      if (m.quoted.key.fromMe) {
+        await m.client.sendMessage(m.jid, { delete: m.quoted.key });
+        return await m.sendReply("_✅ Mesaj silindi!_");
+      }
       if (!m.quoted.key.fromMe) {
         var admin = await isAdmin(m);
         if (!admin) return await m.sendReply("_❌ Ben bir yönetici değilim!_");
-        return await m.client.sendMessage(m.jid, { delete: m.quoted.key });
+        await m.client.sendMessage(m.jid, { delete: m.quoted.key });
+        return await m.sendReply("_✅ Mesaj yönetici yetkisiyle silindi!_");
       }
+    } else {
+      await m.sendReply("_❌ Bu işlem için yetkiniz yok!_");
     }
   }
 );

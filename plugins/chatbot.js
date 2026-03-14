@@ -599,18 +599,18 @@ Module(
 
         let enabledReason = "";
         if (isEnabledIndividually) {
-          enabledReason = "Individual setting";
+          enabledReason = "Bireysel Ayar";
         } else if (isGroup && globalGroups) {
-          enabledReason = "Global groups setting";
+          enabledReason = "Genel Grup Ayarı";
         } else if (!isGroup && globalDMs) {
-          enabledReason = "Global DMs setting";
+          enabledReason = "Genel DM Ayarı";
         }
 
         const statusText =
           `*_🤖 Sohbet Botu Durumu_*\n\n` +
           `📊 _Durum:_ \`${isEnabled ? "Aktif ✅" : "Kapalı ❌"}\`\n` +
           (isEnabled && enabledReason
-            ? `📋 _Etkinleştirme:_ \`${enabledReason === "Individual setting" ? "Bireysel ayar" : enabledReason === "Global groups setting" ? "Genel grup ayarı" : "Genel DM ayarı"}\`\n`
+            ? `📋 _Etkinleştirme:_ \`${enabledReason}\`\n`
             : "") +
           `🌐 _Genel Gruplar:_ \`${
             globalGroups ? "Aktif ✅" : "Kapalı ❌"

@@ -111,7 +111,7 @@ Module(
 
 Module(
   {
-    pattern: "remove(?: |$)(.*)",
+    pattern: "modülsil ?(.*)",
     fromMe: true,
     use: "owner",
     desc: Lang.REMOVE_DESC,
@@ -137,10 +137,10 @@ Module(
 
 Module(
   {
-    pattern: "pupdate ?(.*)",
+    pattern: "mgüncelle ?(.*)",
     fromMe: true,
     use: "owner",
-    usage: ".pupdate plugin_name",
+    usage: ".mgüncelle eklenti_adı",
     desc: "Bir eklentiyi (plugin) günceller",
   },
   async (m, match) => {

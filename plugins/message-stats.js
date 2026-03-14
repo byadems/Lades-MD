@@ -175,7 +175,7 @@ Module(
     fromMe: true,
     desc: "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
     usage:
-      ".inactive 30d (30+ gündür pasif üyeler)\n.inactive 10d kick (10+ gündür pasif üyeleri at)\n\nDesteklenen birimler: d (gün), w (hafta), m (ay), y (yıl)",
+      ".inactive 30gün (30+ gündür pasif üyeler)\n.inactive 10gün kick (10+ gündür pasif üyeleri at)\n\nDesteklenen birimler: gün, hafta, ay, yıl (veya d, w, m, y)",
     use: "group",
   },
   async (message, match) => {
@@ -188,11 +188,11 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       if (!match[1]) {
         return await message.sendReply("_Kullanım:_\n" +
-            "• `.inactive 30d` - 30+ gündür pasif üyeleri göster\n" +
-            "• `.inactive 10d kick` - 10+ gündür pasif üyeleri at\n" +
-            "• `.inactive 2w` - 2+ haftadır pasif üyeleri göster\n" +
-            "• `.inactive 3m kick` - 3+ aydır pasif üyeleri at\n\n" +
-            "_Desteklenen birimler:_ d (gün), w (hafta), m (ay), y (yıl)"
+            "• `.inactive 30gün` - 30+ gündür pasif üyeleri göster\n" +
+            "• `.inactive 10gün kick` - 10+ gündür pasif üyeleri at\n" +
+            "• `.inactive 2hafta` - 2+ haftadır pasif üyeleri göster\n" +
+            "• `.inactive 3ay kick` - 3+ aydır pasif üyeleri at\n\n" +
+            "_Desteklenen birimler:_ gün, hafta, ay, yıl (veya d, w, m, y)"
         );
       }
 
@@ -202,7 +202,7 @@ Module(
 
       const cutoffDate = parseDurationInput(durationStr);
       if (!cutoffDate) {
-        return await message.sendReply("_❌ Geçersiz süre formatı!_\n" + "_Examples:_ 30d, 2w, 3m, 1y"
+        return await message.sendReply("_❌ Geçersiz süre formatı!_\n" + "_Örnekler:_ 30gün, 2hafta, 3ay, 1yıl"
         );
       }
 
@@ -490,7 +490,7 @@ Module(
     fromMe: true,
     desc: "Mesaj sayısına göre en iyi kullanıcıları gösterir.",
     usage:
-      ".users (shows top 10 users - global in DM, chat-specific in gruplar)\n.users global (shows global top users)\n.users 20 (shows top 20 users)\n.users global 15 (shows top 15 global users)",
+      ".users (en iyi 10 kullanıcıyı gösterir - DM'de genel, gruplarda sohbet özel)\n.users genel (genel en iyi kullanıcıları gösterir)\n.users 20 (en iyi 20 kullanıcıyı gösterir)\n.users genel 15 (en iyi 15 genel kullanıcıyı gösterir)",
     use: "utility",
   },
   async (message, match) => {
@@ -505,11 +505,11 @@ Module(
       if (match[1]) {
         const args = match[1].trim().split(" ");
 
-        if (args.includes("global")) {
+        if (args.includes("genel")) {
           isGlobal = true;
 
           const limitArg = args.find(
-            (arg) => arg !== "global" && !isNaN(parseInt(arg))
+            (arg) => arg !== "genel" && !isNaN(parseInt(arg))
           );
           if (limitArg) {
             const parsedLimit = parseInt(limitArg);
@@ -542,7 +542,7 @@ Module(
 
         if (isGlobal) {
           topUsers = await getGlobalTopUsers(limit);
-          scopeText = "global";
+          scopeText = "genel";
         } else {
           topUsers = await getTopUsers(message.jid, limit);
           scopeText = message.isGroup ? "group" : "chat";

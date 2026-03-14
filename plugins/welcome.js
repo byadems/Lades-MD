@@ -13,7 +13,7 @@ Module(
     fromMe: false,
     desc: "Grup karşılama mesajını ayarlar. $user, $group vb. etiketler kullanılabilir.",
     usage:
-      ".welcome Merhaba $mention, $group grubuna hoş geldin! $pp\n.welcome on/off (açmak/kapatmak için)\n.welcome get (mevcut mesajı görüntüle)\n.welcome del (silmek için)",
+      ".welcome Merhaba $mention, $group grubuna hoş geldin! $pp\n.welcome aç/kapat\n.welcome getir (mevcut mesajı görüntüle)\n.welcome sil (silmek için)",
     use: "group",
   },
   async (message, match) => {
@@ -27,9 +27,9 @@ Module(
 
 *Kullanım:*
 • \`.welcome <mesaj>\` - Karşılama mesajını ayarla
-• \`.welcome on/off\` - Karşılamayı aç/kapat
-• \`.welcome get\` - Mevcut mesajı görüntüle
-• \`.welcome del\` - Karşılama mesajını sil
+• \`.welcome aç/kapat\` - Karşılamayı aç/kapat
+• \`.welcome getir\` - Mevcut mesajı görüntüle
+• \`.welcome sil\` - Karşılama mesajını sil
 • \`.welcome status\` - Tüm grupların durumunu göster (sadece sahip)
 • \`.welcome help\` - Örneklerle ayrıntılı yardımı göster
 
@@ -48,7 +48,7 @@ Module(
 \`.welcome Merhaba $mention! $group grubuna hoş geldin 🎉 $pp\`
 \`.welcome Hoş geldin $user! Harika grubumuzda artık $count üyeyiz! $gpp\``);
     }
-    if (input === "on") {
+    if (input === "aç" || input === "on") {
       const current = await welcome.get(message.jid);
       if (!current) {
         return await message.sendReply("_⚙️ Karşılama mesajı ayarlanmamış! Önce şunu kullanarak bir tane ayarlayın:_\n*.welcome <mesajınız>*"
@@ -57,11 +57,11 @@ Module(
       await welcome.toggle(message.jid, true);
       return await message.sendReply("_✅ Karşılama mesajları etkinleştirildi!_ ✅");
     }
-    if (input === "off") {
+    if (input === "kapat" || input === "off") {
       await welcome.toggle(message.jid, false);
       return await message.sendReply("_💬 Karşılama mesajları devre dışı!_ ❌");
     }
-    if (input === "get") {
+    if (input === "getir" || input === "get") {
       const current = await welcome.get(message.jid);
       if (!current) {
         return await message.sendReply("_⚙️ Bu grup için karşılama mesajı ayarlanmamış!_"
@@ -73,7 +73,7 @@ Module(
         }`
       );
     }
-    if (input === "del" || input === "delete") {
+    if (input === "sil" || input === "del" || input === "delete") {
       const deleted = await welcome.delete(message.jid);
       if (deleted) {
         return await message.sendReply("_Karşılama mesajı başarıyla silindi!_ 🗑️"
@@ -154,12 +154,12 @@ Module(
 *📝 TEMEL KOMUTLAR:*
 • \`.welcome <mesaj>\` - Karşılama mesajını ayarla
 • \`.goodbye <mesaj>\` - Veda mesajını ayarla
-• \`.welcome on/off\` - Karşılamayı aç/kapat
-• \`.goodbye on/off\` - Vedayı aç/kapat
-• \`.welcome get\` - Mevcut karşılamayı görüntüle
-• \`.goodbye get\` - Mevcut vedayı görüntüle
-• \`.welcome del\` - Karşılama mesajını sil
-• \`.goodbye del\` - Veda mesajını sil
+• \`.welcome aç/kapat\` - Karşılamayı aç/kapat
+• \`.goodbye aç/kapat\` - Vedayı aç/kapat
+• \`.welcome getir\` - Mevcut karşılamayı görüntüle
+• \`.goodbye getir\` - Mevcut vedayı görüntüle
+• \`.welcome sil\` - Karşılama mesajını sil
+• \`.goodbye sil\` - Veda mesajını sil
 • \`.welcome status\` - Tüm grupların durumunu göster (sadece sahip)
 • \`.welcome help\` - Bu ayrıntılı yardımı göster
 
@@ -228,7 +228,7 @@ Module(
     fromMe: false,
     desc: "Grup çıkış mesajını ayarlar. $user, $group vb. etiketler kullanılabilir.",
     usage:
-      ".goodbye Hoşça kal $mention, $group grubunun parçası olduğun için teşekkürler! $pp\n.goodbye on/off (açmak/kapatmak için)\n.goodbye get (mevcut mesajı görüntüle)\n.goodbye del (silmek için)",
+      ".goodbye Hoşça kal $mention, $group grubunun parçası olduğun için teşekkürler! $pp\n.goodbye aç/kapat\n.goodbye getir (mevcut mesajı görüntüle)\n.goodbye sil (silmek için)",
     use: "group",
   },
   async (message, match) => {
@@ -241,9 +241,9 @@ Module(
       return await message.sendReply(`*Veda Mesajı Ayarları*
 *Kullanım:*
 • \`.goodbye <mesaj>\` - Veda mesajını ayarla
-• \`.goodbye on/off\` - Vedayı aç/kapat
-• \`.goodbye get\` - Mevcut mesajı görüntüle
-• \`.goodbye del\` - Veda mesajını sil
+• \`.goodbye aç/kapat\` - Vedayı aç/kapat
+• \`.goodbye getir\` - Mevcut mesajı görüntüle
+• \`.goodbye sil\` - Veda mesajını sil
 *Yer Tutucular:*
 • \`$mention\` - Kullanıcıyı etiketle
 • \`$user\` - Kullanıcı adı  
@@ -258,7 +258,7 @@ Module(
 \`.goodbye Hoşça kal $mention! $group grubunun parçası olduğun için teşekkürler 👋 $pp\`
 \`.goodbye $user gruptan ayrıldı. Artık $count üyeyiz. $gpp\``);
     }
-    if (input === "on") {
+    if (input === "aç" || input === "on") {
       const current = await goodbye.get(message.jid);
       if (!current) {
         return await message.sendReply("_⚙️ Veda mesajı ayarlanmamış! Önce şunu kullanarak bir tane ayarlayın:_\n*.goodbye <mesajınız>*"
@@ -267,11 +267,11 @@ Module(
       await goodbye.toggle(message.jid, true);
       return await message.sendReply("_✅ Veda mesajları açıldı!_ ✅");
     }
-    if (input === "off") {
+    if (input === "kapat" || input === "off") {
       await goodbye.toggle(message.jid, false);
       return await message.sendReply("_❌ Veda mesajları kapatıldı!_ ❌");
     }
-    if (input === "get") {
+    if (input === "getir" || input === "get") {
       const current = await goodbye.get(message.jid);
       if (!current) {
         return await message.sendReply("_⚙️ Bu grup için veda mesajı ayarlanmamış!_"
@@ -283,7 +283,7 @@ Module(
         }`
       );
     }
-    if (input === "del" || input === "delete") {
+    if (input === "sil" || input === "del" || input === "delete") {
       const deleted = await goodbye.delete(message.jid);
       if (deleted) {
         return await message.sendReply("_Veda mesajı başarıyla silindi!_ 🗑️"

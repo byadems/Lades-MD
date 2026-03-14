@@ -135,7 +135,7 @@ Module(
     fromMe: true,
     desc: "Kendinizi AFK (Klavyeden Uzakta) olarak ayarlayın",
     usage:
-      ".afk [sebep] - _İsteğe bağlı sebeple AFK ol_\n.afk - _Mevcut durumu kontrol et_\n.afk list - _Tüm AFK kullanıcıları göster_",
+      ".uzakta [sebep] - _İsteğe bağlı sebeple AFK ol_\n.uzakta - _Mevcut durumu kontrol et_\n.uzakta list - _Tüm AFK kullanıcıları göster_",
   },
   async (message, match) => {
     const userJid = message.sender;

@@ -14,6 +14,7 @@ Module(
     pattern: "take ?(.*)",
     use: "edit",
     desc: "Çıkartma/ses paketi ve yazar adını değiştirir.",
+    usage: ".take paket;yazar\n(bir çıkartmaya veya sese yanıt vererek)",
   },
   async (m, match) => {
     if (!m.reply_message)
@@ -50,10 +51,10 @@ Module(
         match[1] !== ""
           ? match[1]
           : config.AUDIO_DATA === "default"
-          ? "Ryzn- Audio title here;Lades - Artist;https://i.ibb.co/s98DyMMq/NL-1.png"
+          ? "Lades Ses Başlığı;Lades Sanatçı;https://i.ibb.co/s98DyMMq/NL-1.png"
           : config.AUDIO_DATA;
       if (config.AUDIO_DATA == "default") {
-        await m.sendReply(`_🎵 Varsayılan ses verisi kullanılıyor, değiştirmek için .setvar kullanın_`
+        await m.sendReply(`_🎵 Varsayılan ses verisi kullanılıyor, değiştirmek için .setvar AUDIO_DATA=baslık;sanatcı;kapak_url kullanın_`
         );
       }
       const botInfoParts = config.BOT_INFO.split(";");
@@ -105,6 +106,7 @@ Module(
     pattern: "mp4 ?(.*)",
     use: "edit",
     desc: "Hareketli çıkartmayı videoya dönüştürür",
+    usage: ".mp4 (bir hareketli çıkartmaya yanıt vererek)",
   },
   async (m, t) => {
     if (m.reply_message.sticker) {
@@ -131,7 +133,8 @@ Module(
 Module(
   {
     pattern: "url ?(.*)",
-    desc: "Resmi imgbb'ye yükler ve bir URL gönderir",
+    desc: "Resmi imgbb'ye yükler ve resim URL gönderir",
+    usage: ".url (bir görsele, videoya veya sese yanıt vererek)",
     use: "edit",
   },
   async (m, match) => {

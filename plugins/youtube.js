@@ -41,7 +41,7 @@ Module(
     pattern: "song ?(.*)",
     fromMe: fromMe,
     desc: "YouTube'da ara ve ses indir",
-    usage: ".song <query>",
+    usage: ".song <arama terimi> | .şarkı <arama terimi veya bağlantı>",
     use: "download",
   },
   async (message, match) => {
@@ -426,7 +426,7 @@ Module(
     pattern: "şarkı ?(.*)",
     fromMe: fromMe,
     desc: "YouTube araması veya bağlantısı üzerinden ses oynat (yedek yöntem otomatik)",
-    usage: ".şarkı <şarkı adı veya bağlantı>",
+    usage: ".şarkı <şarkı adı veya bağlantı> | .song <şarkı adı>",
     use: "download",
   },
   async (message, match) => {

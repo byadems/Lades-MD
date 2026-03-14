@@ -259,6 +259,7 @@ Module(
     pattern: "plandurum ?(.*)",
     use: "utility",
     desc: "📋 Planlanan tüm mesajları listeler",
+    usage: ".plandurum",
   },
   async (m, match) => {
     try {
@@ -305,6 +306,7 @@ Module(
     pattern: "plansil ?(.*)",
     use: "utility",
     desc: "🗑️ Planlanan mesajı ID ile iptal eder",
+    usage: ".plansil <id>",
   },
   async (m, match) => {
     if (!match[1]) {

@@ -69,7 +69,7 @@ Module(
     fromMe: true,
     desc: "Sohbeti temizle",
     use: "misc",
-    usage: ".clear (mevcut sohbeti temizler)",
+    usage: ".sohbetsil (mevcut sohbeti temizler)",
   },
   async (message, match) => {
     await message.client.chatModify(
@@ -95,7 +95,7 @@ Module(
     desc: Lang.KICK_DESC,
     use: "group",
     usage:
-      ".kick @etiket veya yanıtla\n.kick all (herkesi at)\n.kick 90 (90 ile başlayan numaraları atar)",
+      ".çıkar @etiket veya yanıtla\n.çıkar hepsi (herkesi at)\n.çıkar 90 (90 ile başlayan numaraları atar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -278,7 +278,7 @@ Module(
     desc: Lang.ADD_DESC,
     warn: "Numaranız banlanabilir, dikkatli kullanın",
     use: "group",
-    usage: ".add 905554443322",
+    usage: ".ekle 90532xxxxxxx",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -305,7 +305,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.PROMOTE_DESC,
-    usage: ".promote @etiket veya yanıtla",
+    usage: ".yetkiver @etiket veya yanıtla",
   },
   async (message, match) => {
     let adminAccesValidated = ADMIN_ACCESS
@@ -334,7 +334,7 @@ Module(
     pattern: "istekler ?(.*)",
     fromMe: false,
     use: "group",
-    usage: ".requests approve all veya reject all",
+    usage: ".istekler (bekleyen istekleri gör)\n.istekler hepsi onayla (tüm istekleri onayla)\n.istekler hepsi reddet (tüm istekleri reddet)",
     desc: "Bekleyen katılma isteklerinin listesini al",
   },
   async (message, match) => {
@@ -426,7 +426,7 @@ Module(
     pattern: "ayrıl",
     fromMe: true,
     desc: Lang.LEAVE_DESC,
-    usage: ".leave (mevcut gruptan çıkar)",
+    usage: ".ayrıl (mevcut gruptan çıkar)",
     use: "group",
   },
   async (message, match) => {
@@ -510,7 +510,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.DEMOTE_DESC,
-    usage: ".demote @etiket veya yanıtla",
+    usage: ".yetkial @etiket veya yanıtla",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -541,7 +541,7 @@ Module(
     fromMe: false,
     desc: Lang.MUTE_DESC,
     usage:
-      ".mute (grubu süresiz olarak sessize alır)\n.mute 1h (1 saat sessize alır)\n.mute 5m (5 dakika sessize alır)",
+      ".sohbetkapat (grubu süresiz olarak sessize alır)\n.sohbetkapat 1s (1 saat sessize alır)\n.sohbetkapat 5d (5 dakika sessize alır)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -558,10 +558,12 @@ Module(
         const m2m = function (m) {
           return 1000 * 60 * m;
         };
-        let duration = match[1].endsWith("h")
+        let duration = (match[1].endsWith("h") || match[1].endsWith("s"))
           ? h2m(match[1].match(/\d+/)[0])
           : m2m(match[1].match(/\d+/)[0]);
-        let displayMatch = match[1].endsWith("h") ? match[1].replace("h", " saat") : match[1].replace("m", " dakika");
+        let displayMatch = (match[1].endsWith("h") || match[1].endsWith("s")) 
+          ? match[1].replace(/[hs]/g, " saat") 
+          : match[1].replace(/[md]/g, " dakika");
         await message.client.groupSettingUpdate(message.jid, "announcement");
         await message.send(`_${displayMatch} boyunca sessize alındı_`);
         await require("timers/promises").setTimeout(duration);
@@ -582,7 +584,7 @@ Module(
     use: "group",
     fromMe: false,
     desc: Lang.UNMUTE_DESC,
-    usage: ".unmute (grubun sessizini açar)",
+    usage: ".sohbetaç (grubun sessizini açar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -637,7 +639,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: Lang.REVOKE_DESC,
-    usage: ".revoke (grup davet bağlantısını sıfırlar)",
+    usage: ".bağlantıyenile (grup davet bağlantısını sıfırlar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -698,7 +700,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: "Grup adını (başlığını) değiştir",
-    usage: ".gname Yeni Grup Adı",
+    usage: ".grupadı Yeni Grup Adı",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -724,7 +726,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: "Grup açıklamasını değiştir",
-    usage: ".gdesc Yeni grup açıklaması burada",
+    usage: ".grupaçıklama Yeni grup açıklaması burada",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -754,7 +756,7 @@ Module(
     fromMe: false,
     use: "group",
     desc: "İki gruptaki ortak katılımcıları bulur",
-    usage: ".common jid1,jid2\n.common kick group_jid",
+    usage: ".common jid1,jid2\n.common çıkar grup_jid",
   },
   async (message, match) => {
     let adminAccesValidated = ADMIN_ACCESS

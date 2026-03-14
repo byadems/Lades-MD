@@ -440,6 +440,7 @@ Module(
     pattern: 'ttara ?(.*)',
     fromMe: false,
     desc: 'TikTok kullanıcı bilgilerini getirir. (Gizli hesaplar hariç)',
+    usage: '.ttara lades\n.ttara @lades\n.ttara https://www.tiktok.com/@lades',
     use: 'search',
   },
   async (message, match) => {

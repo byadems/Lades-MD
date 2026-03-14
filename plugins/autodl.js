@@ -546,7 +546,7 @@ Module(
     fromMe: true,
     desc: "URL izleyici otomatik indirme - sohbetlerde veya küresel olarak etkinleştirin",
     usage:
-      ".autodl - show menu\n.autodl on/off - enable/disable in current chat\n.autodl on/off gruplar - enable/disable in all gruplar\n.autodl on/off dms - enable/disable in all DMs\n.autodl status - show current status",
+      ".otodl - menüyü göster\n.otodl aç/kapat - Mevcut sohbette etkinleştir/devre dışı bırak\n.otodl aç/kapat gruplar - Tüm gruplarda etkinleştir/devre dışı bırak\n.otodl aç/kapat dms - Tüm DM'lerde etkinleştir/devre dışı bırak\n.otodl durum - Mevcut durumu göster",
   },
   async (message, match) => {
     const input = match[1]?.trim();
@@ -578,11 +578,11 @@ Module(
           }\n` +
           `- _Genel DM'ler:_ ${globalDMs ? "Açık ✅" : "Kapalı ❌"}\n\n` +
           `_Komutlar:_\n` +
-          `- \`${HANDLER_PREFIX}autodl on/off\` - Mevcut sohbette ayarla\n` +
-          `- \`${HANDLER_PREFIX}autodl on/off gruplar\` - Tüm gruplarda ayarla\n` +
-          `- \`${HANDLER_PREFIX}autodl on dms\` - Tüm DM'lerde ayarla\n` +
-          `- \`${HANDLER_PREFIX}autodl off dms\` - Tüm DM'lerde kapat\n` +
-          `- \`${HANDLER_PREFIX}autodl status\` - Detaylı durumu göster`
+          `- \`${HANDLER_PREFIX}otodl aç/kapat\` - Mevcut sohbette ayarla\n` +
+          `- \`${HANDLER_PREFIX}otodl aç/kapat gruplar\` - Tüm gruplarda ayarla\n` +
+          `- \`${HANDLER_PREFIX}otodl aç dm\` - Tüm DM'lerde ayarla\n` +
+          `- \`${HANDLER_PREFIX}otodl kapat dm\` - Tüm DM'lerde kapat\n` +
+          `- \`${HANDLER_PREFIX}otodl durum\` - Detaylı durumu göster`
       );
     }
 
@@ -590,14 +590,14 @@ Module(
     const cmd = parts[0].toLowerCase();
     const target = parts[1]?.toLowerCase();
 
-    if (cmd === "on") {
+    if (cmd === "aç" || cmd === "on") {
       if (target === "gruplar") {
         await setVar("AUTODL_ALL_GROUPS", "true");
-        return await message.sendReply("_✅ Tüm gruplarda AutoDL aktif_\n_Kapatmak için .autodl off gruplar kullanın_"
+        return await message.sendReply("_✅ Tüm gruplarda AutoDL aktif_\n_Kapatmak için .otodl kapat gruplar kullanın_"
         );
-      } else if (target === "dms") {
+      } else if (target === "dm") {
         await setVar("AUTODL_ALL_DMS", "true");
-        return await message.sendReply("_✅ Tüm DM'lerde AutoDL aktif_\n_Kapatmak için .autodl off dms kullanın_"
+        return await message.sendReply("_✅ Tüm DM'lerde AutoDL aktif_\n_Kapatmak için .otodl kapat dms kullanın_"
         );
       } else {
         const enabledList = readList();
@@ -608,24 +608,24 @@ Module(
       }
     }
 
-    if (cmd === "off") {
+    if (cmd === "kapat" || cmd === "off") {
       if (target === "gruplar") {
         await setVar("AUTODL_ALL_GROUPS", "false");
-        return await message.sendReply("_✨ Tüm gruplarda AutoDL devre dışı ❌_\n_Açmak için .autodl on gruplar kullanın_"
+        return await message.sendReply("_✨ Tüm gruplarda AutoDL devre dışı ❌_\n_Açmak için .otodl aç gruplar kullanın_"
         );
-      } else if (target === "dms") {
+      } else if (target === "dm") {
         await setVar("AUTODL_ALL_DMS", "false");
-        return await message.sendReply("_✨ Tüm DM'lerde AutoDL devre dışı ❌_\n_Açmak için .autodl on dms kullanın_"
+        return await message.sendReply("_✨ Tüm DM'lerde AutoDL devre dışı ❌_\n_Açmak için .otodl aç dms kullanın_"
         );
       } else {
         const enabledList = readList().filter((x) => x !== chatJid);
         await setVar("AUTODL", enabledList.join(","));
-        return await message.sendReply("_✨ Bu sohbette AutoDL devre dışı ❌_\n_Tekrar açmak için .autodl on kullanın_"
+        return await message.sendReply("_✨ Bu sohbette AutoDL devre dışı ❌_\n_Tekrar açmak için .otodl aç kullanın_"
         );
       }
     }
 
-    if (cmd === "status") {
+    if (cmd === "durum" || cmd === "status") {
       const enabledList = readList();
       const globalGroups = config.AUTODL_ALL_GROUPS === "true";
       const globalDMs = config.AUTODL_ALL_DMS === "true";

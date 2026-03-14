@@ -72,10 +72,10 @@ Module(
 
 Module(
   {
-    pattern: "unstick ?(.*)",
+    pattern: "çıkartmasil ?(.*)",
     fromMe: true,
     desc: "Çıkartmalardaki komutları siler",
-    usage: ".unstick kick",
+    usage: ".çıkartmasil kick",
     use: "utility",
   },
   async (message, match) => {
@@ -111,14 +111,14 @@ Module(
       if (!deleted)
         return await message.sendReply("_❌ Böyle bir komut bulunamadı!_");
     } else
-      return await message.sendReply("_💬 Çıkartmaya yanıt verin veya komut girin!_\n_Ör: *.unstick kick*_"
+      return await message.sendReply("_💬 Çıkartmaya yanıt verin veya komut girin!_\n_Ör: *.çıkartmasil kick*_"
       );
   }
 );
 
 Module(
   {
-    pattern: "getstick ?(.*)",
+    pattern: "otoçıkartmalar ?(.*)",
     fromMe: true,
     desc: "Çıkartmalardaki komutları gösterir",
     use: "utility",
@@ -135,7 +135,7 @@ Module(
   {
     pattern: "otosohbetkapat ?(.*)",
     fromMe: false,
-    warn: "Hindistan standart saatine (IST) göre çalışır",
+    warn: "Sunucu saatine göre çalışır",
     use: "group",
   },
   async (message, match) => {
@@ -145,12 +145,12 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       match = match[1]?.toLowerCase();
       if (!match)
-        return await message.sendReply("*✨ Yanlış format!*\n*.automute 22 00 (Saat 22:00 için)*\n*.automute 06 00 (Saat 06:00 için)*\n*.automute off*"
+        return await message.sendReply("*✨ Yanlış format!*\n*.otosohbetkapat 22 00 (Saat 22:00 için)*\n*.otosohbetkapat 06 00 (Saat 06:00 için)*\n*.otosohbetkapat kapat*"
         );
       if (match.includes("am") || match.includes("pm"))
-        return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır_"
+        return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır (Örn: 22 00)_"
         );
-      if (match == "off") {
+      if (match == "off" || match == "kapat") {
         await automute.delete(message.jid);
         return await message.sendReply("*✨ Bu grupta otomatik susturma devre dışı bırakıldı ❗*"
         );
@@ -176,7 +176,7 @@ Module(
   {
     pattern: "otosohbetaç ?(.*)",
     fromMe: false,
-    warn: "Hindistan standart saatine (IST) göre çalışır",
+    warn: "Sunucu saatine göre çalışır",
     use: "group",
   },
   async (message, match) => {
@@ -186,12 +186,12 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       match = match[1]?.toLowerCase();
       if (!match)
-        return await message.sendReply("*_⚠️ Yanlış format!_*\n*_.autounmute 22 00 (Saat 22:00 için)_*\n*_.autounmute 06 00 (Saat 06:00 için)_*\n*_.autounmute off_*"
+        return await message.sendReply("*_⚠️ Yanlış format!_*\n*_.otosohbetaç 22 00 (Saat 22:00 için)_*\n*_.otosohbetaç 06 00 (Saat 06:00 için)_*\n*_.otosohbetaç kapat_*"
         );
       if (match.includes("am") || match.includes("pm"))
-        return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır_"
+        return await message.sendReply("_⏰ Zaman SS DD (24 saat) formatında olmalıdır (Örn: 08 00)_"
         );
-      if (match === "off") {
+      if (match === "off" || match === "kapat") {
         await autounmute.delete(message.jid);
         return await message.sendReply("*_🎵 Bu grupta otomatik sesi açma devre dışı bırakıldı ❗_*"
         );
@@ -256,45 +256,45 @@ Module(
     if (message.fromOwner || adminAccesValidated) {
       var admin = await isAdmin(message);
       if (!admin) return await message.sendReply("_❌ Ben yönetici değilim!_");
-      if (match[1] === "on") {
+      if (match[1] === "aç" || match[1] === "on") {
         await antifake.set(message.jid);
-        return await message.sendReply("_✅ Antifake açıldı!_");
+        return await message.sendReply("_✅ Antinumara açıldı!_");
       }
-      if (match[1] === "allow") {
+      if (match[1] === "izinli" || match[1] === "allow") {
         return await message.sendReply(
           `_İzin verilen alan kodları: ${ALLOWED} (tüm gruplar için geçerlidir)_`
         );
       }
-      if (match[1] === "off") {
+      if (match[1] === "kapat" || match[1] === "off") {
         await antifake.delete(message.jid);
-        return await message.sendReply("_❌ Antifake kapatıldı!_");
+        return await message.sendReply("_❌ Antinumara kapatıldı!_");
       }
       const buttons = [
         {
-          buttonId: handler + "antifake on",
+          buttonId: handler + "antinumara aç",
           buttonText: {
             displayText: "Açık",
           },
           type: 1,
         },
         {
-          buttonId: handler + "antifake off",
+          buttonId: handler + "antinumara kapat",
           buttonText: {
             displayText: "Kapalı",
           },
           type: 1,
         },
         {
-          buttonId: handler + "antifake allow",
+          buttonId: handler + "antinumara izinli",
           buttonText: {
-            displayText: "İzin verilen önekler",
+            displayText: "İzinli Önekler",
           },
           type: 1,
         },
       ];
 
       const buttonMessage = {
-        text: "✨ Antifake kontrol menüsü",
+        text: "✨ Antinumara kontrol menüsü",
         footer: "",
         buttons: buttons,
         headerType: 1,

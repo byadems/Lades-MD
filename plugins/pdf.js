@@ -103,7 +103,7 @@ Module(
         return await message.sendReply("_🎬 Albümde resim yok (videolar PDF'ye dönüştürülemez)_");
 
       await message.send(
-        `_Adding ${allImages.length} album images to PDF..._`
+        `_${allImages.length} albüm görseli PDF'e ekleniyor..._`
       );
 
       for (let i = 0; i < allImages.length; i++) {
