@@ -605,8 +605,8 @@ Module(
     }
     const repliedText = message.reply_message.message;
     if (
-      repliedText.includes("🎵 YouTube Arama Sonuçları") &&
-      repliedText.includes("ses indirmek için")
+      repliedText.toLowerCase().includes("youtube arama sonuçları") &&
+      repliedText.toLowerCase().includes("ses indirmek için")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
         return await message.sendReply("_⚠️ Lütfen 1-10 arasında bir sayı seçin_");
@@ -618,7 +618,7 @@ Module(
 
       try {
         const queryMatch = repliedText.match(
-          /\d+ sonuç bulundu:_\s*\*(.+?)\*/
+          /_?(\d+) sonuç bulundu:_?\s*\*(.+?)\*/
         );
         if (!queryMatch) return;
 
@@ -686,8 +686,8 @@ Module(
         await message.sendReply("_❌ Seçiminiz işlenemedi._");
       }
     } else if (
-      repliedText.includes("🎵 YouTube Arama Sonuçları") &&
-      repliedText.includes("video detaylarını görüntüle")
+      repliedText.toLowerCase().includes("youtube arama sonuçları") &&
+      repliedText.toLowerCase().includes("video detaylarını görüntüle")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
         return await message.sendReply("_⚠️ Lütfen 1-10 arasında bir sayı seçin_");
@@ -695,7 +695,7 @@ Module(
 
       try {
         const queryMatch = repliedText.match(
-          /\d+ sonuç bulundu:_\s*\*(.+?)\*/
+          /_?(\d+) sonuç bulundu:_?\s*\*(.+?)\*/
         );
         if (!queryMatch) return;
 
