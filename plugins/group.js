@@ -65,7 +65,7 @@ async function sendBanAudio(message) {
 
 Module(
   {
-    pattern: "clear ?(.*)",
+    pattern: "sohbetsil ?(.*)",
     fromMe: true,
     desc: "Sohbeti temizle",
     use: "misc",
@@ -90,7 +90,7 @@ Module(
 
 Module(
   {
-    pattern: "kick ?(.*)",
+    pattern: "çıkar ?(.*)",
     fromMe: false,
     desc: Lang.KICK_DESC,
     use: "group",
@@ -273,7 +273,7 @@ Module(
 
 Module(
   {
-    pattern: "add ?(.*)",
+    pattern: "ekle ?(.*)",
     fromMe: true,
     desc: Lang.ADD_DESC,
     warn: "Numaranız banlanabilir, dikkatli kullanın",
@@ -301,7 +301,7 @@ Module(
 );
 Module(
   {
-    pattern: "promote ?(.*)",
+    pattern: "yetkiver ?(.*)",
     fromMe: false,
     use: "group",
     desc: Lang.PROMOTE_DESC,
@@ -331,7 +331,7 @@ Module(
 );
 Module(
   {
-    pattern: "requests ?(.*)",
+    pattern: "istekler ?(.*)",
     fromMe: false,
     use: "group",
     usage: ".requests approve all veya reject all",
@@ -421,7 +421,7 @@ Module(
 );
 Module(
   {
-    pattern: "leave",
+    pattern: "ayrıl",
     fromMe: true,
     desc: Lang.LEAVE_DESC,
     usage: ".leave (mevcut gruptan çıkar)",
@@ -504,7 +504,7 @@ Module(
 
 Module(
   {
-    pattern: "demote ?(.*)",
+    pattern: "yetkial ?(.*)",
     fromMe: false,
     use: "group",
     desc: Lang.DEMOTE_DESC,
@@ -534,7 +534,7 @@ Module(
 );
 Module(
   {
-    pattern: "mute ?(.*)",
+    pattern: "sohbetkapat ?(.*)",
     use: "group",
     fromMe: false,
     desc: Lang.MUTE_DESC,
@@ -576,7 +576,7 @@ Module(
 );
 Module(
   {
-    pattern: "unmute",
+    pattern: "sohbetaç",
     use: "group",
     fromMe: false,
     desc: Lang.UNMUTE_DESC,
@@ -619,7 +619,7 @@ Module(
     }
   }
 );
-Module({pattern: 'link', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (async (message, match) => {
+Module({pattern: 'davet', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND)
     var admin = await isAdmin(message);
     if (!admin) return await message.sendReply(Lang.NOT_ADMIN)
@@ -631,7 +631,7 @@ Module({pattern: 'link', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (a
 
 Module(
   {
-    pattern: "revoke",
+    pattern: "bağlantıyenile",
     fromMe: false,
     use: "group",
     desc: Lang.REVOKE_DESC,
@@ -692,7 +692,7 @@ Module(
 );
 Module(
   {
-    pattern: "gname ?(.*)",
+    pattern: "grupadı ?(.*)",
     fromMe: false,
     use: "group",
     desc: "Grup adını (başlığını) değiştir",
@@ -718,7 +718,7 @@ Module(
 );
 Module(
   {
-    pattern: "gdesc ?(.*)",
+    pattern: "grupaçıklama ?(.*)",
     fromMe: false,
     use: "group",
     desc: "Grup açıklamasını değiştir",
@@ -905,7 +905,7 @@ Module(
 );
 Module(
   {
-    pattern: "block ?(.*)",
+    pattern: "engelle ?(.*)",
     fromMe: true,
     use: "owner",
     desc: "Kullanıcıyı engelle",
@@ -920,7 +920,7 @@ Module(
 );
 Module(
   {
-    pattern: "join ?(.*)",
+    pattern: "katıl ?(.*)",
     fromMe: true,
     use: "owner",
     desc: "Davet bağlantısını kullanarak bir WhatsApp grubuna katılın",
@@ -937,7 +937,7 @@ Module(
 );
 Module(
   {
-    pattern: "unblock ?(.*)",
+    pattern: "engelkaldır ?(.*)",
     fromMe: true,
     use: "owner",
     desc: "Kullanıcının engelini kaldır",
@@ -1110,7 +1110,7 @@ Module({
 
 Module(
   {
-    pattern: "getjids ?(.*)",
+    pattern: "tümjid ?(.*)",
     desc: "Grup JID'lerini al - tüm gruplar veya son sohbetler",
     use: "utility",
     usage:
@@ -1522,7 +1522,7 @@ Module(
 );
 Module(
   {
-    pattern: "gpp ?(.*)",
+    pattern: "grupfoto ?(.*)",
     fromMe: false,
     use: "owner",
     desc: "Grup simgesini değiştir/al (tam ekran destekli)",

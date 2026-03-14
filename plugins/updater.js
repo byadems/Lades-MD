@@ -31,7 +31,7 @@ async function getRemoteVersion() {
 
 Module(
   {
-    pattern: "update ?(.*)",
+    pattern: "güncelle ?(.*)",
     fromMe: true,
     desc: "Bot güncellemelerini kontrol eder ve uygular.",
     use: "owner",

@@ -258,7 +258,7 @@ Module(
 // ══════════════════════════════════════════════════════════
 Module(
   {
-    pattern: "wiki ?(.*)",
+    pattern: "vikipedi ?(.*)",
     fromMe: isFromMe,
     desc: "Wikipedia'dan bilgi çeker",
     usage: ".wiki İstanbul",

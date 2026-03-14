@@ -269,7 +269,7 @@ initChatbotData();
 
 Module(
   {
-    pattern: "chatbot ?(.*)",
+    pattern: "sohbetbot ?(.*)",
     fromMe: true,
     desc: "Gemini API ile YZ Sohbet Botu yönetimi - metin ve resim analizi destekler",
     usage:
@@ -596,7 +596,7 @@ Module(
 
 Module(
   {
-    pattern: "ai ?(.*)",
+    pattern: "yz ?(.*)",
     fromMe,
     desc: "Metin ve/veya görsel girişiyle Gemini YZ'ye sorun",
     type: "ai",
