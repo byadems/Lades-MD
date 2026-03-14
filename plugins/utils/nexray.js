@@ -332,6 +332,27 @@ async function ytPlayVid(query) {
   return null;
 }
 
+/**
+ * YouTube arama (Arama terimi ile sonuç listeler)
+ * @param {string} query - Arama terimi
+ * @returns {Promise<any[]|null>}
+ */
+async function searchYoutube(query) {
+  try {
+    const res = await axios.get(`${BASE}/search/youtube`, {
+      params: { q: String(query).trim() },
+      timeout: TIMEOUT,
+    });
+    const data = res.data;
+    if (data?.status && Array.isArray(data?.result)) {
+      return data.result;
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray searchYoutube]", e?.message);
+  }
+  return null;
+}
+
 module.exports = {
   colorize,
   gptImage,
