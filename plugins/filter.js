@@ -6,7 +6,7 @@ const handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
 
 Module(
   {
-    pattern: "filter ?(.*)",
+    pattern: "filtre ?(.*)",
     fromMe: false,
     desc: "Otomatik yanıt filtreleri oluşturun. Kullanım: .filter tetikleyici | yanıt",
     usage:
@@ -107,7 +107,7 @@ Module(
 
 Module(
   {
-    pattern: "filters ?(.*)",
+    pattern: "filtreler ?(.*)",
     fromMe: false,
     desc: "Tüm filtreleri listele",
     usage: ".filters\n.filters global\n.filters group",
@@ -166,7 +166,7 @@ Module(
 
 Module(
   {
-    pattern: "delfilter ?(.*)",
+    pattern: "filtresil ?(.*)",
     fromMe: false,
     desc: "Bir filtreyi sil",
     usage: ".delfilter trigger\n.delfilter trigger global",
@@ -271,7 +271,7 @@ Module(
 
 Module(
   {
-    pattern: "testfilter ?(.*)",
+    pattern: "filtretest ?(.*)",
     fromMe: false,
     desc: "Bir mesajın filtreleri tetikleyip tetiklemeyeceğini test edin",
     usage: ".testfilter hello world",
@@ -317,7 +317,7 @@ Module(
 
 Module(
   {
-    pattern: "filterhelp",
+    pattern: "filtreyardım",
     fromMe: false,
     desc: "Filtre sistemi için ayrıntılı yardım",
     use: "utility",

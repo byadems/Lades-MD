@@ -26,7 +26,7 @@ Module(
 
 Module(
   {
-    pattern: "restart",
+    pattern: "ybaşlat",
     fromMe: true,
     desc: "Botu yeniden başlatır",
     use: "system",

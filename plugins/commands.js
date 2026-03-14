@@ -51,7 +51,7 @@ const retrieveCommandDetails = (commandName) => {
 
 Module(
   {
-    pattern: "info ?(.*)",
+    pattern: "komut ?(.*)",
     fromMe: isPrivateMode,
     desc: "Komut bilgisini verir",
   },
@@ -87,7 +87,7 @@ Module(
 
 Module(
   {
-    pattern: "list ?(.*)",
+    pattern: "liste ?(.*)",
     fromMe: isPrivateMode,
     excludeFromCommands: true,
   },
@@ -175,7 +175,7 @@ const manage = {
 
 Module(
   {
-    pattern: "alive",
+    pattern: "test",
     fromMe: isPrivateMode,
     desc: "Botun çevrimiçi olup olmadığını kontrol eder.",
   },
@@ -307,7 +307,7 @@ _Merhaba $user!_
 
 Module(
   {
-    pattern: "menu",
+    pattern: "menü",
     fromMe: isPrivateMode,
     use: "utility",
     desc: "Bot komut menüsünü gösterir.",
@@ -419,7 +419,7 @@ ${cmdmenu}`;
 );
 Module(
   {
-    pattern: "games ?(.*)",
+    pattern: "oyunlar ?(.*)",
     fromMe: isPrivateMode,
     desc: "Mevcut tüm oyunları listeler",
   },

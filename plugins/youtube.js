@@ -86,7 +86,7 @@ Module(
 
 Module(
   {
-    pattern: "yts ?(.*)",
+    pattern: "ytara ?(.*)",
     fromMe: fromMe,
     desc: "YouTube araması (detaylı bilgi ile)",
     usage: ".yts <query>",
@@ -134,7 +134,7 @@ Module(
 
 Module(
   {
-    pattern: "ytv ?(.*)",
+    pattern: "ytvideo ?(.*)",
     fromMe: fromMe,
     desc: "Video kalitesi seçimi ile YouTube videosu indir",
     usage: ".ytv <link>",
@@ -352,7 +352,7 @@ Module(
 
 Module(
   {
-    pattern: "yta ?(.*)",
+    pattern: "ytses ?(.*)",
     fromMe: fromMe,
     desc: "YouTube sesini belge olarak indir",
     usage: ".yta <link>",

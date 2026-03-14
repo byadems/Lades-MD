@@ -55,7 +55,7 @@ function isSudoUser(jid) {
 
 Module(
   {
-    pattern: "mention ?(.*)",
+    pattern: "bahsetme ?(.*)",
     fromMe: true,
     desc: "Otomatik etiket (mention) yanıt yönetimi",
     usage:

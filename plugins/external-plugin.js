@@ -9,7 +9,7 @@ var handler = config.HANDLERS !== "false" ? config.HANDLERS.split("")[0] : "";
 
 Module(
   {
-    pattern: "install ?(.*)",
+    pattern: "modülyükle ?(.*)",
     fromMe: true,
     use: "owner",
     desc: Lang.INSTALL_DESC,
@@ -69,7 +69,7 @@ Module(
 
 Module(
   {
-    pattern: "plugin ?(.*)",
+    pattern: "modül ?(.*)",
     fromMe: true,
     use: "owner",
     desc: Lang.PLUGIN_DESC,

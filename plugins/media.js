@@ -278,7 +278,7 @@ Module(
 
 Module(
   {
-    pattern: "ai ?(.*)",
+    pattern: "yz ?(.*)",
     desc: "AI araçları: görsel oluşturma, görsel düzenleme",
     usage: ".ai görsel <açıklama> | .ai yzdüzenle <talimat> (görsele yanıt)",
     use: "edit",
@@ -357,7 +357,7 @@ Module(
 
 Module(
   {
-    pattern: "black",
+    pattern: "siyahvideo",
     desc: "Sesi siyah videoya dönüştürür",
     use: "edit",
   },
@@ -412,7 +412,7 @@ Module(
 );
 Module(
   {
-    pattern: "avmix",
+    pattern: "birleştir",
     desc: Lang.AVMIX_DESC,
     use: "edit",
   },
@@ -522,7 +522,7 @@ Module(
 );
 Module(
   {
-    pattern: "slowmo",
+    pattern: "ağırçekim",
     desc: "Videoyu pürüzsüz ağır çekime dönüştürür",
     use: "edit",
   },
@@ -547,7 +547,7 @@ Module(
 );
 Module(
   {
-    pattern: "circle",
+    pattern: "oval",
     desc: "Çıkartma/fotoğrafı yuvarlak olarak kırpar",
     use: "edit",
   },
@@ -654,7 +654,7 @@ Module(
 );
 Module(
   {
-    pattern: "rotate ?(.*)",
+    pattern: "döndür ?(.*)",
     desc: "Videoyu döndürür (sol/sağ)",
   },
   async (message, match) => {
