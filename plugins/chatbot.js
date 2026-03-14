@@ -1,44 +1,79 @@
 const { Module } = require("../main");
 const config = require("../config");
 const axios = require("axios");
-const fromMe = config.MODE !== "public";
 const { setVar } = require("./manage");
 const fs = require("fs");
+const {
+  addExif,
+  webp2mp4,
+  addID3,
+  getBuffer,
+  uploadToImgbb,
+  uploadToCatbox,
+} = require("./utils");
+const nexray = require("./utils/nexray");
 const { callGenerativeAI } = require("./utils/misc");
 
 const API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 const models = [
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
+  "gemini-2.5-pro",
   "gemini-2.0-flash",
+  "gemini-2.0-flash-exp",
   "gemini-2.0-flash-lite",
-  "gemini-1.5-flash",
-  "gemma-3-12b-it",
+  "gemini-pro-latest"
 ];
+
+let validApiModels = [];
+
 const chatbotStates = new Map();
 const chatContexts = new Map();
 const modelStates = new Map();
+const modelCooldowns = new Map();
 
-const MAX_CHAT_MAPS = 200;
-
-function pruneMap(map, max = MAX_CHAT_MAPS) {
-  if (map.size > max) {
-    const excess = map.size - max;
-    const keys = map.keys();
-    for (let i = 0; i < excess; i++) {
-      map.delete(keys.next().value);
-    }
-  }
-}
-
-function pruneContexts() {
-  pruneMap(chatContexts, 100);
-  pruneMap(chatbotStates, MAX_CHAT_MAPS);
-  pruneMap(modelStates, MAX_CHAT_MAPS);
-}
+const DEFAULT_MAX_ATTEMPTS = 4;
+const DEFAULT_TIMEOUT = 15000;
 
 let globalSystemPrompt =
-  "Sen Lades adında yardımsever bir yapay zeka asistandısın. Kısa, nazik ve bilgilendirici ol.";
+  "Lades adında yardımsever bir süper yapay zekâ asistanısın. Özlü, arkadaş canlısı ve sadece gerektiğinde bilgilendirici ol.";
+
+async function logValidGeminiModels() {
+  const apiKey = config.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn("⚠️ GEMINI_API_KEY yok, model listesi alınamadı.");
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      "https://generativelanguage.googleapis.com/v1beta/models",
+      {
+        headers: {
+          "x-goog-api-key": apiKey,
+        },
+      }
+    );
+
+    const modelsFromApi = res.data.models || [];
+
+    validApiModels = modelsFromApi
+      .filter(m => m.supportedGenerationMethods?.includes("generateContent"))
+      .map(m => m.name.replace("models/", ""));
+
+    console.log("✅ API tarafından geçerli Gemini modelleri:");
+    validApiModels.forEach(m => console.log(" -", m));
+
+    if (!validApiModels.length) {
+      console.warn("⚠️ API geçerli model döndürmedi.");
+    }
+  } catch (err) {
+    console.error(
+      "❌ Gemini model listesi alınamadı:",
+      err.response?.data || err.message
+    );
+  }
+}
 
 async function initChatbotData() {
   try {
@@ -51,12 +86,12 @@ async function initChatbotData() {
       });
     }
 
-    const systemPrompt = config.CHATBOT_SYSTEM_PROMPT;
+    const systemPrompt = config.AI_DEFAULT_PROMPT;
     if (systemPrompt) {
       globalSystemPrompt = systemPrompt;
     }
   } catch (error) {
-    console.error("Sohbet botu verisi başlatılamadı:", error);
+    console.error("Sohbet botu verileri başlatılırken hata oluştu:", error);
   }
 }
 
@@ -70,16 +105,16 @@ async function saveChatbotData() {
     }
     await setVar("CHATBOT", enabledChats.join(","));
   } catch (error) {
-    console.error("Sohbet botu verisi kaydedilemedi:", error);
+    console.error("Sohbet botu verileri kaydedilirken hata oluştu:", error);
   }
 }
 
 async function saveSystemPrompt(prompt) {
   try {
     globalSystemPrompt = prompt;
-    await setVar("CHATBOT_SYSTEM_PROMPT", prompt);
+    await setVar("AI_DEFAULT_PROMPT", prompt);
   } catch (error) {
-    console.error("Sistem istemi kaydedilemedi:", error);
+    console.error("Varsayılan istem kaydedilirken hata oluştu:", error);
   }
 }
 
@@ -94,66 +129,149 @@ async function imageToGenerativePart(imageBuffer) {
       },
     };
   } catch (error) {
-    console.error("Görsel işlenirken hata:", error.message);
+    console.error("Görsel işlenirken hata oluştu:", error.message);
     return null;
   }
 }
 
-async function getAIResponse(message, chatJid, imageBuffer = null) {
+function sleep(ms) {
+  return new Promise((res) => setTimeout(res, ms));
+}
+
+function jitter(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+async function postWithRetry(url, payload, opts = {}) {
+  const maxAttempts = opts.maxAttempts || DEFAULT_MAX_ATTEMPTS;
+  const timeout = opts.timeout || DEFAULT_TIMEOUT;
+  const headers = opts.headers || { "Content-Type": "application/json" };
+
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const source = axios.CancelToken.source();
+      const timer = setTimeout(() => {
+        source.cancel(`timeout ${timeout}ms`);
+      }, timeout);
+
+      const res = await axios.post(url, payload, {
+        headers,
+        cancelToken: source.token,
+      });
+
+      clearTimeout(timer);
+      return res;
+    } catch (err) {
+      lastErr = err;
+
+      if (axios.isCancel(err)) {
+        console.warn(`Request canceled (timeout) for ${url}: ${err.message}`);
+      }
+
+      const status = err.response?.status;
+      const retryAfterRaw = err.response?.headers?.["retry-after"];
+      let retryAfter = null;
+      if (retryAfterRaw) {
+        const parsed = parseInt(retryAfterRaw, 10);
+        if (!Number.isNaN(parsed)) retryAfter = parsed * 1000;
+      }
+
+      if (status && [401, 403, 400, 404].includes(status)) {
+        throw err;
+      }
+
+      if (status && [429, 500, 502, 503].includes(status)) {
+        const baseDelay = retryAfter !== null ? retryAfter : Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+        const delay = baseDelay + jitter(100, 600);
+        console.warn(`Request to ${url} failed with ${status}. Attempt ${attempt}/${maxAttempts}. Retrying in ${Math.round(delay)}ms.`);
+        await sleep(delay);
+        continue;
+      }
+
+      if (!err.response) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000) + jitter(100, 600);
+        console.warn(`Network error for ${url}, attempt ${attempt}/${maxAttempts}. Retrying in ${Math.round(delay)}ms.`);
+        await sleep(delay);
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  if (lastErr) {
+    lastErr.isMaxAttempts = true;
+    throw lastErr;
+  }
+
+  const e = new Error("Max attempts reached");
+  e.isMaxAttempts = true;
+  throw e;
+}
+
+async function getAIResponse(message, chatJid, imageBuffer = null, retryCount = 0) {
+  const MAX_MODEL_RETRIES = 10;
   const apiKey = config.GEMINI_API_KEY;
   if (!apiKey) {
-    return "_❌ GEMINI_API_KEY yapılandırılmadı. Ayarlamak için şunu kullanın: `.setvar GEMINI_API_KEY your_api_key`_";
+    return "_❌ GEMINI_API_KEY yapılandırılmamış. Lütfen `.setvar GEMINI_API_KEY` komutunu kullanarak ayarlayın._";
   }
 
   const currentModelIndex = modelStates.get(chatJid) || 0;
   const currentModel = models[currentModelIndex];
 
-  try {
-    const apiUrl = `${API_BASE_URL}${currentModel}:generateContent?key=${apiKey}`;
+  const cooldownUntil = modelCooldowns.get(chatJid) || 0;
+  if (Date.now() < cooldownUntil) {
+    return "_⏳ Çok sık model değişim denemesi algılandı. Lütfen birkaç saniye sonra tekrar deneyin._";
+  }
 
-    const context = chatContexts.get(chatJid) || [];
+  const apiUrl = `${API_BASE_URL}${currentModel}:generateContent?key=${apiKey}`;
 
-    const contents = [
-      {
-        role: "user",
-        parts: [{ text: `System: ${globalSystemPrompt}` }],
-      },
-    ];
+  const context = chatContexts.get(chatJid) || [];
 
-    const recentContext = context.slice(-10);
-    recentContext.forEach((msg) => {
-      contents.push({
-        role: msg.role,
-        parts: [{ text: msg.text }],
-      });
-    });
-
-    const parts = [{ text: message }];
-
-    if (imageBuffer) {
-      const imagePart = await imageToGenerativePart(imageBuffer);
-      if (imagePart) {
-        parts.push(imagePart);
-      }
-    }
-
-    contents.push({
+  const contents = [
+    {
       role: "user",
-      parts: parts,
+      parts: [{ text: `System: ${globalSystemPrompt}` }],
+    },
+  ];
+
+  const recentContext = context.slice(-10);
+  recentContext.forEach((msg) => {
+    contents.push({
+      role: msg.role,
+      parts: [{ text: msg.text }],
     });
+  });
 
-    const payload = {
-      contents: contents,
-      generationConfig: {
-        maxOutputTokens: 1000,
-        temperature: 0.7,
-      },
-    };
+  const parts = [{ text: message }];
 
-    const response = await axios.post(apiUrl, payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+  if (imageBuffer) {
+    const imagePart = await imageToGenerativePart(imageBuffer);
+    if (imagePart) {
+      parts.push(imagePart);
+    }
+  }
+
+  contents.push({
+    role: "user",
+    parts: parts,
+  });
+
+  const payload = {
+    contents: contents,
+    generationConfig: {
+      maxOutputTokens: 1000,
+      temperature: 0.7,
+    },
+  };
+
+  let lastError = null;
+
+  try {
+    const response = await postWithRetry(apiUrl, payload, {
+      headers: { "Content-Type": "application/json" },
+      maxAttempts: 3,
       timeout: 15000,
     });
 
@@ -171,45 +289,72 @@ async function getAIResponse(message, chatJid, imageBuffer = null) {
         chatContexts.set(chatJid, []);
       }
       const contextArray = chatContexts.get(chatJid);
-      const contextMessage = imageBuffer
-        ? `${message} [Image included]`
-        : message;
+      const contextMessage = imageBuffer ? `${message} [Image included]` : message;
       contextArray.push({ role: "user", text: contextMessage });
       contextArray.push({ role: "model", text: aiResponse });
 
       if (contextArray.length > 20) {
         contextArray.splice(0, contextArray.length - 20);
       }
-
-      pruneContexts();
-
+      modelStates.set(chatJid, 0);
       return aiResponse;
     } else {
-      return "_❌ YZ'den beklenmeyen bir yanıt alındı. Lütfen tekrar deneyin._";
+      console.warn("YZ beklenmedik içerik döndürdü.");
+      return "_❌ YZ beklenmedik içerik döndürdü._";
     }
   } catch (error) {
-    console.error("Yapay zeka yanıtı alınamadı:", error.message);
+    lastError = error;
+    const status = error.response?.status;
+    const retryAfterRaw = error.response?.headers?.["retry-after"];
+    let retryAfterMs = retryAfterRaw ? (parseInt(retryAfterRaw, 10) * 1000) : 2000;
 
-    if (error.response && error.response.status === 429) {
-      const nextModelIndex = currentModelIndex + 1;
+    if (status && [401, 403].includes(status)) {
+      console.error("YZ yanıtı alınırken hata (auth):", status, error.response?.data || error.message);
+      return `_❌ API Authentication Error: ${error.response?.data?.error?.message || "Yetkilendirme hatası."}_`;
+    }
+
+    console.warn("YZ isteği başarısız oldu:", status || error.message, error.isMaxAttempts ? "(isMaxAttempts)" : "");
+
+    if (status && [400, 404].includes(status)) {
+      const nextModelIndex = (modelStates.get(chatJid) || 0) + 1;
       if (nextModelIndex < models.length) {
         modelStates.set(chatJid, nextModelIndex);
-        console.log(
-          `Sohbet ${chatJid} için modele geçiliyor: ${models[nextModelIndex]}`
-        );
-        return "_⚠️ Oran sınırına ulaşıldı. Yedek modele geçildi. Lütfen tekrar deneyin._";
+        modelCooldowns.set(chatJid, Date.now() + 3000);
+        console.log(`🔄 Modele geçiş: ${models[nextModelIndex]} | Sohbet: ${chatJid} | Hata: ${status}`);
+        
+        await sleep(2000);
+        return await getAIResponse(message, chatJid, imageBuffer);
       } else {
-        return "_❌ Tüm modeller hız sınırına ulaştı. Lütfen daha sonra tekrar deneyin._";
+        modelStates.set(chatJid, 0);
+        return "_🤯 Tüm modeller denenip hata alındı. Lütfen geliştiricime haber verin._";
       }
     }
 
-    if (error.response) {
-      return `_❌ API hatası: ${
-        error.response.data?.error?.message || "Bilinmeyen hata"
-      }_`;
+    if (status && [429, 500, 502, 503].includes(status)) {
+      const nextModelIndex = (modelStates.get(chatJid) || 0) + 1;
+
+      if (nextModelIndex < models.length) {
+        modelStates.set(chatJid, nextModelIndex);
+        modelCooldowns.set(chatJid, Date.now() + retryAfterMs + 500);
+        console.log(`🔄 Modele geçiş: ${models[nextModelIndex]} | Sohbet: ${chatJid} | Hata: ${status}`);
+        
+        await sleep(retryAfterMs + 1000);
+        return await getAIResponse(message, chatJid, imageBuffer);
+      } else {
+        modelStates.set(chatJid, 0);
+        modelCooldowns.set(chatJid, Date.now() + Math.max(retryAfterMs, 5000));
+        return `_🤯 Tüm modeller başarısız oldu (kod: ${status}). Lütfen bir süre sonra tekrar deneyin._`;
+      }
     }
 
-    return "_❌ Ağ hatası. Bağlantınızı kontrol edip tekrar deneyin._";
+    if (lastError && lastError.isMaxAttempts) {
+      return "_❌ Çok fazla deneme yapıldı, isteğiniz tamamlanamadı. Ağ/Servis durumunu kontrol edin._";
+    }
+
+    if (lastError?.response) {
+      return `_❌ API Error: ${JSON.stringify(lastError.response.data || lastError.message)}_`;
+    }
+    return "_❌ Ağ hatası! 🛜 Lütfen bağlantınızı kontrol edin ve tekrar deneyin._";
   }
 }
 
@@ -219,11 +364,11 @@ function isChatbotEnabled(jid) {
   }
 
   const isGroup = jid.includes("@g.us");
-  if (isGroup && config.CHATBOT_ALL_GROUPS === "true") {
+  if (isGroup && config.AI_ALL_GRUP === "true") {
     return true;
   }
 
-  if (!isGroup && config.CHATBOT_ALL_DMS === "true") {
+  if (!isGroup && config.AI_ALL_DM === "true") {
     return true;
   }
 
@@ -250,13 +395,13 @@ function clearContext(jid) {
 }
 
 async function clearAllContexts(target) {
-  if (target === "gruplar") {
+  if (target === "grup") {
     for (const [jid] of chatbotStates.entries()) {
       if (jid.includes("@g.us")) {
         clearContext(jid);
       }
     }
-  } else if (target === "dms") {
+  } else if (target === "dm") {
     for (const [jid] of chatbotStates.entries()) {
       if (!jid.includes("@g.us")) {
         clearContext(jid);
@@ -266,14 +411,15 @@ async function clearAllContexts(target) {
 }
 
 initChatbotData();
+logValidGeminiModels();
 
 Module(
   {
-    pattern: "sohbetbot ?(.*)",
+    pattern: "yzayar ?(.*)",
     fromMe: true,
-    desc: "Gemini API ile YZ Sohbet Botu yönetimi - metin ve resim analizi destekler",
+    desc: "Gemini API ile yapay zeka destekli sohbet botu yapılandırması - metin ve görüntü analizini destekler.",
     usage:
-      ".chatbot - _Yardım menüsünü göster_\n.chatbot on/off - _Bu sohbette aç/kapat_\n.chatbot on/off gruplar - _Tüm gruplarda aç/kapat_\n.chatbot on/off dms - _Tüm DM'lerde aç/kapat_\n.chatbot set \"prompt\" - _Sistem komutunu ayarla_\n.chatbot clear - _AI geçmişini temizle_\n_Görsellere yanıt vererek YZ görsel analizi yapın_",
+      '.yzayar - _Ayar menüsünü açar\n.yzayar aç/kapat - _Mevcut sohbette etkinleştir/devre dışı bırak_\n.yzayar aç/kapat grup - _Tüm gruplarda etkinleştir/devre dışı bırak_\n.yzayar aç/kapat dm - _DM olarak çalışmasını etkinleştir/devre dışı bırak_\n.yzayar seç "istem" - _Varsayılan istemi ayarla_\n.yzayar temizle - _Tüm sohbet geçmişini sil_\n_Yapay Zeka görsel analizi için görsellere yanıt verebilirsiniz_',
   },
   async (message, match) => {
     const input = match[1]?.trim();
@@ -281,52 +427,52 @@ Module(
 
     if (!input) {
       const isEnabled = isChatbotEnabled(chatJid);
-      const globalGroups = config.CHATBOT_ALL_GROUPS === "true";
-      const globalDMs = config.CHATBOT_ALL_DMS === "true";
+      const globalGroups = config.AI_ALL_GRUP === "true";
+      const globalDMs = config.AI_ALL_DM === "true";
       const currentModel = models[modelStates.get(chatJid) || 0];
       const contextSize = chatContexts.get(chatJid)?.length || 0;
       const hasApiKey = !!config.GEMINI_API_KEY;
 
       const helpText =
-        `*_🤖 YZ Sohbet Botu Yönetimi_*\n\n` +
-        `📊 _Mevcut Durum:_ \`${isEnabled ? "Açık" : "Kapalı"}\`\n` +
-        `🔑 _API Anahtarı:_ \`${hasApiKey ? "Yapılandırıldı ✅" : "Eksik ❌"}\`\n` +
-        `🌐 _Genel Gruplar:_ \`${
-          globalGroups ? "Açık ✅" : "Kapalı ❌"
+        `*_🤖 Yapay Zeka Botu Yapılandırması_*\n\n` +
+        `📊 _Mevcut Durum:_ \`${isEnabled ? "Aktif" : "Devre Dışı"}\`\n` +
+        `🔑 _API Anahtarı:_ \`${hasApiKey ? "Ekli ✅" : "Eksik ❌"}\`\n` +
+        `🌐 _Gruplarda:_ \`${
+          globalGroups ? "Aktif ✅" : "Devre Dışı ❌"
         }\`\n` +
-        `💬 _Genel DM'ler:_ \`${globalDMs ? "Açık ✅" : "Kapalı ❌"}\`\n` +
-        `🤖 _Mevcut Model:_ \`${currentModel}\`\n` +
-        `💭 _Bağlam Mesajları:_ \`${contextSize}\`\n` +
-        `🎯 _Sistem Komutu:_ \`${globalSystemPrompt.substring(0, 100)}${
+        `💬 _DM'de:_ \`${globalDMs ? "Aktif ✅" : "Devre Dışı ❌"}\`\n` +
+        `🤖 Seçili Model:_ \`${currentModel}\`\n` +
+        `💭 _Sohbet Hafızası:_ \`${contextSize}\`\n` +
+        `🎯 _Varsayılan İstem:_ \`${globalSystemPrompt.substring(0, 100)}${
           globalSystemPrompt.length > 100 ? "..." : ""
         }\`\n\n` +
         (hasApiKey
           ? `*_Komutlar:_*\n` +
-            `- \`.chatbot on\` - _Bu sohbette sohbet botunu aç_\n` +
-            `- \`.chatbot off\` - _Bu sohbette sohbet botunu kapat_\n` +
-            `- \`.chatbot on gruplar\` - _Tüm gruplarda aç_\n` +
-            `- \`.chatbot on dms\` - _Tüm DM'lerde aç_\n` +
-            `- \`.chatbot off gruplar\` - _Tüm gruplarda kapat_\n` +
-            `- \`.chatbot off dms\` - _Tüm DM'lerde kapat_\n` +
-            `- \`.chatbot set "prompt"\` - _Sistem komutunu ayarla_\n` +
-            `- \`.chatbot clear\` - _AI geçmişini temizle_\n` +
-            `- \`.chatbot status\` - _Detaylı durumu göster_\n\n` +
-            `*_Nasıl çalışır:_*\n` +
-            `- _Bota gelen direkt mesajlar YZ yanıtını tetikler_\n` +
-            `- _Etiketler (@bot) YZ yanıtını tetikler_\n` +
-            `- _Bot mesajlarına yanıtlar YZ yanıtını tetikler_\n` +
-            `- _Görsellere yanıt vererek YZ görsel analizi yapın_\n` +
-            `- _Konuşma bağlamını otomatik olarak sürdürür_\n` +
-            `- _Hız sınırlarında otomatik model değiştirir_`
-          : `*_⚠️ Kurulum Gerekli:_*\n` +
-            `_Sohbet botunu kullanmak için API anahtarı gereklidir._\n\n` +
-            `*_API anahtarınızı alın:_*\n` +
-            `- _Ziyaret edin: https://aistudio.google.com/app/apikey_\n` +
-            `- _Google hesabıyla giriş yapın_\n` +
+            `- \`.yzayar aç\` - _Mevcut sohbette Yapay Zeka'yı etkinleştirir_\n` +
+            `- \`.yzayar kapat\` - _Mevcut sohbette Yapay Zeka'yı kapatır\n` +
+            `- \`.yzayar aç grup\` - _Tüm gruplarda Yapay Zeka'yı etkinleştirir_\n` +
+            `- \`.yzayar aç dm\` - _DM için Yapay Zeka'yı etkinleştirir_\n` +
+            `- \`.yzayar kapat grup\` - _Tüm gruplarda Yapay Zeka'yı kapatır\n` +
+            `- \`.yzayar kapat dm\` - _DM için Yapay Zeka'yı kapatır\n` +
+            `- \`.yzayar seç "istem"\` - _Varsayılan istemi ayarlar_\n` +
+            `- \`.yzayar temizle\` - _Tüm sohbet geçmişini siler_\n` +
+            `- \`.yzayar durum\` - _Ayrıntılı olarak yapılandırmayı gösterir_\n\n` +
+            `🤔 *_Peki, nasıl çalışır?_*\n` +
+            `- _Bot'a gönderilen direkt mesajlar Yapay Zeka'yı çalıştırır_\n` +
+            `- _Bahsetmeler (@bot) Yapay Zeka'yı çalıştırır_\n` +
+            `- _Bot mesajlarına verilen yanıtlar Yapay Zeka'yı çalıştırır_\n` +
+            `- _Görsel Analizi için mesajı yanıtlamak Yapay Zeka'yı çalıştırır_\n` +
+            `- _Sohbet geçmişini otomatik olarak korur_\n` +
+            `- _Hız limitlerine bağlı olarak modelleri otomatik olarak değiştirir_`
+          : `*_⚠️ Kurulum Gerekli!_*\n` +
+            `_Yapay Zeka'yı kullanmak için API anahtarı gereklidir._\n\n` +
+            `*_API anahtarı edinmek için:_*\n` +
+            `- _Bağlantıya tıklayın: https://aistudio.google.com/app/apikey_\n` +
+            `- _Google hesabınızla oturum açın_\n` +
             `- _API Anahtarı Oluşturun_\n\n` +
-            `*_API anahtarınızı ayarlayın:_*\n` +
+            `*_API anahtarınızı ayarlamak içinse:_*\n` +
             `\`.setvar GEMINI_API_KEY=your_api_key_here\`\n\n` +
-            `_Anahtarı ayarladıktan sonra, etkinleştirmek için \`.chatbot on\` kullanın._`);
+            `_Anahtarı ayarladıktan sonra aktifleştirmek için \`.yzayar aç\` yazın._`);
 
       return await message.sendReply(helpText);
     }
@@ -336,110 +482,116 @@ Module(
     const target = args[1]?.toLowerCase();
 
     switch (command) {
-      case "on":
+      case "aç":
         if (!config.GEMINI_API_KEY) {
-          return await message.sendReply(`*_❌ GEMINI_API_KEY Yapılandırılmadı_*\n\n` +
-              `_Gemini API anahtarı olmadan sohbet botu etkinleştirilemez._\n\n` +
-              `*_API anahtarınızı nasıl alırsınız:_*\n` +
-              `- _Ziyaret edin: https://aistudio.google.com/app/apikey_\n` +
-              `- _Google hesabınızla giriş yapın_\n` +
-              `- _Click "API Anahtarı Oluştur"_\n` +
-              `- _Oluşturulan API anahtarını kopyalayın_\n\n` +
-              `*_Nasıl ayarlanır:_*\n` +
-              `\`.setvar GEMINI_API_KEY=your_api_key_here\`\n\n` +
-              `_Yerine \`your_api_key_here\` gerçek API anahtarınızı yazın._`
+          return await message.sendReply(
+            `*_❌ GEMINI_API_KEY Eklenmemiş!_*\n\n` +
+              `_Gemini API anahtarı olmadan Yapay Zeka etkinleştirilemez._\n\n` +
+              `*_API anahtarı edinmek için:_*\n` +
+              `- _Bağlantıya tıklayın: https://aistudio.google.com/app/apikey_\n` +
+              `- _Google hesabınızla oturum açın_\n` +
+              `- _API Anahtarı Oluşturun_\n` +
+              `- _Oluşturulan API anahtarını kopyalayın._\n\n` +
+              `*_API anahtarınızı ayarlamak içinse:_*\n` +
+              `\`.setvar GEMINI_API_KEY=sizin_api_anahtarınız\`\n\n` +
+              `_Şu kısmı \`sizin_api_anahtarınız\` gerçek API anahtarınızla değiştirin._`
           );
         }
 
-        if (target === "gruplar") {
-          await setVar("CHATBOT_ALL_GROUPS", "true");
-          return await message.sendReply(`*_🤖 Sohbet Botu Tüm Gruplar için Açıldı_*\n\n` +
-              `✅ _Sohbet botu artık tüm gruplarda yanıt verecek_\n` +
+        if (target === "grup") {
+          await setVar("AI_ALL_GRUP", "true");
+          return await message.sendReply(
+            `*_🤖 Tüm gruplar için Yapay Zeka aktifleştirildi!_*\n\n` +
+              `✅ _Yapay Zeka artık tüm gruplarda yanıt verecek._\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
-              `📍 _Tetikleyici:_ _Sadece etiketler ve yanıtlar_\n\n` +
-              `_Kullanmak için \`.chatbot off gruplar\` kullanarak kapatın._`
+              `📍 _Çalışma Koşulu:_ _Yalnızca bahsetmeler ve mesaj yanıtları_\n\n` +
+              `_Yeniden devre dışı bırakmak için \`.yzayar kapat grup\` yazın._`
           );
-        } else if (target === "dms") {
-          await setVar("CHATBOT_ALL_DMS", "true");
-          return await message.sendReply(`*_🤖 Sohbet Botu Tüm DM'ler için Açıldı_*\n\n` +
-              `✅ _Sohbet botu artık tüm DM'lerde yanıt verecek_\n` +
+        } else if (target === "dm") {
+          await setVar("AI_ALL_DM", "true");
+          return await message.sendReply(
+            `*_🤖 DM için Yapay Zeka Aktifleştirildi!_*\n\n` +
+              `✅ _Yapay Zeka artık doğrudan tüm mesajlara yanıt verecek._\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
-              `📍 _Tetikleyici:_ _Tüm mesajlar_\n\n` +
-              `_Kullanmak için \`.chatbot off dms\` kullanarak kapatın._`
+              `📍 _Çalışma Koşulu:_ _Tüm Mesajlar_\n\n` +
+              `_Yeniden devre dışı bırakmak için \`.yzayar kapat dm\` yazın._`
           );
         } else {
           await enableChatbot(chatJid);
-          return await message.sendReply(`*_🤖 Sohbet Botu Açıldı_*\n\n` +
-              `📍 _Sohbet:_ \`${chatJid.includes("@g.us") ? "Grup" : "DM"}\`\n` +
+          return await message.sendReply(
+            `*_🤖 Yapay Zeka Aktif!_*\n\n` +
+              `📍 _Sohbet:_ \`${chatJid.includes("@g.us") ? "Group" : "DM"}\`\n` +
               `🤖 _Model:_ \`${models[0]}\`\n` +
-              `💭 _Bağlam:_ _Yeni başlangıç_\n\n` +
-              `_Artık direkt mesajlara, etiketlere ve yanıtlara cevap vereceğim!_`
+              `💭 _Sohbet Geçmişi:_ _Yeni Başlangıç_\n\n` +
+              `_Artık direkt mesajlara, bahsetmelere ve mesaj yanıtlarına cevap vereceğim!_`
           );
         }
 
-      case "off":
-        if (target === "gruplar") {
-          await setVar("CHATBOT_ALL_GROUPS", "false");
-          return await message.sendReply(`*_🤖 Sohbet Botu Tüm Gruplar için Kapatıldı_*\n\n` +
-              `❌ _Sohbet botu artık küresel olarak gruplarda yanıt vermeyecek_\n` +
-              `📝 _Bireysel grup ayarları korunur_\n\n` +
-              `_Kullanmak için \`.chatbot on gruplar\` tekrar etkinleştirin._`
+      case "kapat":
+        if (target === "grup") {
+          await setVar("AI_ALL_GRUP", "false");
+          return await message.sendReply(
+            `*_🤖 Tüm gruplar için Yapay Zeka devre dışı bırakıldı!_*\n\n` +
+              `❌ _Yapay Zeka artık hiçbir grupta yanıt vermeyecek._\n` +
+              `📝 _Kişisel grup ayarları korunacaktır._\n\n` +
+              `_Yeniden aktifleştirmek için \`.yzayar aç grup\` yazın._`
           );
-        } else if (target === "dms") {
-          await setVar("CHATBOT_ALL_DMS", "false");
-          return await message.sendReply(`*_🤖 Sohbet Botu Tüm DM'ler için Kapatıldı_*\n\n` +
-              `❌ _Sohbet botu artık küresel olarak DM'lerde yanıt vermeyecek_\n` +
-              `📝 _Bireysel DM ayarları korunur_\n\n` +
-              `_Kullanmak için \`.chatbot on dms\` tekrar etkinleştirin._`
+        } else if (target === "dm") {
+          await setVar("AI_ALL_DM", "false");
+          return await message.sendReply(
+            `🤖 *_DM için Yapay Zeka devre dışı bırakıldı!_*\n\n` +
+              `❌ _Yapay Zeka artık DM üzerinden yanıt vermeyecek._\n` +
+              `📝 _Kişisel DM ayarları korunacaktır._\n` +
+              `_Yeniden aktifleştirmek için \`.yzayar aç dm\` yazın._`
           );
         } else {
           await disableChatbot(chatJid);
-          return await message.sendReply(`*_🤖 Sohbet Botu Kapatıldı_*\n\n` +
-              `_Sohbet botu bu sohbette kapatıldı._\n` +
-              `_Konuşma bağlamı temizlendi._`
+          return await message.sendReply(
+            `*_🤖 Yapay Zeka artık devre dışı!_*\n\n` +
+              `_Bu sohbette Yapay Zeka devre dışı bırakıldı._\n` +
+              `_Sohbet geçmişi ise temizlendi._`
           );
         }
 
-      case "set":
-        const promptMatch = input.match(/set\s+"([^"]+)"/);
+      case "seç":
+        const promptMatch = input.match(/"([^"]+)"/);
         if (!promptMatch) {
-          return await message.sendReply(`_⚠️ Lütfen sistem komutunu tırnak içinde belirtin._\n\n` +
+          return await message.sendReply(
+            `_Lütfen istemi tırnak içinde belirtin._\n\n` +
               `*_Örnek:_*\n` +
-              `\`.chatbot set "You are a helpful assistant specialized in programming."\``
+              `\`.yzayar seç "Sen konuşma konusunda uzmanlaşmış, yardımsever bir asistansın."\``
           );
         }
         const newPrompt = promptMatch[1];
         await saveSystemPrompt(newPrompt);
-        return await message.sendReply(`*_🎯 Sistem Komutu Güncellendi_*\n\n` +
-            `📝 _Yeni Komut:_ \`${newPrompt}\`\n\n` +
-            `_Bu tüm yeni konuşmalara uygulanacak._`
+        return await message.sendReply(
+          `*_🎯 Varsayılan İstem Güncellendi!_*\n\n` +
+            `📝 _Yeni İstem:_ \`${newPrompt}\`\n\n` +
+            `_Bu tüm yeni sohbetler için geçerli olacaktır._`
         );
 
-      case "clear":
-        if (target === "gruplar" || target === "dms") {
+      case "temizle":
+        if (target === "grup" || target === "dm") {
           await clearAllContexts(target);
           return await message.sendReply(
-            `*_💭 Contexts Cleared for All ${
-              target === "gruplar" ? "Gruplar" : "DM'ler"
-            }_*\n\n` +
-              `_Konuşma geçmişleri tüm  ${
-                target === "gruplar" ? "gruplar" : "DMs"
-              }._\n` +
-              `_Sonraki mesajlar yeni konuşmalar başlatacak._`
+            `*_💭 Contexts Cleared for All ${target === "grup" ? "Grup" : "DM"}_*\n\n` +
+              `_Conversation histories have been reset for all ${target === "grup" ? "grup" : "DM"}._\n` +
+              `_Next messages will start fresh conversations._`
           );
         } else {
           clearContext(chatJid);
-          return await message.sendReply(`*_💭 Bağlam Temizlendi_*\n\n` +
+          return await message.sendReply(
+            `*_💭 Geçmiş Temizlendi!_*\n\n` +
               `_Konuşma geçmişi sıfırlandı._\n` +
               `_Sonraki mesaj yeni bir konuşma başlatacak._`
           );
         }
 
-      case "status":
+      case "durum":
         const isEnabled = isChatbotEnabled(chatJid);
         const isEnabledIndividually = chatbotStates.get(chatJid) === true;
-        const globalGroups = config.CHATBOT_ALL_GROUPS === "true";
-        const globalDMs = config.CHATBOT_ALL_DMS === "true";
+        const globalGroups = config.AI_ALL_GRUP === "true";
+        const globalDMs = config.AI_ALL_DM === "true";
         const currentModel = models[modelStates.get(chatJid) || 0];
         const contextSize = chatContexts.get(chatJid)?.length || 0;
         const modelIndex = modelStates.get(chatJid) || 0;
@@ -447,46 +599,41 @@ Module(
 
         let enabledReason = "";
         if (isEnabledIndividually) {
-          enabledReason = "Bireysel ayar";
+          enabledReason = "Individual setting";
         } else if (isGroup && globalGroups) {
-          enabledReason = "Küresel grup ayarı";
+          enabledReason = "Global groups setting";
         } else if (!isGroup && globalDMs) {
-          enabledReason = "Küresel DM ayarı";
+          enabledReason = "Global DMs setting";
         }
 
         const statusText =
-          `*_🤖 Sohbet Botu Durumu_*\n\n` +
-          `📊 _Durum:_ \`${isEnabled ? "Açık ✅" : "Kapalı ❌"}\`\n` +
+          `*_🤖 Chatbot Status_*\n\n` +
+          `📊 _Status:_ \`${isEnabled ? "Enabled ✅" : "Disabled ❌"}\`\n` +
           (isEnabled && enabledReason
-            ? `📋 _Şununla etkin:_ \`${enabledReason}\`\n`
+            ? `📋 _Enabled via:_ \`${enabledReason}\`\n`
             : "") +
-          `🌐 _Genel Gruplar:_ \`${
-            globalGroups ? "Açık ✅" : "Kapalı ❌"
+          `🌐 _Global Groups:_ \`${
+            globalGroups ? "Enabled ✅" : "Disabled ❌"
           }\`\n` +
-          `💬 _Genel DM'ler:_ \`${globalDMs ? "Açık ✅" : "Kapalı ❌"}\`\n` +
-          `🤖 _Mevcut Model:_ \`${currentModel}\`\n` +
-          `📈 _Model Yedek Seviyesi:_ \`${modelIndex + 1}/${
-            models.length
-          }\`\n` +
-          `💭 _Bağlam Mesajları:_ \`${contextSize}\`\n` +
-          `🎯 _Sistem Komutu:_ \`${globalSystemPrompt}\`\n` +
-          `🔑 _API Anahtarı:_ \`${
-            config.GEMINI_API_KEY ? "Yapılandırıldı ✅" : "Eksik ❌"
-          }\`\n\n` +
-          `*_Kullanılabilir Modeller:_*\n` +
+          `💬 _Global DMs:_ \`${globalDMs ? "Enabled ✅" : "Disabled ❌"}\`\n` +
+          `🤖 _Current Model:_ \`${currentModel}\`\n` +
+          `📈 _Model Fallback Level:_ \`${modelIndex + 1}/${models.length}\`\n` +
+          `💭 _Context Messages:_ \`${contextSize}\`\n` +
+          `🎯 _System Prompt:_ \`${globalSystemPrompt}\`\n` +
+          `🔑 _API Key:_ \`${config.GEMINI_API_KEY ? "Configured ✅" : "Missing ❌"}\`\n\n` +
+          `*_Available Models:_*\n` +
           models
             .map(
               (model, index) =>
-                `${index + 1}. \`${model}\` ${
-                  index === modelIndex ? "← Mevcut" : ""
-                }`
+                `${index + 1}. \`${model}\` ${index === modelIndex ? "← Current" : ""}`
             )
             .join("\n");
 
         return await message.sendReply(statusText);
 
       default:
-        return await message.sendReply(`_❌ Bilinmeyen komut: \`${command}\`_\n\n_💡 Mevcut komutları görmek için \`.chatbot\` kullanın._`
+        return await message.sendReply(
+          `_Bilinmeyen komut: \`${command}\`_\n\n_Kullanılabilir komutları görmek için \`.yzayar\` yazın._`
         );
     }
   }
@@ -505,10 +652,6 @@ Module(
       const isDM = !isGroup;
 
       if (!isChatbotEnabled(chatJid)) {
-        return;
-      }
-
-      if (message.fromMe) {
         return;
       }
 
@@ -554,11 +697,12 @@ Module(
             responseText = "Bu görselde ne görüyorsun?";
           }
         } catch (error) {
-          console.error("Görsel indirilemedi:", error);
-          return await message.sendReply("_❌ Görsel indirilemedi. Lütfen tekrar deneyin._"
+          console.error("Görsel indirilirken hata oluştu:", error);
+          return await message.sendReply(
+            "_❌ Görsel indirme başarısız oldu. Lütfen tekrar deneyin._"
           );
         }
-      } else if (messageText.length < 2) {
+      } else if (!messageText || messageText.length < 2) {
         return;
       }
 
@@ -579,31 +723,103 @@ Module(
         return;
       }
 
-      const aiResponse = await getAIResponse(
-        responseText,
-        chatJid,
-        imageBuffer
-      );
+      const aiResponse = await getAIResponse(responseText, chatJid, imageBuffer);
 
       if (aiResponse) {
         await message.sendReply(aiResponse);
       }
     } catch (error) {
-      console.error("Mesaj işleyicide hata:", error);
+      console.error("Mesaj işleyicisinde hata:", error);
     }
   }
 );
 
-Module(
-  {
+Module({
     pattern: "yz ?(.*)",
-    fromMe,
-    desc: "Metin ve/veya görsel girişiyle Gemini YZ'ye sorun",
+    fromMe: false,
+    desc: "Yapay zeka komutları: sohbet, görsel üretme ve görsel düzenleme.",
+    usage: ".yz <soru> | .yz görsel <açıklama> | .yz düzenle <talimat> (görsele yanıt)",
     type: "ai",
   },
   async (message, match) => {
     let imageParts = [];
-    let prompt = match[1]?.trim() || "";
+    const rawInput = match[1]?.trim() || "";
+    const loweredInput = rawInput.toLowerCase();
+    let prompt = rawInput;
+
+    if (!rawInput) {
+      return await message.sendReply(
+        "_🤖 *YZ Komutları*_\n\n" +
+        "• _.yz <soru>_ – Yapay zekaya soru sorar\n" +
+        "• _.yz görsel <açıklama>_ – Metinden görsel oluşturur\n" +
+        "• _.yz düzenle <talimat>_ – Yanıtlanan görseli talimata göre düzenler\n\n" +
+        "_Örnek: .yz görsel gece neon şehir_\n" +
+        "_Örnek: .yz düzenle arka planı cyberpunk yap_"
+      );
+    }
+
+    if (loweredInput.startsWith("görsel")) {
+      const imagePrompt = rawInput.slice(6).trim() || message.reply_message?.text?.trim();
+      if (!imagePrompt) {
+        return await message.sendReply("_🖼️ Görsel açıklaması girin._\n_Örnek: .yz görsel gün batımı sahil_ ");
+      }
+
+      try {
+        const processingMsg = await message.sendReply("_🎨 Görsel oluşturuluyor..._");
+        const resultBuffer = await nexray.deepImg(imagePrompt);
+        if (resultBuffer && resultBuffer.length) {
+          await message.sendReply(resultBuffer, "image", {
+            caption: `_*${imagePrompt.slice(0, 80)}${imagePrompt.length > 80 ? "..." : ""}*_`,
+          });
+          await message.edit("_✅ Görsel oluşturuldu!_", message.jid, processingMsg.key);
+        } else {
+          await message.edit("_❌ Görsel oluşturulamadı. Farklı bir açıklama deneyin._", message.jid, processingMsg.key);
+        }
+      } catch (error) {
+        console.error("YZ görsel üretme hatası:", error);
+        await message.sendReply("_❌ Görsel üretiminde hata oluştu. Lütfen tekrar deneyin._");
+      }
+      return;
+    }
+
+    if (loweredInput.startsWith("düzenle")) {
+      const editPrompt = rawInput.slice(7).trim();
+
+      if (!message.reply_message || !message.reply_message.image) {
+        return await message.sendReply(
+          "_🖼️ Düzenleme için bir görsele yanıt verin._\n\n" +
+          "*Görsel düzenleme seçenekleri:*\n" +
+          "• _.yz düzenle <talimat>_ (YZ ile gelişmiş düzenleme)\n" +
+          "• _.renklendir_ (S/B görseli renklendirir)\n" +
+          "• _.apsil_ (arka planı kaldırır)\n" +
+          "• _.upscale_ (görsel kalitesini artırır)"
+        );
+      }
+
+      if (!editPrompt) {
+        return await message.sendReply("_📝 Düzenleme talimatı girin._\n_Örnek: .yz düzenle gökyüzünü mor yap_ ");
+      }
+
+      try {
+        const processingMsg = await message.sendReply("_🎨 Görsel düzenleniyor..._");
+        const imgBuffer = await message.reply_message.download("buffer");
+        const mimetype = message.reply_message.mimetype || "image/jpeg";
+        const resultBuffer = await nexray.gptImage(imgBuffer, editPrompt, mimetype);
+
+        if (resultBuffer && resultBuffer.length) {
+          await message.sendReply(resultBuffer, "image", {
+            caption: `_*${editPrompt.slice(0, 80)}${editPrompt.length > 80 ? "..." : ""}*_`,
+          });
+          await message.edit("_✅ Görsel düzenlendi!_", message.jid, processingMsg.key);
+        } else {
+          await message.edit("_❌ Görsel düzenleme başarısız oldu. Farklı bir talimat deneyin._", message.jid, processingMsg.key);
+        }
+      } catch (error) {
+        console.error("YZ görsel düzenleme hatası:", error);
+        await message.sendReply("_❌ Görsel düzenleme sırasında hata oluştu. Lütfen tekrar deneyin._");
+      }
+      return;
+    }
 
     if (message.reply_message) {
       if (message.reply_message.image) {
@@ -612,7 +828,7 @@ Module(
           const imagePart = await imageToGenerativePart(buffer);
           if (imagePart) imageParts.push(imagePart);
         } catch (error) {
-          console.error("Görsel indirilemedi:", error);
+          console.error("Görsel indirilirken hata oluştu::", error);
           return await message.sendReply("❌ Görsel indirilemedi.");
         }
         if (!prompt) prompt = "Bu görselde ne görüyorsun?";
@@ -627,17 +843,17 @@ Module(
               const imagePart = await imageToGenerativePart(buffer);
               if (imagePart) imageParts.push(imagePart);
             } catch (err) {
-              console.error("Albüm görseli işlenirken hata:", err);
+              console.error("Albüm görselleri işlenirken hata oluştu:", err);
             }
           }
 
           if (!imageParts.length) {
-            return await message.sendReply("❌ Albümde resim bulunamadı.");
+            return await message.sendReply("❌ Albümde hiçbir görsel bulunamadı.");
           }
           if (!prompt) prompt = "Bu görselleri benim için analiz et.";
         } catch (error) {
-          console.error("Albüm indirilemedi:", error);
-          return await message.sendReply("❌ Albüm indirilemedi.");
+          console.error("Albüm indirme hatası:", error);
+          return await message.sendReply("❌ Albüm indirmesi başarısız oldu.");
         }
       }
       else if (message.reply_message.text && !prompt) {
@@ -646,26 +862,181 @@ Module(
     }
 
     if (!prompt && !imageParts.length) {
-      return await message.sendReply("⚠️ Lütfen bir komut girin veya bir mesaja/resme yanıt verin.");
+      return await message.sendReply("⚠️ Lütfen bir mesaja/görsele yanıt verin veya hızlı bir şekilde cevaplayın.");
     }
 
     let sent_msg;
     try {
-      sent_msg = await message.sendReply("_🧠 Düşünüyor..._");
+      sent_msg = await message.sendReply("🧐 _Düşünüyorum..._");
       const fullText = await callGenerativeAI(prompt, imageParts, message, sent_msg);
 
       if (!fullText) {
-        await message.edit("❌ YZ'den boş bir yanıt alındı.", message.jid, sent_msg.key);
+        await message.edit("❌ Yapay Zeka'dan boş yanıt alındı.", message.jid, sent_msg.key);
         return;
       }
 
       await message.edit(fullText, message.jid, sent_msg.key);
     } catch (error) {
-      console.error("Yapay zeka komut hatası:", error.message);
+      console.error("YZ komut hatası:", error.message);
       if (sent_msg) {
-        await message.edit("❌ AI API'si ile ilgili bir hata oluştu.", message.jid, sent_msg.key);
+        await message.edit("❌ Yapay Zeka API'sinde bir hata oluştu.", message.jid, sent_msg.key);
       } else {
-        await message.sendReply("❌ AI API'si ile ilgili bir hata oluştu.");
+        await message.sendReply("❌ Yapay Zeka API'sinde bir hata oluştu.");
+      }
+    }
+  }
+);
+
+Module({
+    pattern: "soruçöz ?(.*)",
+    fromMe: false,
+    desc: "Sınav sorularını YZ yardımıyla çözer",
+    type: "ai",
+  },
+  async (message, match) => {
+    let extra = match[1]?.trim() || "";
+    let imageParts = [];
+
+    let basePrompt =
+      "Şimdi gönderilen sınav sorusunu adım adım çözelim. " +
+      "Önce soruyu analiz et, sonra çözüm yolunu açık ve mantıklı bir şekilde adım adım göster. " +
+      "En sonunda ise net cevabı yaz.";
+
+    if (extra) {
+      basePrompt += "\n\nEk not: " + extra;
+    }
+
+    if (message.reply_message) {
+      if (message.reply_message.image) {
+        try {
+          const buffer = await message.reply_message.download("buffer");
+          const part = await imageToGenerativePart(buffer);
+          if (part) imageParts.push(part);
+        } catch (err) {
+          console.error("Görsel indirilemedi:", err);
+          return await message.sendReply("❌ Görsel yüklenemedi. Tekrar deneyin.");
+        }
+      } else if (message.reply_message.album) {
+        try {
+          const album = await message.reply_message.download();
+          for (const img of album.images) {
+            const buffer = fs.readFileSync(img);
+            const part = await imageToGenerativePart(buffer);
+            if (part) imageParts.push(part);
+          }
+        } catch (err) {
+          console.error("Albüm indirilemedi:", err);
+          return await message.sendReply("❌ Medya yüklenemedi! Tekrar deneyin.");
+        }
+      }
+    }
+
+    if (!imageParts.length && !message.reply_message?.text) {
+      return await message.sendReply("❗ *Lütfen bir sınav sorusuna yanıtlayarak `.soruçöz` yazın.*");
+    }
+
+    let sent;
+    try {
+      sent = await message.sendReply("🧐 _Düşünüyorum..._");
+
+      const result = await callGenerativeAI(
+        basePrompt,
+        imageParts,
+        message,
+        sent
+      );
+
+      if (!result) {
+        return await message.edit(
+          "❌ YZ boş yanıt gönderdi.",
+          message.jid,
+          sent.key
+        );
+      }
+
+      await message.edit(result, message.jid, sent.key);
+    } catch (err) {
+      console.error("SORU ÇÖZME HATASI:", err);
+      if (sent) {
+        await message.edit(
+          "❌ İşlemde hata oluştu. Tekrar deneyiniz.",
+          message.jid,
+          sent.key
+        );
+      } else {
+        await message.sendReply("❌ Yapay Zeka hatası!");
+      }
+    }
+  }
+);
+
+Module({
+    pattern: "animeçiz ?(.*)",
+    fromMe: false,
+    desc: "Fotoğrafı Yapay Zeka ile anime stiline dönüştürür.",
+    type: "ai",
+  },
+  async (message, match) => {
+    if (!message.reply_message?.image) {
+      return await message.sendReply("❗ *Lütfen bir fotoğrafa yanıt vererek `.animeçiz` yazın.*");
+    }
+    let sent;
+    let tempFile = null;
+    try {
+      sent = await message.send("🎨 _Anime stili uygulanıyor..._ ⌛");
+      const buffer = await message.reply_message.download("buffer");
+      tempFile = `./temp_anime_${Date.now()}.jpg`;
+      fs.writeFileSync(tempFile, buffer);
+
+      let animeBuffer = null;
+
+      // 1. Birincil: ZellAPI
+      try {
+        const uploadResult = await uploadToImgbb(tempFile);
+        const imageUrl = uploadResult.url;
+        const animeResponse = await axios.get(
+          `https://zellapi.autos/ai/applyfilter?imageUrl=${encodeURIComponent(imageUrl)}`,
+          { timeout: 30000 }
+        );
+        if (animeResponse.data?.result) {
+          animeBuffer = await getBuffer(animeResponse.data.result);
+        }
+      } catch (_) {}
+
+      // 2. Yedek: Nexray gptImage (anime prompt ile dönüştürme)
+      if (!animeBuffer) {
+        try {
+          const nexray = require("./utils/nexray");
+          animeBuffer = await nexray.gptImage(
+            buffer,
+            "Transform this photo into high quality anime/manga art style. Keep the same composition and person but make it look like a Japanese anime character.",
+            "image/jpeg"
+          );
+        } catch (_) {}
+      }
+
+      if (!animeBuffer) {
+        throw new Error("Tüm anime API'leri başarısız oldu");
+      }
+
+      await message.edit("✅ _Anime stili uygulandı!_", message.jid, sent.key);
+      await message.client.sendMessage(message.jid, {
+        image: animeBuffer
+      }, { quoted: message.reply_message });
+    } catch (err) {
+      console.error("ANİME ÇİZME HATASI:", err.response?.data || err.message);
+      if (sent) {
+        await message.edit(
+          "❌ Anime dönüştürmesi başarısız oldu. Lütfen tekrar deneyin.",
+          message.jid,
+          sent.key
+        );
+      } else {
+        await message.sendReply("❌ *Anime dönüştürmesi başarısız oldu!*");
+      }
+    } finally {
+      if (tempFile && fs.existsSync(tempFile)) {
+        fs.unlinkSync(tempFile);
       }
     }
   }
