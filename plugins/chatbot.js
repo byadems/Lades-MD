@@ -976,26 +976,33 @@ Module({
       // 1. Birincil: ZellAPI
       try {
         const uploadResult = await uploadToImgbb(tempFile);
-        const imageUrl = uploadResult.url;
-        const animeResponse = await axios.get(
-          `https://zellapi.autos/ai/applyfilter?imageUrl=${encodeURIComponent(imageUrl)}`,
-          { timeout: 30000 }
-        );
-        if (animeResponse.data?.result) {
-          animeBuffer = await getBuffer(animeResponse.data.result);
-        }
-      } catch (_) {}
+        const imageUrl = uploadResult?.url;
 
-      // 2. Yedek: Nexray gptImage (anime prompt ile dönüştürme)
+        if (imageUrl && imageUrl.startsWith("http")) {
+          const animeResponse = await axios.get(
+            `https://zellapi.autos/ai/applyfilter?imageUrl=${encodeURIComponent(imageUrl)}`,
+            { timeout: 30000 }
+          );
+
+          if (animeResponse.data?.result) {
+            animeBuffer = await getBuffer(animeResponse.data.result);
+          }
+        }
+      } catch (err) {
+        console.error("ZellAPI anime dönüştürme hatası:", err.response?.data || err.message);
+      }
+
+      // 2. Yedek API: Nexray gptImage
       if (!animeBuffer) {
         try {
-          const nexray = require("./utils/nexray");
           animeBuffer = await nexray.gptImage(
             buffer,
             "Transform this photo into high quality anime/manga art style. Keep the same composition and person but make it look like a Japanese anime character.",
             "image/jpeg"
           );
-        } catch (_) {}
+        } catch (err) {
+          console.error("Nexray anime dönüştürme hatası:", err.response?.data || err.message);
+        }
       }
 
       if (!animeBuffer) {
@@ -1005,7 +1012,7 @@ Module({
       await message.edit("✅ _Anime stili uygulandı!_", message.jid, sent.key);
       await message.client.sendMessage(message.jid, {
         image: animeBuffer
-      }, { quoted: message.reply_message });
+      }, { quoted: message.data });
     } catch (err) {
       console.error("ANİME ÇİZME HATASI:", err.response?.data || err.message);
       if (sent) {
