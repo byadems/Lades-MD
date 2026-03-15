@@ -59,7 +59,7 @@ Module(
     return await m.sendReply("_" + TimeCalculator(age) + " kalan_");
   }
 );
-const speedTest = require("speedtest-net");
+const FastSpeedtest = require("fast-speedtest-api");
 
 Module(
   {
@@ -80,27 +80,29 @@ Module(
   {
     pattern: "hıztesti",
     use: "utility",
-    desc: "Sunucu ağ hızını (Speedtest.net) ölçer",
+    desc: "Sunucu ağ hızını (Fast.com) ölçer",
   },
   async (message, match) => {
     let sent_msg = await message.sendReply("_🚀 Hız testi başlatılıyor... Lütfen bekleyin._");
     
     try {
-      const result = await speedTest({
-        acceptLicense: true,
-        acceptGdpr: true,
+      const speedtest = new FastSpeedtest({
+        token: "YXNkZmFzZGZhc2RmYXNkZmFzZGY=", // Public Fast.com token
+        verbose: false,
+        timeout: 10000,
+        https: true,
+        urlCount: 5,
+        bufferSize: 8,
+        unit: FastSpeedtest.UNITS.Mbps
       });
 
-      const text = `*❮ sᴘᴇᴇᴅᴛᴇsᴛ.ɴᴇᴛ ʀᴇsᴜʟᴛs ❯*
+      const speed = await speedtest.getSpeed();
 
-*📡 İss:* \`${result.isp}\`
-*📍 Sunucu:* \`${result.server.location} (${result.server.name})\`
+      const text = `*❮ ꜰᴀsᴛ.ᴄᴏᴍ sᴘᴇᴇᴅᴛᴇsᴛ ❯*
 
-*📥 İndirme:* \`${(result.download.bandwidth / 125000).toFixed(2)} Mbps\`
-*📤 Yükleme:* \`${(result.upload.bandwidth / 125000).toFixed(2)} Mbps\`
-*⏱️ Gecikme:* \`${result.ping.latency.toFixed(0)} ms (Jitter: ${result.ping.jitter.toFixed(0)} ms)\`
+*📥 İndirme Hızı:* \`${speed.toFixed(2)} Mbps\`
 
-_Sponsor: ${result.server.sponsor || "Bilinmiyor"}_`;
+_Not: Fast.com (Netflix) altyapısı kullanılmıştır._`;
 
       await message.edit(text, message.jid, sent_msg.key);
     } catch (error) {
