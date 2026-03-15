@@ -24,6 +24,11 @@ const { promisify } = require("util");
 const execPromise = promisify(exec);
 const fs = require("fs");
 const path = require("path");
+const https = require("https");
+const { pipeline } = require("stream");
+const { createWriteStream, createReadStream } = require("fs");
+const zlib = require("zlib");
+const tar = require("tar");
 
 // ═══════════════════════════════════
 // 📅 Yaş Hesaplayıcı
@@ -111,6 +116,27 @@ Module(
   }
 );
 
+// Helper function: Download file
+function downloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const file = createWriteStream(dest);
+    https.get(url, (response) => {
+      if (response.statusCode === 302 || response.statusCode === 301) {
+        // Redirect
+        return downloadFile(response.headers.location, dest).then(resolve).catch(reject);
+      }
+      response.pipe(file);
+      file.on('finish', () => {
+        file.close();
+        resolve();
+      });
+    }).on('error', (err) => {
+      fs.unlink(dest, () => {});
+      reject(err);
+    });
+  });
+}
+
 // ═══════════════════════════════════
 // ⚡ Gerçek Speedtest (CLI Binary)
 // ═══════════════════════════════════
@@ -126,11 +152,12 @@ Module(
     );
 
     try {
-      const speedtestPath = path.join(__dirname, "..", "speedtest");
-      let speedtestBin = speedtestPath;
+      const baseDir = path.join(__dirname, "..");
+      const speedtestBin = path.join(baseDir, "speedtest");
+      const tempTgz = path.join(baseDir, "speedtest.tgz");
 
       // Speedtest binary kontrolü ve kurulumu
-      if (!fs.existsSync(speedtestPath)) {
+      if (!fs.existsSync(speedtestBin)) {
         await message.edit(
           "```📦 Speedtest CLI indiriliyor...\n⏳ İlk kullanım 1-2 dakika sürebilir```",
           message.jid,
@@ -147,17 +174,34 @@ Module(
             downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz";
           } else if (platform === "linux" && arch === "arm64") {
             downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz";
-          } else if (platform === "darwin") {
+          } else if (platform === "darwin" && arch === "x64") {
+            downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-macosx-x86_64.tgz";
+          } else if (platform === "darwin" && arch === "arm64") {
             downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-macosx-universal.tgz";
           } else {
             throw new Error("Desteklenmeyen platform: " + platform + " " + arch);
           }
 
-          // İndir ve çıkart
-          await execPromise(`cd ${path.dirname(speedtestPath)} && curl -Ls ${downloadUrl} | tar xz && chmod +x speedtest`);
+          // Download
+          await downloadFile(downloadUrl, tempTgz);
 
-          if (!fs.existsSync(speedtestPath)) {
-            throw new Error("Speedtest binary kurulamadı");
+          // Extract
+          await tar.extract({
+            file: tempTgz,
+            cwd: baseDir,
+            filter: (path) => path === 'speedtest' || path === 'speedtest.exe'
+          });
+
+          // Cleanup
+          fs.unlinkSync(tempTgz);
+
+          // Make executable
+          if (platform !== "win32") {
+            fs.chmodSync(speedtestBin, 0o755);
+          }
+
+          if (!fs.existsSync(speedtestBin)) {
+            throw new Error("Speedtest binary çıkarılamadı");
           }
 
         } catch (installError) {
