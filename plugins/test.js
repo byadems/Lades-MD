@@ -1,179 +1,225 @@
 function TimeCalculator(a) {
+  a = Math.abs(a);
   let b = Math.floor(a / 31536e3),
     c = Math.floor((a % 31536e3) / 2628e3),
     d = Math.floor(((a % 31536e3) % 2628e3) / 86400),
     e = Math.floor((a % 86400) / 3600),
     f = Math.floor((a % 3600) / 60),
     g = Math.floor(a % 60);
-  return (
-    (b > 0 ? b + (1 === b ? " yıl, " : " yıl, ") : "") +
-    (c > 0 ? c + (1 === c ? " ay, " : " ay, ") : "") +
-    (d > 0 ? d + (1 === d ? " gün, " : " gün, ") : "") +
-    (e > 0 ? e + (1 === e ? " saat, " : " saat, ") : "") +
-    (f > 0 ? f + (1 === f ? " dakika " : " dakika, ") : "") +
-    (g > 0 ? g + (1 === g ? " saniye" : " saniye ") : "")
-  );
+
+  let parts = [];
+  if (b > 0) parts.push(b + " yıl");
+  if (c > 0) parts.push(c + " ay");
+  if (d > 0) parts.push(d + " gün");
+  if (e > 0) parts.push(e + " saat");
+  if (f > 0) parts.push(f + " dakika");
+  if (g > 0) parts.push(g + " saniye");
+
+  return parts.length > 0 ? parts.join(", ") : "0 saniye";
 }
+
 const { Module } = require("../main");
+const axios = require("axios");
+
+// ═══════════════════════════════════
+// 📅 Yaş Hesaplayıcı
+// ═══════════════════════════════════
 Module(
   {
     pattern: "yaşhesap ?(.*)",
     desc: "Yaş hesaplayıcı",
     use: "utility",
   },
-  async (m, t) => {
-    if (!t[1]) return await m.sendReply("_📅 Doğum tarihinizi girin_");
+  async (m, match) => {
+    if (!match) return await m.sendReply("_📅 Doğum tarihinizi girin_\n_Örnek: .yaşhesap 15/06/1990_");
     if (
-      !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(t[1])
+      !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(match)
     )
-      return await m.sendReply("_⚠️ Tarih gg/aa/yy formatında olmalıdır_");
-    var DOB = t[1];
-    var actual = DOB.includes("-")
-      ? DOB.split("-")[1] + "-" + DOB.split("-")[0] + "-" + DOB.split("-")[2]
-      : DOB.split("/")[1] + "-" + DOB.split("/")[0] + "-" + DOB.split("/")[2];
+      return await m.sendReply("_⚠️ Tarih gg/aa/yyyy formatında olmalıdır_\n_Örnek: 15/06/1990_");
+
+    var DOB = match;
+    var parts = DOB.includes("-") ? DOB.split("-") : DOB.split("/");
+    var actual = parts[1] + "/" + parts[0] + "/" + parts[2];
     var dob = new Date(actual).getTime();
+
+    if (isNaN(dob)) return await m.sendReply("_⚠️ Geçersiz tarih!_");
+
     var today = new Date().getTime();
+
+    if (dob > today) return await m.sendReply("_⚠️ Doğum tarihi gelecekte olamaz!_");
+
     var age = (today - dob) / 1000;
-    return await m.sendReply("```" + TimeCalculator(age) + "```");
-  }
-);
-Module({
-    pattern: "gerisayım ?(.*)",
-    desc: "Tarihi Sayar",
-    use: "utility",
-  },
-  async (m, t) => {
-    if (!t[1]) return await m.sendReply("_📅 Bana gelecek bir tarih verin!_");
-    if (
-      !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(t[1])
-    )
-      return await m.sendReply("_⚠️ Tarih gg/aa/yy formatında olmalıdır_");
-    var DOB = t[1];
-    var actual = DOB.includes("-")
-      ? DOB.split("-")[1] + "-" + DOB.split("-")[0] + "-" + DOB.split("-")[2]
-      : DOB.split("/")[1] + "-" + DOB.split("/")[0] + "-" + DOB.split("/")[2];
-    var dob = new Date(actual).getTime();
-    var today = new Date().getTime();
-    var age = (dob - today) / 1000;
-    return await m.sendReply("_" + TimeCalculator(age) + " kalan_");
+    return await m.sendReply("```🎂 Yaşınız: " + TimeCalculator(age) + "```");
   }
 );
 
-Module({
+// ═══════════════════════════════════
+// ⏳ Geri Sayım
+// ═══════════════════════════════════
+Module(
+  {
+    pattern: "gerisayım ?(.*)",
+    desc: "Tarihe geri sayım yapar",
+    use: "utility",
+  },
+  async (m, match) => {
+    if (!match) return await m.sendReply("_📅 Bana gelecek bir tarih verin!_\n_Örnek: .gerisayım 01/01/2026_");
+    if (
+      !/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/.test(match)
+    )
+      return await m.sendReply("_⚠️ Tarih gg/aa/yyyy formatında olmalıdır_\n_Örnek: 01/01/2026_");
+
+    var DOB = match;
+    var parts = DOB.includes("-") ? DOB.split("-") : DOB.split("/");
+    var actual = parts[1] + "/" + parts[0] + "/" + parts[2];
+    var dob = new Date(actual).getTime();
+
+    if (isNaN(dob)) return await m.sendReply("_⚠️ Geçersiz tarih!_");
+
+    var today = new Date().getTime();
+
+    if (dob <= today) return await m.sendReply("_⚠️ Lütfen gelecekte bir tarih girin!_");
+
+    var remaining = (dob - today) / 1000;
+    return await m.sendReply("_⏳ " + TimeCalculator(remaining) + " kaldı_");
+  }
+);
+
+// ═══════════════════════════════════
+// 🏓 Ping Testi
+// ═══════════════════════════════════
+Module(
+  {
     pattern: "ping",
     use: "utility",
     desc: "Ağ gecikmesini (ping) ölçer",
   },
-  async (message, match) => {
+  async (message) => {
     const start = process.hrtime();
     let sent_msg = await message.sendReply("*❮ ᴘɪɴɢ ᴛᴇsᴛɪ ❯*");
     const diff = process.hrtime(start);
     const ms = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(2);
-    await message.edit("*🚀 ᴛᴇᴘᴋɪ sᴜ̈ʀᴇsɪ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);
+    await message.edit(
+      "*🚀 ᴛᴇᴘᴋɪ sᴜ̈ʀᴇsɪ: " + ms + " _ᴍs_*",
+      message.jid,
+      sent_msg.key
+    );
   }
 );
 
-Module({
+// ═══════════════════════════════════
+// ⚡ Hız Testi (HTTP Download Test)
+// ═══════════════════════════════════
+Module(
+  {
     pattern: "hıztesti",
+    desc: "İnternet hız testi yapar",
     use: "utility",
-    desc: "Speedtest.net ile gerçek indirme/yükleme hızını ölçer",
   },
-  async (message, match) => {
-    let sent_msg = await message.sendReply("_⏳ Speedtest.net sunucuları aranıyor..._");
+  async (message) => {
+    const loading = await message.sendReply(
+      "```⚡ Hız testi başlatılıyor...\n⏳ Lütfen bekleyin```"
+    );
 
     try {
-      const configRes = await fetch("https://www.speedtest.net/speedtest-config.php", {
-        headers: { "User-Agent": "Mozilla/5.0" },
-      });
-      const configText = await configRes.text();
-      const ipMatch  = configText.match(/ip="([^"]+)"/);
-      const latMatch = configText.match(/lat="([^"]+)"/);
-      const lonMatch = configText.match(/lon="([^"]+)"/);
-      const ispMatch = configText.match(/isp="([^"]+)"/);
-      const clientIp  = ipMatch  ? ipMatch[1]  : "N/A";
-      const clientLat = latMatch ? parseFloat(latMatch[1]) : 0;
-      const clientLon = lonMatch ? parseFloat(lonMatch[1]) : 0;
-      const clientIsp = ispMatch ? ispMatch[1] : "N/A";
-
-      const serverRes  = await fetch("https://www.speedtest.net/api/js/servers?engine=js&limit=10", {
-        headers: { "User-Agent": "Mozilla/5.0" },
-      });
-      const servers = await serverRes.json();
-
-      function haversine(lat1, lon1, lat2, lon2) {
-        const R = 6371;
-        const dLat = ((lat2 - lat1) * Math.PI) / 180;
-        const dLon = ((lon2 - lon1) * Math.PI) / 180;
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos((lat1 * Math.PI) / 180) *
-          Math.cos((lat2 * Math.PI) / 180) *
-          Math.sin(dLon / 2) ** 2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      }
-      const server = servers
-        .map((s) => ({ ...s, dist: haversine(clientLat, clientLon, parseFloat(s.lat), parseFloat(s.lon)) }))
-        .sort((a, b) => a.dist - b.dist)[0];
-
+      // Test dosyası (10MB)
+      const testUrl = "https://speed.cloudflare.com/__down?bytes=10000000";
+      
+      // İndirme hızı testi
       await message.edit(
-        `_📡 Sunucu: ${server.sponsor} (${server.name}) — bağlanılıyor..._`,
-        message.jid, sent_msg.key
+        "```⚡ Hız testi yapılıyor...\n📥 İndirme hızı ölçülüyor...```",
+        message.jid,
+        loading.key
       );
 
-      const pingUrl = `https://${server.host}/speedtest/latency.txt`;
-      const pings = [];
-      for (let i = 0; i < 5; i++) {
-        const t0 = Date.now();
-        await fetch(pingUrl, { cache: "no-store" });
-        pings.push(Date.now() - t0);
+      const downloadStart = Date.now();
+      const downloadResponse = await axios({
+        method: 'get',
+        url: testUrl,
+        responseType: 'arraybuffer',
+        timeout: 30000,
+        onDownloadProgress: (progressEvent) => {
+          // Progress takibi (isteğe bağlı)
+        }
+      });
+      const downloadEnd = Date.now();
+      const downloadTime = (downloadEnd - downloadStart) / 1000; // saniye
+      const downloadBytes = downloadResponse.data.byteLength;
+      const downloadSpeed = ((downloadBytes * 8) / downloadTime / 1000000).toFixed(2); // Mbps
+
+      // Yükleme hızı testi
+      await message.edit(
+        "```⚡ Hız testi yapılıyor...\n📤 Yükleme hızı ölçülüyor...```",
+        message.jid,
+        loading.key
+      );
+
+      const uploadData = Buffer.alloc(1000000); // 1MB dummy data
+      const uploadStart = Date.now();
+      await axios.post("https://speed.cloudflare.com/__up", uploadData, {
+        timeout: 30000,
+        headers: { 'Content-Type': 'application/octet-stream' }
+      });
+      const uploadEnd = Date.now();
+      const uploadTime = (uploadEnd - uploadStart) / 1000;
+      const uploadSpeed = ((uploadData.length * 8) / uploadTime / 1000000).toFixed(2); // Mbps
+
+      // Ping testi
+      const pingStart = Date.now();
+      await axios.get("https://1.1.1.1", { timeout: 5000 });
+      const pingEnd = Date.now();
+      const ping = pingEnd - pingStart;
+
+      // Sunucu bilgisi
+      let serverInfo = "Cloudflare CDN";
+      try {
+        const geoResponse = await axios.get("https://ipapi.co/json/", { timeout: 5000 });
+        serverInfo = `${geoResponse.data.city || 'Unknown'}, ${geoResponse.data.country_name || 'Unknown'}`;
+      } catch (e) {
+        // Geo bilgisi alınamazsa varsayılan kalır
       }
-      const ping   = Math.min(...pings);
-      const jitter = Math.round(Math.max(...pings) - Math.min(...pings));
 
-      const dlSizes  = [350, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
-      const dlUrl    = `https://${server.host}/speedtest/random${dlSizes[dlSizes.length - 1]}x${dlSizes[dlSizes.length - 1]}.jpg`;
-      const dlStart  = Date.now();
-      const dlResults = await Promise.all([
-        fetch(`${dlUrl}?x=${Math.random()}`).then((r) => r.arrayBuffer()),
-        fetch(`${dlUrl}?x=${Math.random()}`).then((r) => r.arrayBuffer()),
-        fetch(`${dlUrl}?x=${Math.random()}`).then((r) => r.arrayBuffer()),
-        fetch(`${dlUrl}?x=${Math.random()}`).then((r) => r.arrayBuffer()),
-      ]);
-      const dlTime  = (Date.now() - dlStart) / 1000;
-      const dlBytes = dlResults.reduce((s, b) => s + b.byteLength, 0);
-      const dlMbps  = ((dlBytes * 8) / dlTime / 1_000_000).toFixed(2);
+      // Sistem bilgileri
+      const os = require("os");
+      const totalMem = (os.totalmem() / (1024 ** 3)).toFixed(2);
+      const freeMem = (os.freemem() / (1024 ** 3)).toFixed(2);
+      const usedMem = (totalMem - freeMem).toFixed(2);
 
-      const ulChunk = new Uint8Array(1 * 1024 * 1024);
-      const ulStart = Date.now();
-      await Promise.all([
-        fetch(`https://${server.host}/speedtest/upload.php`, { method: "POST", body: ulChunk }),
-        fetch(`https://${server.host}/speedtest/upload.php`, { method: "POST", body: ulChunk }),
-        fetch(`https://${server.host}/speedtest/upload.php`, { method: "POST", body: ulChunk }),
-        fetch(`https://${server.host}/speedtest/upload.php`, { method: "POST", body: ulChunk }),
-      ]);
-      const ulTime  = (Date.now() - ulStart) / 1000;
-      const ulBytes = ulChunk.byteLength * 4;
-      const ulMbps  = ((ulBytes * 8) / ulTime / 1_000_000).toFixed(2);
+      const uptime = process.uptime();
+      const hours = Math.floor(uptime / 3600);
+      const minutes = Math.floor((uptime % 3600) / 60);
 
-      const text =
-        `*❮ sᴘᴇᴇᴅᴛᴇsᴛ.ɴᴇᴛ ❯*\n\n` +
-        `*📥 İndirme:* \`${dlMbps} Mbps\`\n` +
-        `*📤 Yükleme:* \`${ulMbps} Mbps\`\n` +
-        `*🏓 Ping:* \`${ping} ms\`\n` +
-        `*📳 Jitter:* \`${jitter} ms\`\n\n` +
-        `*📡 Sunucu:* ${server.sponsor} — ${server.name}\n` +
-        `*🌐 ISP:* ${clientIsp}\n` +
-        `*🔌 IP:* \`${clientIp}\``;
+      let result = `⚡ *LADES HIZ TESTİ*\n\n`;
+      result += `╭─「 İnternet Hızı 」\n`;
+      result += `│ 📥 *İndirme:* ${downloadSpeed} Mbps\n`;
+      result += `│ 📤 *Yükleme:* ${uploadSpeed} Mbps\n`;
+      result += `│ 🏓 *Ping:* ${ping} ms\n`;
+      result += `│ 🌐 *Konum:* ${serverInfo}\n`;
+      result += `╰──────────────\n\n`;
+      result += `╭─「 Sistem Durumu 」\n`;
+      result += `│ ⏰ *Çalışma:* ${hours}s ${minutes}d\n`;
+      result += `│ 💾 *RAM:* ${usedMem}/${totalMem} GB\n`;
+      result += `│ 🆓 *Boş:* ${freeMem} GB\n`;
+      result += `╰──────────────`;
 
-      await message.edit(text, message.jid, sent_msg.key);
+      await message.edit(result, message.jid, loading.key);
 
     } catch (error) {
-      console.error("Speedtest error:", error);
-      await message.edit(
-        "_❌ Hız testi başarısız oldu!_\n_Hata: " + (error.message || "Bilinmeyen hata") + "_",
-        message.jid,
-        sent_msg.key
-      );
+      console.error("Speedtest Error:", error);
+      
+      let errorMsg = `❌ *Hız testi başarısız!*\n\n`;
+      
+      if (error.code === 'ECONNABORTED') {
+        errorMsg += `_Zaman aşımı! Bağlantınız çok yavaş._`;
+      } else if (error.response?.status) {
+        errorMsg += `_HTTP Hatası: ${error.response.status}_`;
+      } else {
+        errorMsg += `_${error.message}_`;
+      }
+      
+      errorMsg += `\n\n💡 *Alternatif:* .ping komutunu kullanın`;
+      
+      await message.edit(errorMsg, message.jid, loading.key);
     }
   }
 );
