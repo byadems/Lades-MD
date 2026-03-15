@@ -150,32 +150,60 @@ Module(
   {
     pattern: "ytvideo ?(.*)",
     fromMe: fromMe,
-    desc: "Video kalitesi seçimi ile YouTube videosu indir",
-    usage: ".ytvideo <bağlantı>",
+    desc: "Video arama veya bağlantıdan doğrudan en yüksek kaliteyi indirir",
+    usage: ".ytvideo <sorgu/bağlantı>",
     use: "download",
   },
   async (message, match) => {
-    let url = match[1] || message.reply_message?.text;
-
-    if (url && /\bhttps?:\/\/\S+/gi.test(url)) {
-      url = url.match(/\bhttps?:\/\/\S+/gi)[0];
+    let input = (match[1] || message.reply_message?.text || "").trim();
+    if (!input) {
+      return await message.sendReply("_⚠️ Lütfen video adını veya bağlantısını yazın!_\n_Örnek: .ytvideo kedi videoları_");
     }
 
-    if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
-      return await message.sendReply("_⚠️ Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .ytvideo https://youtube.com/watch?v=xxxxx_"
-      );
-    }
+    const extractedUrl = /\bhttps?:\/\/\S+/gi.test(input)
+      ? input.match(/\bhttps?:\/\/\S+/gi)?.[0]
+      : null;
 
-    // Convert YouTube Shorts URL to regular watch URL if needed
-    if (url.includes("youtube.com/shorts/")) {
-      const shortId = url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
-      if (shortId) {
-        url = `https://www.youtube.com/watch?v=${shortId}`;
+    const url = extractedUrl && (extractedUrl.includes("youtube.com") || extractedUrl.includes("youtu.be"))
+      ? (extractedUrl.includes("youtube.com/shorts/")
+        ? (() => {
+            const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
+            return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
+          })()
+        : extractedUrl)
+      : null;
+
+    if (!url) {
+      try {
+        const searchMsg = await message.sendReply("_🔍 YouTube'da aranıyor..._");
+        const results = await nexray.searchYoutube(input);
+
+        if (!results || results.length === 0) {
+          return await message.edit("_❌ Sonuç bulunamadı!_", message.jid, searchMsg.key);
+        }
+
+        let resultText = "🎵 YouTube Arama Sonuçları\n\n";
+        resultText += `_${results.length} sonuç bulundu:_ *${input}*\n\n`;
+
+        results.slice(0, 10).forEach((video, index) => {
+          resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
+          resultText += `   _Süre:_ \`${video.duration}\` | _Görüntülenme:_ \`${video.views}\`\n`;
+          resultText += `   _Kanal:_ ${video.channel}\n\n`;
+        });
+
+        resultText += "_Video indirmek için bir numara (1-10) ile yanıtlayın_";
+        return await message.edit(resultText, message.jid, searchMsg.key);
+      } catch (error) {
+        console.error("ytvideo arama hatası:", error);
+        return await message.sendReply("_❌ Arama başarısız oldu._");
       }
     }
 
+    let downloadMsg;
+    let videoPath;
+
     try {
-      const infoMsg = await message.sendReply("_📊 Video bilgileri alınıyor..._");
+      downloadMsg = await message.sendReply("_📊 Video bilgileri alınıyor..._");
       const info = await getVideoInfo(url);
 
       const videoFormats = info.formats
@@ -188,84 +216,60 @@ Module(
           return getRes(b.quality) - getRes(a.quality);
         });
 
-      const uniqueQualities = [...new Set(videoFormats.map((f) => f.quality))];
+      if (videoFormats.length === 0) {
+         return await message.edit(
+           "_❌ Bu video için uygun format bulunamadı._",
+           message.jid,
+           downloadMsg.key
+         );
+      }
 
-      const videoIdMatch = url.match(
-        /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&\s/?]+)/
+      const highestQuality = videoFormats[0].quality;
+      const safeTitle = censorBadWords(info.title || "Video");
+
+      await message.edit(
+        `_🔻 İndirilip yükleniyor..._ *${safeTitle}*\n_Kalite:_ \`${highestQuality}\``,
+        message.jid,
+        downloadMsg.key
       );
-      const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-      let qualityText = "🎬 _*Video Kalitesini Seçin*_\n\n";
-      qualityText += `_*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
+      const result = await downloadVideo(url, highestQuality);
+      videoPath = result.path;
+      const stats = fs.statSync(videoPath);
 
-      if (uniqueQualities.length === 0) {
-        return await message.edit(
-          "_❌ Bu video için uygun format bulunamadı._",
-          message.jid,
-          infoMsg.key
-        );
+      if (stats.size > VIDEO_SIZE_LIMIT) {
+        const stream = fs.createReadStream(videoPath);
+        await message.sendMessage({ stream }, "document", {
+          fileName: `${safeTitle}.mp4`,
+          mimetype: "video/mp4",
+          caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
+        });
+        stream.destroy();
+      } else {
+        const stream = fs.createReadStream(videoPath);
+        await message.sendReply({ stream }, "video", {
+          caption: `_*${safeTitle}*_\n\n_Kalite: ${highestQuality}_`,
+        });
+        stream.destroy();
       }
 
-      uniqueQualities.forEach((quality, index) => {
-        const format = videoFormats.find((f) => f.quality === quality);
-        const audioFormat = info.formats.find((f) => f.type === "audio");
+      await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
 
-        let sizeInfo = "";
-        if (format.size && audioFormat?.size) {
-          // Parse sizes and estimate total
-          const parseSize = (sizeStr) => {
-            const match = sizeStr.match(/([\d.]+)\s*(KB|MB|GB)/i);
-            if (!match) return 0;
-            const value = parseFloat(match[1]);
-            const unit = match[2].toUpperCase();
-            if (unit === "KB") return value * 1024;
-            if (unit === "MB") return value * 1024 * 1024;
-            if (unit === "GB") return value * 1024 * 1024 * 1024;
-            return value;
-          };
-
-          const videoSize = parseSize(format.size);
-          const audioSize = parseSize(audioFormat.size);
-          const totalSize = videoSize + audioSize;
-
-          if (totalSize > 0) {
-            sizeInfo = ` ~ _${formatBytes(totalSize)}_`;
-          }
-        }
-
-        qualityText += `*${index + 1}.* _*${quality}*_${sizeInfo}\n`;
-      });
-
-      const audioFormat = info.formats.find((f) => f.type === "audio");
-      if (audioFormat) {
-        let audioSizeInfo = "";
-        if (audioFormat.size) {
-          const parseSize = (sizeStr) => {
-            const match = sizeStr.match(/([\d.]+)\s*(KB|MB|GB)/i);
-            if (!match) return 0;
-            const value = parseFloat(match[1]);
-            const unit = match[2].toUpperCase();
-            if (unit === "KB") return value * 1024;
-            if (unit === "MB") return value * 1024 * 1024;
-            if (unit === "GB") return value * 1024 * 1024 * 1024;
-            return value;
-          };
-          const audioSize = parseSize(audioFormat.size);
-          if (audioSize > 0) {
-            audioSizeInfo = ` ~ _${formatBytes(audioSize)}_`;
-          }
-        }
-        qualityText += `*${uniqueQualities.length + 1
-          }.* _*Sadece Ses*_${audioSizeInfo}\n`;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (fs.existsSync(videoPath)) {
+        fs.unlinkSync(videoPath);
       }
-
-      qualityText += "\n_İndirmek için bir numara ile yanıtlayın_";
-
-      await message.edit(qualityText, message.jid, infoMsg.key);
     } catch (error) {
-      console.error("YouTube video bilgi hatası:", error);
-      await message.sendReply("_⚠️ Video bilgisi alınamadı. Lütfen bağlantıyı kontrol edin._"
-      );
+      console.error("YouTube ytvideo indirme hatası:", error);
+      if (downloadMsg) {
+        await message.edit("_❌ İndirme başarısız! Lütfen tekrar deneyin._", message.jid, downloadMsg.key);
+      } else {
+        await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
+      }
+
+      if (videoPath && fs.existsSync(videoPath)) {
+        try { fs.unlinkSync(videoPath); } catch (_) { }
+      }
     }
   }
 );
@@ -807,171 +811,97 @@ Module(
         await message.sendReply("_❌ İndirme işlemi başarısız oldu._");
       }
     } else if (
-      repliedText.includes("Video Kalitesini Seçin") &&
-      repliedText.includes("İndirmek için bir numara ile yanıtlayın")
+      repliedText.toLowerCase().includes("youtube arama sonuçları") &&
+      repliedText.toLowerCase().includes("video indirmek için")
     ) {
+      if (selectedNumber < 1 || selectedNumber > 10) {
+        return await message.sendReply("_⚠️ Lütfen 1-10 arasında bir sayı seçin_");
+      }
+
       try {
-        const lines = repliedText.split("\n");
-        let videoId = "";
+        const queryMatch = repliedText.match(
+          /_?(\d+) sonuç bulundu:_?\s*\*(.+?)\*/
+        );
+        if (!queryMatch) return;
 
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].trim();
+        const query = queryMatch[2];
+        const results = await nexray.searchYoutube(query);
 
-          if (
-            line.startsWith("(") &&
-            line.endsWith(")") &&
-            line.length >= 13 &&
-            !line.includes("Select") &&
-            !line.includes("Reply") &&
-            !line.match(/^\*\d+\./)
-          ) {
-            videoId = line.replace(/[()]/g, "").trim();
-            if (videoId.length >= 10) break;
-          }
+        if (!results || !results[selectedNumber - 1]) {
+          return await message.sendReply("_❌ Geçersiz seçim!_");
         }
 
-        if (!videoId || videoId.length < 10) {
-          return await message.sendReply("_🎬 Video kimliği alınamadı._");
-        }
+        const selectedVideo = results[selectedNumber - 1];
+        let downloadMsg;
 
-        const url = `https://www.youtube.com/watch?v=${videoId}`;
+        try {
+          const safeTitle = censorBadWords(selectedVideo.title);
+          downloadMsg = await message.sendReply(
+            `_📊 Video bilgileri alınıyor..._ *${safeTitle}*`
+          );
 
-        const titleMatch = repliedText.match(/_\*([^*]+)\*_/);
-        if (!titleMatch) return;
-
-        const qualityLines = lines.filter((line) => line.match(/^\*\d+\./));
-
-        if (!qualityLines[selectedNumber - 1]) {
-          return await message.sendReply("_❌ Geçersiz kalite seçimi!_");
-        }
-
-        const selectedLine = qualityLines[selectedNumber - 1];
-        const isAudioOnly = selectedLine.includes("Sadece Ses");
-
-        if (isAudioOnly) {
-          let downloadMsg;
-          let audioPath;
-
-          try {
-            downloadMsg = await message.sendReply("_⬇️ Ses indiriliyor..._");
-
-            const result = await downloadAudio(url);
-            audioPath = result.path;
-
-            const mp3Path = await convertM4aToMp3(audioPath);
-            audioPath = mp3Path;
-
-            await message.edit(
-              "_🔻 İndirilip yükleniyor..._",
-              message.jid,
-              downloadMsg.key
-            );
-
-            const safeTitle = censorBadWords(result.title);
-            const stream = fs.createReadStream(audioPath);
-            await message.sendMessage({ stream }, "document", {
-              fileName: `${safeTitle}.m4a`,
-              mimetype: "audio/mp4",
-              caption: `_*${safeTitle}*_`,
+          const info = await getVideoInfo(selectedVideo.url);
+          const videoFormats = info.formats
+            .filter((f) => f.type === "video" && f.quality)
+            .sort((a, b) => {
+              const getRes = (q) => {
+                const match = q.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 0;
+              };
+              return getRes(b.quality) - getRes(a.quality);
             });
-            stream.destroy();
 
-            await message.edit(
-              "_✅ Hazır!_",
-              message.jid,
-              downloadMsg.key
-            );
-
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            if (fs.existsSync(audioPath)) {
-              fs.unlinkSync(audioPath);
-            }
-          } catch (error) {
-            console.error("YouTube video ses indirme hatası:", error);
-            if (downloadMsg) {
-              await message.edit(
-                "_İndirme başarısız!_",
-                message.jid,
-                downloadMsg.key
-              );
-            }
-
-            if (audioPath && fs.existsSync(audioPath)) {
-              fs.unlinkSync(audioPath);
-            }
+          if (videoFormats.length === 0) {
+             return await message.edit("_❌ Bu video için uygun format bulunamadı._", message.jid, downloadMsg.key);
           }
-        } else {
-          const qualityMatch = selectedLine.match(/(\d+p)/);
-          if (!qualityMatch) return;
 
-          const selectedQuality = qualityMatch[1];
+          const highestQuality = videoFormats[0].quality;
 
-          let downloadMsg;
-          let videoPath;
+          await message.edit(
+            `_🔻 İndirilip yükleniyor..._ *${safeTitle}*\n_Kalite:_ \`${highestQuality}\``,
+            message.jid,
+            downloadMsg.key
+          );
 
-          try {
-            downloadMsg = await message.sendReply(
-              `_⬇️ *${selectedQuality}* kalitesinde video indiriliyor..._`
-            );
+          const result = await downloadVideo(selectedVideo.url, highestQuality);
+          const videoPath = result.path;
+          const stats = fs.statSync(videoPath);
 
-            const result = await downloadVideo(url, selectedQuality);
-            videoPath = result.path;
+          if (stats.size > VIDEO_SIZE_LIMIT) {
+             const stream = fs.createReadStream(videoPath);
+             await message.sendMessage({ stream }, "document", {
+               fileName: `${safeTitle}.mp4`,
+               mimetype: "video/mp4",
+               caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
+             });
+             stream.destroy();
+          } else {
+             const stream = fs.createReadStream(videoPath);
+             await message.sendReply({ stream }, "video", {
+               caption: `_*${safeTitle}*_\n\n_Kalite: ${highestQuality}_`,
+             });
+             stream.destroy();
+          }
 
+          await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          if (fs.existsSync(videoPath)) {
+            try { fs.unlinkSync(videoPath); } catch (_) { }
+          }
+        } catch (error) {
+          console.error("Video (highest quality) indirme hatası:", error);
+          if (downloadMsg) {
             await message.edit(
-              "_🔻 İndirilip yükleniyor..._",
+              "_⚠️ İndirme başarısız! Lütfen tekrar deneyin._",
               message.jid,
               downloadMsg.key
             );
-
-            const stats = fs.statSync(videoPath);
-            const safeTitle = censorBadWords(result.title);
-
-            if (stats.size > VIDEO_SIZE_LIMIT) {
-              const stream7 = fs.createReadStream(videoPath);
-              await message.sendMessage({ stream: stream7 }, "document", {
-                fileName: `${safeTitle}.mp4`,
-                mimetype: "video/mp4",
-                caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(
-                  stats.size
-                )}_\n_Kalite: ${selectedQuality}_`,
-              });
-              stream7.destroy();
-            } else {
-              const stream8 = fs.createReadStream(videoPath);
-              await message.sendReply({ stream: stream8 }, "video", {
-                caption: `_*${safeTitle}*_\n\n_Kalite: ${selectedQuality}_`,
-              });
-              stream8.destroy();
-            }
-
-            await message.edit(
-              "_✅ Hazır!_",
-              message.jid,
-              downloadMsg.key
-            );
-
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            if (fs.existsSync(videoPath)) {
-              fs.unlinkSync(videoPath);
-            }
-          } catch (error) {
-            console.error("YouTube video indirme hatası:", error);
-            if (downloadMsg) {
-              await message.edit(
-                "_İndirme başarısız!_",
-                message.jid,
-                downloadMsg.key
-              );
-            }
-
-            if (videoPath && fs.existsSync(videoPath)) {
-              fs.unlinkSync(videoPath);
-            }
           }
         }
       } catch (error) {
-        console.error("YouTube kalite seçim hatası:", error);
-        await message.sendReply("_❌ Kalite seçimi işlenemedi._");
+        console.error("Video (highest quality) seçim hatası:", error);
+        await message.sendReply("_❌ Seçiminiz işlenemedi._");
       }
     }
   }
