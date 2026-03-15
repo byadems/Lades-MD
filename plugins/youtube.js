@@ -355,18 +355,23 @@ Module(
         const stats = fs.statSync(videoPath);
         const safeTitle = censorBadWords(result.title);
 
+        let metadataStr = "";
+        try {
+           metadataStr = `_Kanal:_ ${info.channel || "Bilinmiyor"}\n_Süre:_ \`${info.duration || "Bilinmiyor"}\` | _Görüntülenme:_ \`${info.views || "Bilinmiyor"}\`\n\n`;
+        } catch (_) {}
+
         if (stats.size > VIDEO_SIZE_LIMIT) {
           const stream = fs.createReadStream(videoPath);
           await message.sendMessage({ stream }, "document", {
             fileName: `${safeTitle}.mp4`,
             mimetype: "video/mp4",
-            caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
+            caption: `_*${safeTitle}*_\n\n${metadataStr}_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
           });
           stream.destroy();
         } else {
           const stream = fs.createReadStream(videoPath);
           await message.sendReply({ stream }, "video", {
-            caption: `_*${safeTitle}*_\n\n_Kalite: ${highestQuality}_`,
+            caption: `_*${safeTitle}*_\n\n${metadataStr}_Kalite: ${highestQuality}_`,
           });
           stream.destroy();
         }
@@ -851,7 +856,7 @@ Module(
       }
     } else if (
       repliedText.toLowerCase().includes("youtube arama sonuçları") &&
-      repliedText.toLowerCase().includes("video indirmek için")
+      repliedText.toLowerCase().includes("videoyu indirmek için")
     ) {
       if (selectedNumber < 1 || selectedNumber > 10) {
         return await message.sendReply("_⚠️ Lütfen 1-10 arasında bir sayı seçin_");
