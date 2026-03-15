@@ -72,7 +72,9 @@ Module(
       const posts = r.media_count ?? r.posts ?? "-";
       const priv = r.is_private ? "🔒 Gizli" : "🌐 Açık";
       const verified = r.is_verified ? "✅" : "❌";
-      await message.sendReply(
+      const avatar = r.profile_pic_url || r.profile_pic || r.avatar || r.profile?.avatar;
+
+      const caption = 
         `📸 *Instagram Profili*\n\n` +
         `👤 *Ad:* ${full}\n` +
         `🔑 *Kullanıcı:* @${user}\n` +
@@ -81,8 +83,13 @@ Module(
         `➡️ *Takip:* ${fmtCount(following)}\n` +
         `📷 *Gönderi:* ${posts}\n` +
         `🔐 *Hesap:* ${priv}\n` +
-        `✅ *Doğrulanmış:* ${verified}`
-      );
+        `✅ *Doğrulanmış:* ${verified}`;
+
+      if (avatar) {
+        await message.client.sendMessage(message.jid, { image: { url: avatar }, caption }, { quoted: message.data });
+      } else {
+        await message.sendReply(caption);
+      }
     } catch (e) {
       await message.sendReply(`❌ _Instagram profili alınamadı:_ ${e.message}`);
     }
@@ -113,7 +120,9 @@ Module(
       const tweets = stats.tweets ?? r.statuses_count ?? r.tweets ?? "-";
       const likes = stats.likes ?? r.favourites_count ?? "-";
       const verified = r.verified ? "✅" : "❌";
-      await message.sendReply(
+      const avatar = r.profile?.avatar || r.avatar || r.profile_image_url;
+
+      const caption = 
         `🐦 *Twitter/X Profili*\n\n` +
         `👤 *Ad:* ${name}\n` +
         `🔑 *Kullanıcı:* @${user}\n` +
@@ -122,8 +131,13 @@ Module(
         `➡️ *Takip:* ${fmtCount(following)}\n` +
         `🐦 *Tweet:* ${fmtCount(tweets)}\n` +
         `❤️ *Beğeni:* ${fmtCount(likes)}\n` +
-        `✅ *Doğrulanmış:* ${verified}`
-      );
+        `✅ *Doğrulanmış:* ${verified}`;
+
+      if (avatar) {
+        await message.client.sendMessage(message.jid, { image: { url: avatar }, caption }, { quoted: message.data });
+      } else {
+        await message.sendReply(caption);
+      }
     } catch (e) {
       await message.sendReply(`❌ _Twitter profili alınamadı:_ ${e.message}`);
     }
