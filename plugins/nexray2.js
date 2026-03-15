@@ -1,6 +1,7 @@
 const { Module } = require("../main");
 const axios = require("axios");
 const config = require("../config");
+const { uploadToCatbox } = require("./utils");
 
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 45000;
@@ -82,10 +83,12 @@ Module(
     try {
       const r = await nx(`/stalker/twitter?username=${encodeURIComponent(user)}`);
       const name = r.name || user;
-      const bio = r.description || r.bio || "-";
-      const followers = r.followers_count ?? r.followers ?? "-";
-      const following = r.friends_count ?? r.following ?? "-";
-      const tweets = r.statuses_count ?? r.tweets ?? "-";
+      const bio = r.description || r.bio || r.signature || "-";
+      const stats = r.stats || {};
+      const followers = stats.followers ?? r.followers_count ?? r.followers ?? "-";
+      const following = stats.following ?? r.friends_count ?? r.following ?? "-";
+      const tweets = stats.tweets ?? r.statuses_count ?? r.tweets ?? "-";
+      const likes = stats.likes ?? r.favourites_count ?? "-";
       const verified = r.verified ? "✅" : "❌";
       await message.sendReply(
         `🐦 *Twitter/X Profili*\n\n` +
@@ -95,6 +98,7 @@ Module(
         `👥 *Takipçi:* ${Number(followers).toLocaleString()}\n` +
         `➡️ *Takip:* ${Number(following).toLocaleString()}\n` +
         `🐦 *Tweet:* ${Number(tweets).toLocaleString()}\n` +
+        `❤️ *Beğeni:* ${Number(likes).toLocaleString()}\n` +
         `✅ *Doğrulanmış:* ${verified}`
       );
     } catch (e) {
@@ -117,21 +121,16 @@ Module(
   },
   async (message, match) => {
     const mime = message.reply_message?.mimetype || message.mimetype || "";
-    const isImg = mime.startsWith("image/") || (message.reply_message?.mimetype || "").startsWith("image/");
+    const isImg = mime.startsWith("image/");
     if (!isImg) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.wasted`");
     try {
-      let imgUrl;
-      if (message.reply_message?.mimetype?.startsWith("image/")) {
-        const buf = await message.reply_message.download();
-        const b64 = buf.toString("base64");
-        const ext = mime.includes("png") ? "png" : "jpg";
-        imgUrl = `data:image/${ext};base64,${b64}`;
-      } else if (match[1]?.startsWith("http")) {
-        imgUrl = match[1].trim();
-      } else {
-        return await message.sendReply("🖼️ _Bir görseli yanıtlayın_");
-      }
-      const buf = await nx(`/editor/wasted?url=${encodeURIComponent(imgUrl)}`, { buffer: true });
+      const wait = await message.send("💀 _İşleniyor..._");
+      const path = await message.reply_message.downloadAndSave();
+      const { url } = await uploadToCatbox(path);
+      if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
+      
+      const buf = await nx(`/editor/wasted?url=${encodeURIComponent(url)}`, { buffer: true });
+      await message.edit("💀 *Wasted!*", message.jid, wait.key);
       await message.client.sendMessage(message.jid, { image: buf, caption: "💀 *Wasted!*" }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Wasted efekti uygulanamadı:_ ${e.message}`);
@@ -150,19 +149,21 @@ Module(
   async (message, match) => {
     const replyMime = message.reply_message?.mimetype || "";
     const isImg = replyMime.startsWith("image/");
-    let urlInput = (match[1] || "").trim();
+    let imgUrl = (match[1] || "").trim();
 
-    if (!isImg && !urlInput.startsWith("http")) {
+    if (!isImg && !imgUrl.startsWith("http")) {
       return await message.sendReply("🖼️ _Bir görseli yanıtlayın veya URL girin:_ `.wanted`");
     }
     try {
-      let imgUrl = urlInput;
       if (!imgUrl && isImg) {
-        // Use media URL from quoted message if available
-        imgUrl = message.reply_message?.image?.url ||
-          message.reply_message?.url ||
-          "https://i.imgur.com/Y3KqMfn.jpg";
+        const wait = await message.send("🔫 _İşleniyor..._");
+        const path = await message.reply_message.downloadAndSave();
+        const { url } = await uploadToCatbox(path);
+        imgUrl = url;
+        await message.edit("✅ _Görsel yüklendi, poster oluşturuluyor..._", message.jid, wait.key);
       }
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
+      
       const buf = await nx(`/editor/wanted?url=${encodeURIComponent(imgUrl)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: "🔫 *ARANIYOR!*" }, { quoted: message.data });
     } catch (e) {
@@ -181,9 +182,13 @@ async function applyEphoto(message, endpoint, caption) {
   const isImg = replyMime.startsWith("image/");
   if (!isImg) return await message.sendReply(`🖼️ _Bir görseli yanıtlayın:_ \`${endpoint}\``);
   try {
-    const buf = await message.reply_message.download();
-    const b64 = `data:image/jpeg;base64,${buf.toString("base64")}`;
-    const result = await nx(`${endpoint}?url=${encodeURIComponent(b64)}`, { buffer: true, timeout: 90000 });
+    const wait = await message.send("⌛ _İşleniyor..._");
+    const path = await message.reply_message.downloadAndSave();
+    const { url } = await uploadToCatbox(path);
+    if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
+    
+    await message.edit("✅ _Efekt uygulanıyor..._", message.jid, wait.key);
+    const result = await nx(`${endpoint}?url=${encodeURIComponent(url)}`, { buffer: true, timeout: 90000 });
     await message.client.sendMessage(message.jid, { image: result, caption }, { quoted: message.data });
   } catch (e) {
     await message.sendReply(`❌ _Efekt uygulanamadı:_ ${e.message}`);
@@ -326,13 +331,17 @@ Module(
     if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.metin`");
     try {
       if (!imgUrl && isImg) {
-        const buf = await message.reply_message.download();
-        imgUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
+        const wait = await message.send("🔍 _İşleniyor..._");
+        const path = await message.reply_message.downloadAndSave();
+        const { url } = await uploadToCatbox(path);
+        imgUrl = url;
+        await message.edit("✅ _Metin okunuyor..._", message.jid, wait.key);
       }
-      const sent = await message.send("🔍 _Metin okunuyor..._");
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
+      
       const result = await nx(`/tools/ocr?url=${encodeURIComponent(imgUrl)}`);
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
       const text = typeof result === "string" ? result : result?.text || result?.result || JSON.stringify(result);
+      if (!text || text === "null") throw new Error("Metin bulunamadı");
       await message.sendReply(`📝 *OCR Sonucu:*\n\n${text}`);
     } catch (e) {
       await message.sendReply(`❌ _Metin okunamadı:_ ${e.message}`);
@@ -355,12 +364,15 @@ Module(
     if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.upscale`");
     try {
       if (!imgUrl && isImg) {
-        const buf = await message.reply_message.download();
-        imgUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
+        const wait = await message.send("⬆️ _İşleniyor..._");
+        const path = await message.reply_message.downloadAndSave();
+        const { url } = await uploadToCatbox(path);
+        imgUrl = url;
+        await message.edit("✅ _Görsel yükseltiliyor..._", message.jid, wait.key);
       }
-      const sent = await message.send("⬆️ _Görsel yükseltiliyor..._");
-      const buf = await nx(`/tools/upscale?url=${encodeURIComponent(imgUrl)}`, { buffer: true, timeout: 90000 });
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
+      
+      const buf = await nx(`/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolusi=2`, { buffer: true, timeout: 90000 });
       await message.client.sendMessage(message.jid, { image: buf, caption: "⬆️ *Görsel HD kaliteye yükseltildi!*" }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Yükseltme başarısız:_ ${e.message}`);
@@ -423,12 +435,16 @@ Module(
     if (!isImg) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.meme ÜSTMETIN|ALTMETIN`");
     const [top, bottom] = input.split("|").map(s => s.trim());
     try {
-      const buf = await message.reply_message.download();
-      const imgUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
+      const wait = await message.send("⌛ _Meme oluşturuluyor..._");
+      const path = await message.reply_message.downloadAndSave();
+      const { url } = await uploadToCatbox(path);
+      if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
+      
       const result = await nx(
-        `/maker/meme?url=${encodeURIComponent(imgUrl)}&top=${encodeURIComponent(top)}&bottom=${encodeURIComponent(bottom || "")}`,
+        `/maker/smeme?background=${encodeURIComponent(url)}&text_atas=${encodeURIComponent(top)}&text_bawah=${encodeURIComponent(bottom || "")}`,
         { buffer: true }
       );
+      await message.edit("😂 *Meme Hazır!*", message.jid, wait.key);
       await message.client.sendMessage(message.jid, { image: result, caption: `😂 *${top}* — *${bottom}*` }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Meme oluşturulamadı:_ ${e.message}`);
@@ -449,7 +465,7 @@ Module(
     if (!code && message.reply_message?.text) code = message.reply_message.text.trim();
     if (!code) return await message.sendReply("💻 _Kod girin:_ `.kodgörsel const x = 1`");
     try {
-      const buf = await nx(`/maker/codeimage?code=${encodeURIComponent(code)}`, { buffer: true });
+      const buf = await nx(`/maker/codesnap?code=${encodeURIComponent(code)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: "💻 *Kod Görseli*" }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Kod görseli oluşturulamadı:_ ${e.message}`);
@@ -730,8 +746,16 @@ Module(
     const parts = (match[1] || "").split("|").map(s => s.trim());
     if (parts.length < 2) return await message.sendReply("🎵 _Kullanım:_ `.müzikkartı Şarkı Adı|Sanatçı` veya `Şarkı|Sanatçı|<resim_url>`");
     const [title, artist, img] = parts;
-    const imageUrl = img || "https://i.imgur.com/Y3KqMfn.jpg";
+    let imageUrl = img || "https://i.imgur.com/Y3KqMfn.jpg";
+    
+    // Reply to image check
+    const isImg = (message.reply_message?.mimetype || "").startsWith("image/");
     try {
+      if (isImg && !img) {
+        const path = await message.reply_message.downloadAndSave();
+        const { url } = await uploadToCatbox(path);
+        if (url && !url.includes("hata")) imageUrl = url;
+      }
       const buf = await nx(
         `/canvas/musiccard?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}&image=${encodeURIComponent(imageUrl)}`,
         { buffer: true }
