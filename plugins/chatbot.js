@@ -16,13 +16,12 @@ const { callGenerativeAI } = require("./utils/misc");
 
 const API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 const models = [
+  "gemini-3.1-flash-lite-preview",
+  "gemini-3-flash-preview",
   "gemini-2.5-flash-lite",
+  "gemini-2.5-flash-lite-preview-09-2025",
   "gemini-2.5-flash",
-  "gemini-2.5-pro",
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-exp",
-  "gemini-2.0-flash-lite",
-  "gemini-pro-latest"
+  "gemini-2.5-pro"
 ];
 
 let validApiModels = [];
