@@ -28,6 +28,23 @@ async function nx(path, opts = {}) {
   throw new Error(d?.message || d?.error || `API hatası: HTTP ${res.status}`);
 }
 
+async function nxTry(paths, opts = {}) {
+  const errors = [];
+  for (const path of paths) {
+    try {
+      return await nx(path, opts);
+    } catch (e) {
+      errors.push(`${path} → ${e.message}`);
+    }
+  }
+  throw new Error(errors.length ? errors.join(" | ") : "API isteği başarısız");
+}
+
+function fmtCount(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toLocaleString() : "-";
+}
+
 // ════════════════════════════════════════════════════════════
 // STALKER KOMUTLarı
 // ════════════════════════════════════════════════════════════
@@ -44,7 +61,10 @@ Module(
     const user = (match[1] || "").trim().replace(/^@/, "");
     if (!user) return await message.sendReply("📸 _Kullanıcı adı girin:_ `.igbio username`");
     try {
-      const r = await nx(`/stalker/instagram?username=${encodeURIComponent(user)}`);
+      const r = await nxTry([
+        `/stalker/instagram?username=${encodeURIComponent(user)}`,
+        `/stalker/instagram?user=${encodeURIComponent(user)}`,
+      ]);
       const full = r.full_name || r.fullname || r.name || user;
       const bio = r.biography || r.bio || "-";
       const followers = r.follower_count ?? r.followers ?? "-";
@@ -57,8 +77,8 @@ Module(
         `👤 *Ad:* ${full}\n` +
         `🔑 *Kullanıcı:* @${user}\n` +
         `📝 *Bio:* ${bio}\n` +
-        `👥 *Takipçi:* ${Number(followers).toLocaleString()}\n` +
-        `➡️ *Takip:* ${Number(following).toLocaleString()}\n` +
+        `👥 *Takipçi:* ${fmtCount(followers)}\n` +
+        `➡️ *Takip:* ${fmtCount(following)}\n` +
         `📷 *Gönderi:* ${posts}\n` +
         `🔐 *Hesap:* ${priv}\n` +
         `✅ *Doğrulanmış:* ${verified}`
@@ -81,7 +101,10 @@ Module(
     const user = (match[1] || "").trim().replace(/^@/, "");
     if (!user) return await message.sendReply("🐦 _Kullanıcı adı girin:_ `.twitterbio username`");
     try {
-      const r = await nx(`/stalker/twitter?username=${encodeURIComponent(user)}`);
+      const r = await nxTry([
+        `/stalker/twitter?username=${encodeURIComponent(user)}`,
+        `/stalker/twitter?user=${encodeURIComponent(user)}`,
+      ]);
       const name = r.name || user;
       const bio = r.description || r.bio || r.signature || "-";
       const stats = r.stats || {};
@@ -95,10 +118,10 @@ Module(
         `👤 *Ad:* ${name}\n` +
         `🔑 *Kullanıcı:* @${user}\n` +
         `📝 *Bio:* ${bio}\n` +
-        `👥 *Takipçi:* ${Number(followers).toLocaleString()}\n` +
-        `➡️ *Takip:* ${Number(following).toLocaleString()}\n` +
-        `🐦 *Tweet:* ${Number(tweets).toLocaleString()}\n` +
-        `❤️ *Beğeni:* ${Number(likes).toLocaleString()}\n` +
+        `👥 *Takipçi:* ${fmtCount(followers)}\n` +
+        `➡️ *Takip:* ${fmtCount(following)}\n` +
+        `🐦 *Tweet:* ${fmtCount(tweets)}\n` +
+        `❤️ *Beğeni:* ${fmtCount(likes)}\n` +
         `✅ *Doğrulanmış:* ${verified}`
       );
     } catch (e) {
@@ -304,7 +327,10 @@ Module(
     if (!url || !url.startsWith("http")) return await message.sendReply("🌐 _Web sitesi URL'si girin:_ `.screenshot https://google.com`");
     try {
       const sent = await message.send("📸 _Ekran görüntüsü alınıyor..._");
-      const buf = await nx(`/tools/screenshot2?url=${encodeURIComponent(url)}`, { buffer: true, timeout: 60000 });
+      const buf = await nxTry([
+        `/tools/screenshot2?url=${encodeURIComponent(url)}`,
+        `/tools/screenshot?url=${encodeURIComponent(url)}`,
+      ], { buffer: true, timeout: 60000 });
       await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
       await message.client.sendMessage(message.jid, {
         image: buf,
@@ -339,7 +365,10 @@ Module(
       }
       if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
       
-      const result = await nx(`/tools/ocr?url=${encodeURIComponent(imgUrl)}`);
+      const result = await nxTry([
+        `/tools/ocr?url=${encodeURIComponent(imgUrl)}`,
+        `/tools/ocr?image=${encodeURIComponent(imgUrl)}`,
+      ]);
       const text = typeof result === "string" ? result : result?.text || result?.result || JSON.stringify(result);
       if (!text || text === "null") throw new Error("Metin bulunamadı");
       await message.sendReply(`📝 *OCR Sonucu:*\n\n${text}`);
@@ -372,7 +401,11 @@ Module(
       }
       if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
       
-      const buf = await nx(`/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolusi=2`, { buffer: true, timeout: 90000 });
+      const buf = await nxTry([
+        `/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolusi=2`,
+        `/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolution=2`,
+        `/tools/upscale?image=${encodeURIComponent(imgUrl)}&resolusi=2`,
+      ], { buffer: true, timeout: 90000 });
       await message.client.sendMessage(message.jid, { image: buf, caption: "⬆️ *Görsel HD kaliteye yükseltildi!*" }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Yükseltme başarısız:_ ${e.message}`);
@@ -401,7 +434,10 @@ Module(
     if (!url || !url.includes("capcut")) return await message.sendReply("🎬 _CapCut bağlantısı girin:_ `.capcut <url>`");
     try {
       const sent = await message.send("⬇️ _İndiriliyor..._");
-      const result = await nx(`/downloader/capcut?url=${encodeURIComponent(url)}`);
+      const result = await nxTry([
+        `/downloader/capcut?url=${encodeURIComponent(url)}`,
+        `/downloader/capcut?link=${encodeURIComponent(url)}`,
+      ]);
       await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
       const videoUrl = result?.url || result?.video || (Array.isArray(result) ? result[0]?.url : null);
       if (!videoUrl) throw new Error("Video URL bulunamadı");
@@ -489,7 +525,11 @@ Module(
     const query = (match[1] || "").trim();
     if (!query) return await message.sendReply("🔍 _Konu girin:_ `.resim kedi`");
     try {
-      const results = await nx(`/search/google?q=${encodeURIComponent(query)}`);
+      const results = await nxTry([
+        `/search/google?q=${encodeURIComponent(query)}`,
+        `/search/googleimage?q=${encodeURIComponent(query)}`,
+        `/search/bingimage?q=${encodeURIComponent(query)}`,
+      ]);
       if (!results?.length) throw new Error("Sonuç bulunamadı");
       const pick = results[Math.floor(Math.random() * Math.min(results.length, 5))];
       const imgUrl = pick.url || pick.image || pick.link || pick.original || pick.thumbnail;
@@ -516,7 +556,11 @@ Module(
     const query = (match[1] || "").trim();
     if (!query) return await message.sendReply("🍲 _Yemek adı girin:_ `.reçete pilav`");
     try {
-      const results = await nx(`/search/resepkoki?q=${encodeURIComponent(query)}`);
+      const results = await nxTry([
+        `/search/resepkoki?q=${encodeURIComponent(query)}`,
+        `/search/resep?kategori=${encodeURIComponent(query)}`,
+        `/search/resep?q=${encodeURIComponent(query)}`,
+      ]);
       if (!results?.length) throw new Error("Tarif bulunamadı");
       const r = results[0];
       const title = r.title || r.name || query;
