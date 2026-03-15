@@ -274,81 +274,106 @@ Module(
   {
     pattern: "video ?(.*)",
     fromMe: fromMe,
-    desc: "YouTube videosunu 360p indir",
-    usage: ".video <link>",
+    desc: "YouTube'dan video indirir (arama terimi veya link ile)",
+    usage: ".video <sorgu/link>",
     use: "download",
   },
   async (message, match) => {
-    let url = match[1] || message.reply_message?.text;
-
-    if (url && /\bhttps?:\/\/\S+/gi.test(url)) {
-      url = url.match(/\bhttps?:\/\/\S+/gi)[0];
+    let input = (match[1] || message.reply_message?.text || "").trim();
+    if (!input) {
+      return await message.sendReply("_⚠️ Lütfen video adını veya bağlantısını yazın!_\n_Örnek: .video kedi videoları_");
     }
 
-    if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
-      return await message.sendReply("_⚠️ Lütfen geçerli bir YouTube bağlantısı verin!_\n_Örnek: .video https://youtube.com/watch?v=xxxxx_"
-      );
-    }
+    const extractedUrl = /\bhttps?:\/\/\S+/gi.test(input)
+      ? input.match(/\bhttps?:\/\/\S+/gi)?.[0]
+      : null;
 
-    // Convert YouTube Shorts URL to regular watch URL if needed
-    if (url.includes("youtube.com/shorts/")) {
-      const shortId = url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
-      if (shortId) {
-        url = `https://www.youtube.com/watch?v=${shortId}`;
-      }
-    }
+    const normalizedUrl = extractedUrl &&
+      (extractedUrl.includes("youtube.com") || extractedUrl.includes("youtu.be"))
+      ? (extractedUrl.includes("youtube.com/shorts/")
+        ? (() => {
+            const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
+            return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
+          })()
+        : extractedUrl)
+      : null;
 
     let downloadMsg;
     let videoPath;
 
     try {
-      downloadMsg = await message.sendReply("_⬇️ Video indiriliyor..._");
-      const result = await downloadVideo(url, "360p");
-      videoPath = result.path;
+      if (normalizedUrl) {
+        downloadMsg = await message.sendReply("_⬇️ Video indiriliyor..._");
+        const result = await downloadVideo(normalizedUrl, "360p");
+        videoPath = result.path;
 
-      await message.edit("_📤 Video yükleniyor..._", message.jid, downloadMsg.key);
+        await message.edit("_📤 Video yükleniyor..._", message.jid, downloadMsg.key);
 
-      const stats = fs.statSync(videoPath);
+        const stats = fs.statSync(videoPath);
+        const safeTitle = censorBadWords(result.title);
 
-      const safeTitle = censorBadWords(result.title);
-      if (stats.size > VIDEO_SIZE_LIMIT) {
-        const stream = fs.createReadStream(videoPath);
-        await message.sendMessage({ stream }, "document", {
-          fileName: `${safeTitle}.mp4`,
-          mimetype: "video/mp4",
-          caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(
-            stats.size
-          )}_\n_Kalite: 360p_`,
-        });
-        stream.destroy();
+        if (stats.size > VIDEO_SIZE_LIMIT) {
+          const stream = fs.createReadStream(videoPath);
+          await message.sendMessage({ stream }, "document", {
+            fileName: `${safeTitle}.mp4`,
+            mimetype: "video/mp4",
+            caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: 360p_`,
+          });
+          stream.destroy();
+        } else {
+          const stream = fs.createReadStream(videoPath);
+          await message.sendReply({ stream }, "video", {
+            caption: `_*${safeTitle}*_\n\n_Kalite: 360p_`,
+          });
+          stream.destroy();
+        }
+
+        await message.edit("_✅ İstek tamamlandı!_", message.jid, downloadMsg.key);
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        if (fs.existsSync(videoPath)) {
+          fs.unlinkSync(videoPath);
+        }
       } else {
-        const stream = fs.createReadStream(videoPath);
-        await message.sendReply({ stream }, "video", {
-          caption: `_*${safeTitle}*_\n\n_Kalite: 360p_`,
+        downloadMsg = await message.sendReply("_🔍 Video aranıyor..._");
+        const result = await nexray.ytPlayVid(input);
+        
+        if (!result || !result.url) {
+          return await message.edit("_❌ Sonuç bulunamadı!_", message.jid, downloadMsg.key);
+        }
+
+        const safeTitle = censorBadWords(result.title || input);
+        await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
+
+        await message.sendReply({ url: result.url }, "video", {
+          caption: `_*${safeTitle}*_`,
         });
-        stream.destroy();
-      }
 
-      await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      if (fs.existsSync(videoPath)) {
-        fs.unlinkSync(videoPath);
+        await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
       }
     } catch (error) {
-      try {
-        const fallback = await nexray.downloadYtMp4(url);
-        if (fallback?.url) {
-          if (!downloadMsg) downloadMsg = await message.sendReply("_⬇️ Yedek yöntemle indiriliyor..._");
-          await message.edit("_📤 Video yükleniyor..._", message.jid, downloadMsg.key);
-          const safeTitle = censorBadWords(fallback.title || "video");
-          await message.sendReply({ url: fallback.url }, "video", {
-            caption: `_*${safeTitle}*_\n\n_Yedek indirme_`,
-          });
-          await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
-          return;
-        }
-      } catch (_) { }
+      if (normalizedUrl) {
+        try {
+          const fallback = await nexray.downloadYtMp4(normalizedUrl);
+          if (fallback?.url) {
+            if (!downloadMsg) {
+              downloadMsg = await message.sendReply("_🔎 Alternatif yöntemle aranıyor..._");
+            } else {
+              await message.edit("_🔎 Alternatif yöntemle aranıyor..._", message.jid, downloadMsg.key);
+            }
+            
+            const safeTitle = censorBadWords(fallback.title || "video");
+            await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
+            
+            await message.sendReply({ url: fallback.url }, "video", {
+              caption: `_*${safeTitle}*_`,
+            });
+            await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
+            return;
+          }
+        } catch (_) { }
+      }
+      
       console.error("Video indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
@@ -357,7 +382,7 @@ Module(
       }
 
       if (videoPath && fs.existsSync(videoPath)) {
-        fs.unlinkSync(videoPath);
+        try { fs.unlinkSync(videoPath); } catch (_) { }
       }
     }
   }
