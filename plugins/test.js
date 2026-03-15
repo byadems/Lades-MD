@@ -25,9 +25,7 @@ const execPromise = promisify(exec);
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
-const { pipeline } = require("stream");
-const { createWriteStream, createReadStream } = require("fs");
-const zlib = require("zlib");
+const { createWriteStream } = require("fs");
 const tar = require("tar");
 
 // ═══════════════════════════════════
@@ -122,7 +120,6 @@ function downloadFile(url, dest) {
     const file = createWriteStream(dest);
     https.get(url, (response) => {
       if (response.statusCode === 302 || response.statusCode === 301) {
-        // Redirect
         return downloadFile(response.headers.location, dest).then(resolve).catch(reject);
       }
       response.pipe(file);
@@ -165,7 +162,6 @@ Module(
         );
 
         try {
-          // Platform tespiti
           const platform = process.platform;
           const arch = process.arch;
 
@@ -182,20 +178,16 @@ Module(
             throw new Error("Desteklenmeyen platform: " + platform + " " + arch);
           }
 
-          // Download
           await downloadFile(downloadUrl, tempTgz);
 
-          // Extract
           await tar.extract({
             file: tempTgz,
             cwd: baseDir,
             filter: (path) => path === 'speedtest' || path === 'speedtest.exe'
           });
 
-          // Cleanup
           fs.unlinkSync(tempTgz);
 
-          // Make executable
           if (platform !== "win32") {
             fs.chmodSync(speedtestBin, 0o755);
           }
@@ -210,7 +202,6 @@ Module(
         }
       }
 
-      // Speedtest çalıştır
       await message.edit(
         "```⚡ Speedtest çalışıyor...\n📊 En yakın sunucu bulunuyor...```",
         message.jid,
@@ -224,23 +215,12 @@ Module(
       const result = JSON.parse(stdout);
 
       // Sonuçları parse et
-      const download = (result.download.bandwidth * 8 / 1000000).toFixed(2); // Mbps
-      const upload = (result.upload.bandwidth * 8 / 1000000).toFixed(2); // Mbps
+      const download = (result.download.bandwidth * 8 / 1000000).toFixed(2);
+      const upload = (result.upload.bandwidth * 8 / 1000000).toFixed(2);
       const ping = result.ping.latency.toFixed(0);
       const jitter = result.ping.jitter.toFixed(2);
-      const server = result.server.name;
-      const serverLocation = `${result.server.location}, ${result.server.country}`;
-      const isp = result.isp;
       const packetLoss = result.packetLoss ? result.packetLoss.toFixed(1) : "0";
-
-      // Sistem bilgileri
-      const os = require("os");
-      const totalMem = (os.totalmem() / (1024 ** 3)).toFixed(2);
-      const freeMem = (os.freemem() / (1024 ** 3)).toFixed(2);
-      const usedMem = (totalMem - freeMem).toFixed(2);
-      const uptime = process.uptime();
-      const hours = Math.floor(uptime / 3600);
-      const minutes = Math.floor((uptime % 3600) / 60);
+      const resultId = result.result.id;
 
       // Hız kategorisi
       let speedRating = "";
@@ -251,30 +231,17 @@ Module(
       else if (dlSpeed < 500) speedRating = "🚀 Çok Hızlı";
       else speedRating = "⚡ Ultra Hızlı";
 
-      let finalResult = `⚡ *SPEEDTEST SONUÇLARI*\n\n`;
-      finalResult += `╭─「 Hız Testi 」\n`;
+      let finalResult = `⚡ *HIZ TESTİ SONUÇLARI*\n\n`;
+      finalResult += `╭─────────────────╮\n`;
       finalResult += `│ 📥 *İndirme:* ${download} Mbps\n`;
       finalResult += `│ 📤 *Yükleme:* ${upload} Mbps\n`;
       finalResult += `│ 🏓 *Ping:* ${ping} ms\n`;
       finalResult += `│ 📊 *Jitter:* ${jitter} ms\n`;
       finalResult += `│ 📦 *Paket Kaybı:* ${packetLoss}%\n`;
       finalResult += `│ ⭐ *Değerlendirme:* ${speedRating}\n`;
-      finalResult += `╰──────────────\n\n`;
-      
-      finalResult += `╭─「 Sunucu Bilgisi 」\n`;
-      finalResult += `│ 🖥️ *Sunucu:* ${server}\n`;
-      finalResult += `│ 📍 *Konum:* ${serverLocation}\n`;
-      finalResult += `│ 📡 *ISP:* ${isp}\n`;
-      finalResult += `╰──────────────\n\n`;
-      
-      finalResult += `╭─「 Sistem Durumu 」\n`;
-      finalResult += `│ ⏰ *Çalışma:* ${hours}s ${minutes}d\n`;
-      finalResult += `│ 💾 *RAM:* ${usedMem}/${totalMem} GB\n`;
-      finalResult += `│ 🆓 *Boş:* ${freeMem} GB\n`;
-      finalResult += `╰──────────────\n\n`;
-      
-      finalResult += `_✅ Test tamamlandı (Ookla Speedtest)_\n`;
-      finalResult += `_🔗 Sonuç ID: ${result.result.id}_`;
+      finalResult += `╰─────────────────╯\n\n`;
+      finalResult += `_✅ Test tamamlandı! (Ookla Speedtest)_\n`;
+      finalResult += `_ℹ️ Sonuç ID: ${resultId}_`;
 
       await message.edit(finalResult, message.jid, loading.key);
 
