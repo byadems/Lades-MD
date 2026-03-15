@@ -342,6 +342,7 @@ function applyDatabaseCaching() {
 
       _statsDirtyKeys.add(key);
       userStatsCache.set(key, this);
+      pruneMap(userStatsCache);
 
       return this;
     };
@@ -353,6 +354,7 @@ function applyDatabaseCaching() {
       const key = `${this.userJid || this.dataValues?.userJid}::${this.chatJid || this.dataValues?.chatJid}`;
       _statsDirtyKeys.add(key);
       userStatsCache.set(key, this);
+      pruneMap(userStatsCache);
       return this;
     };
   }
@@ -366,6 +368,7 @@ function applyDatabaseCaching() {
       const key = `${this.userJid || this.dataValues?.userJid}::${this.chatJid || this.dataValues?.chatJid}`;
       _statsDirtyKeys.add(key);
       userStatsCache.set(key, this);
+      pruneMap(userStatsCache);
       return this;
     };
     UserStats.prototype.update = patchedUpdate;

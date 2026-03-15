@@ -42,7 +42,7 @@ const HEAP_WARN_THRESHOLD_MB = 300;
 
 let _memoryMonitorTimer = null;
 
-function startMemoryMonitor() {
+function startMemoryMonitor(botManager) {
   _memoryMonitorTimer = setInterval(() => {
     const mem = process.memoryUsage();
     const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
@@ -51,14 +51,32 @@ function startMemoryMonitor() {
     if (heapMB > HEAP_WARN_THRESHOLD_MB) {
       logger.warn({ heapMB, rssMB }, `Yüksek bellek kullanımı tespit edildi`);
       console.warn(`[Bellek] Heap: ${heapMB}MB / RSS: ${rssMB}MB — yüksek kullanım!`);
-
-      if (typeof global.gc === "function") {
-        global.gc();
-        const after = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
-        logger.info({ before: heapMB, after }, "GC zorlandı (yüksek heap)");
+      // GC zorlamayı kaldırdık, çünkü PM2 veya Node V8 otomatik yapmalı
+      // Manuel çağrı, main thread'i dondurarak botu yavaşlatıyor
+    }
+    
+    // Baileys Store Cleanup: Her grupta/sohbette son 50 mesaj dışındaki eski mesajları RAM'den temizle
+    if (botManager && botManager.bots) {
+      for (const [sessionId, bot] of botManager.bots.entries()) {
+        if (bot && bot.store && bot.store.messages) {
+          let trimmedCount = 0;
+          for (const jid of Object.keys(bot.store.messages)) {
+            const chatMessages = bot.store.messages[jid];
+            // Eğer bir sohbette 50'den fazla mesaj bellekte tutuluyorsa, eskileri kes
+            if (chatMessages && chatMessages.array && chatMessages.array.length > 50) {
+              const toRemove = chatMessages.array.length - 50;
+              chatMessages.array.splice(0, toRemove);
+              trimmedCount += toRemove;
+            }
+          }
+          if (trimmedCount > 0) {
+            logger.info({ session: sessionId, trimmed: trimmedCount }, "Store mesajları temizlendi (Bellek sızıntısı önlemi)");
+          }
+        }
       }
     }
-  }, MEMORY_CHECK_INTERVAL);
+    
+  }, 10 * 60 * 1000); // 3 dakika yerine 10 dakikada bir kontrol
 
   if (_memoryMonitorTimer.unref) _memoryMonitorTimer.unref();
 }
@@ -183,7 +201,7 @@ async function main() {
 
   if (process.env.USE_SERVER !== "false") startServer();
 
-  startMemoryMonitor();
+  startMemoryMonitor(botManager);
   startTempCleanup();
 }
 
