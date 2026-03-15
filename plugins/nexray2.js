@@ -270,7 +270,7 @@ Module(
     usage: ".grafitisokak (görsel yanıtla)",
     use: "ephoto",
   },
-  async (message) => applyEphoto(message, "/ephoto/graffiti", "🎨 *Grafiti dönüşümü tamamlandı!*")
+  async (message) => applyEphoto(message, "/ephoto/street", "🎨 *Grafiti dönüşümü tamamlandı!*")
 );
 
 Module(
@@ -281,7 +281,7 @@ Module(
     usage: ".pikselart (görsel yanıtla)",
     use: "ephoto",
   },
-  async (message) => applyEphoto(message, "/ephoto/pixel", "👾 *Piksel sanat dönüşümü tamamlandı!*")
+  async (message) => applyEphoto(message, "/ephoto/nft", "👾 *Piksel sanat dönüşümü tamamlandı!*")
 );
 
 Module(
@@ -328,8 +328,7 @@ Module(
     try {
       const sent = await message.send("📸 _Ekran görüntüsü alınıyor..._");
       const buf = await nxTry([
-        `/tools/screenshot2?url=${encodeURIComponent(url)}`,
-        `/tools/screenshot?url=${encodeURIComponent(url)}`,
+        `/tools/ssweb?url=${encodeURIComponent(url)}`,
       ], { buffer: true, timeout: 60000 });
       await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
       await message.client.sendMessage(message.jid, {
@@ -526,7 +525,6 @@ Module(
     if (!query) return await message.sendReply("🔍 _Konu girin:_ `.resim kedi`");
     try {
       const results = await nxTry([
-        `/search/google?q=${encodeURIComponent(query)}`,
         `/search/googleimage?q=${encodeURIComponent(query)}`,
         `/search/bingimage?q=${encodeURIComponent(query)}`,
       ]);
@@ -557,18 +555,17 @@ Module(
     if (!query) return await message.sendReply("🍲 _Yemek adı girin:_ `.reçete pilav`");
     try {
       const results = await nxTry([
-        `/search/resepkoki?q=${encodeURIComponent(query)}`,
-        `/search/resep?kategori=${encodeURIComponent(query)}`,
         `/search/resep?q=${encodeURIComponent(query)}`,
       ]);
       if (!results?.length) throw new Error("Tarif bulunamadı");
       const r = results[0];
-      const title = r.title || r.name || query;
+      const title = r.judul || r.title || r.name || query;
       const info = [
         `🍲 *${title}*`,
-        r.serving ? `🍽️ *Porsiyon:* ${r.serving}` : "",
-        r.cooktime ? `⏱️ *Süre:* ${r.cooktime}` : "",
-        r.url ? `🔗 ${r.url}` : "",
+        r.waktu_masak ? `⏱️ *Süre:* ${r.waktu_masak}` : "",
+        r.tingkat_kesulitan ? `📊 *Zorluk:* ${r.tingkat_kesulitan}` : "",
+        r.hasil ? `🍽️ *Porsiyon:* ${r.hasil}` : "",
+        r.link || r.url ? `🔗 ${r.link || r.url}` : "",
       ].filter(Boolean).join("\n");
       await message.sendReply(info);
     } catch (e) {
