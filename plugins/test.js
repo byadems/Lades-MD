@@ -19,7 +19,11 @@ function TimeCalculator(a) {
 }
 
 const { Module } = require("../main");
-const axios = require("axios");
+const { exec } = require("child_process");
+const { promisify } = require("util");
+const execPromise = promisify(exec);
+const fs = require("fs");
+const path = require("path");
 
 // ═══════════════════════════════════
 // 📅 Yaş Hesaplayıcı
@@ -108,190 +112,82 @@ Module(
 );
 
 // ═══════════════════════════════════
-// ⚡ Hız Testi (HTTP Download Test)
+// ⚡ Gerçek Speedtest (CLI Binary)
 // ═══════════════════════════════════
 Module(
   {
     pattern: "hıztesti",
-    desc: "Çoklu API ile internet hız testi",
+    desc: "Ookla Speedtest ile gerçek hız testi",
     use: "utility",
   },
   async (message) => {
     const loading = await message.sendReply(
-      "```⚡ Hız testi başlatılıyor...\n🌐 3 farklı sunucu test ediliyor\n⏳ Lütfen bekleyin (30-45sn)```"
+      "```⚡ Hız testi başlatılıyor...\n⏳ Lütfen bekleyin (30-60 saniye)```"
     );
 
-    const results = {
-      cloudflare: { name: "Cloudflare", download: 0, upload: 0, ping: 0, status: "⏳" },
-      google: { name: "Google", download: 0, upload: 0, ping: 0, status: "⏳" },
-      fast: { name: "Fast.com (Netflix)", download: 0, upload: 0, ping: 0, status: "⏳" }
-    };
-
-    // Test fonksiyonları
-    const testCloudflare = async () => {
-      try {
-        // Ping
-        const pingStart = Date.now();
-        await axios.get("https://1.1.1.1", { timeout: 5000 });
-        results.cloudflare.ping = Date.now() - pingStart;
-
-        // Download (10MB)
-        const dlStart = Date.now();
-        const dlResponse = await axios.get("https://speed.cloudflare.com/__down?bytes=10000000", {
-          responseType: 'arraybuffer',
-          timeout: 30000
-        });
-        const dlTime = (Date.now() - dlStart) / 1000;
-        const dlBytes = dlResponse.data.byteLength;
-        results.cloudflare.download = ((dlBytes * 8) / dlTime / 1000000).toFixed(2);
-
-        // Upload (1MB)
-        const ulData = Buffer.alloc(1000000);
-        const ulStart = Date.now();
-        await axios.post("https://speed.cloudflare.com/__up", ulData, {
-          timeout: 30000,
-          headers: { 'Content-Type': 'application/octet-stream' }
-        });
-        const ulTime = (Date.now() - ulStart) / 1000;
-        results.cloudflare.upload = ((ulData.length * 8) / ulTime / 1000000).toFixed(2);
-
-        results.cloudflare.status = "✅";
-      } catch (error) {
-        results.cloudflare.status = "❌";
-        console.error("Cloudflare test failed:", error.message);
-      }
-    };
-
-    const testGoogle = async () => {
-      try {
-        // Ping
-        const pingStart = Date.now();
-        await axios.get("https://www.google.com", { timeout: 5000 });
-        results.google.ping = Date.now() - pingStart;
-
-        // Download (5MB test file)
-        const dlStart = Date.now();
-        const dlResponse = await axios.get("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png", {
-          responseType: 'arraybuffer',
-          timeout: 20000,
-          params: { dummy: Math.random() } // Cache bypass
-        });
-        
-        // Daha büyük dosya için tekrar et
-        const dlResponse2 = await axios.get("https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2", {
-          responseType: 'arraybuffer',
-          timeout: 20000
-        });
-        
-        const dlTime = (Date.now() - dlStart) / 1000;
-        const dlBytes = dlResponse.data.byteLength + dlResponse2.data.byteLength;
-        results.google.download = ((dlBytes * 8) / dlTime / 1000000).toFixed(2);
-
-        // Upload simülasyonu (POST request)
-        const ulData = JSON.stringify({ test: "x".repeat(500000) });
-        const ulStart = Date.now();
-        await axios.post("https://httpbin.org/post", ulData, {
-          timeout: 20000,
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const ulTime = (Date.now() - ulStart) / 1000;
-        results.google.upload = ((ulData.length * 8) / ulTime / 1000000).toFixed(2);
-
-        results.google.status = "✅";
-      } catch (error) {
-        results.google.status = "❌";
-        console.error("Google test failed:", error.message);
-      }
-    };
-
-    const testFast = async () => {
-      try {
-        // Ping
-        const pingStart = Date.now();
-        await axios.get("https://fast.com", { timeout: 5000 });
-        results.fast.ping = Date.now() - pingStart;
-
-        // Download (Github CDN - büyük dosya)
-        const dlStart = Date.now();
-        const dlResponse = await axios.get("https://github.com/git/git/archive/refs/heads/master.zip", {
-          responseType: 'arraybuffer',
-          timeout: 30000,
-          maxContentLength: 5000000, // 5MB limit
-          onDownloadProgress: (progressEvent) => {
-            if (progressEvent.loaded > 3000000) { // 3MB'dan sonra kes
-              throw new axios.Cancel('Speed test complete');
-            }
-          }
-        }).catch(err => {
-          if (axios.isCancel(err)) {
-            return { data: Buffer.alloc(3000000) };
-          }
-          throw err;
-        });
-        
-        const dlTime = (Date.now() - dlStart) / 1000;
-        const dlBytes = dlResponse.data.byteLength;
-        results.fast.download = ((dlBytes * 8) / dlTime / 1000000).toFixed(2);
-
-        // Upload
-        const ulData = Buffer.alloc(800000); // 800KB
-        const ulStart = Date.now();
-        await axios.post("https://httpbin.org/post", ulData, {
-          timeout: 20000,
-          headers: { 'Content-Type': 'application/octet-stream' }
-        });
-        const ulTime = (Date.now() - ulStart) / 1000;
-        results.fast.upload = ((ulData.length * 8) / ulTime / 1000000).toFixed(2);
-
-        results.fast.status = "✅";
-      } catch (error) {
-        results.fast.status = "❌";
-        console.error("Fast test failed:", error.message);
-      }
-    };
-
-    // Progress updates
     try {
-      // Test 1/3
-      await message.edit(
-        "```⚡ Hız Testi\n\n[1/3] 🔵 Cloudflare test ediliyor...\n[2/3] ⚪ Google bekleniyor\n[3/3] ⚪ Fast.com bekleniyor```",
-        message.jid,
-        loading.key
-      );
-      await testCloudflare();
+      const speedtestPath = path.join(__dirname, "..", "speedtest");
+      let speedtestBin = speedtestPath;
 
-      // Test 2/3
-      await message.edit(
-        "```⚡ Hız Testi\n\n[1/3] " + results.cloudflare.status + " Cloudflare tamamlandı\n[2/3] 🔵 Google test ediliyor...\n[3/3] ⚪ Fast.com bekleniyor```",
-        message.jid,
-        loading.key
-      );
-      await testGoogle();
+      // Speedtest binary kontrolü ve kurulumu
+      if (!fs.existsSync(speedtestPath)) {
+        await message.edit(
+          "```📦 Speedtest CLI indiriliyor...\n⏳ İlk kullanım 1-2 dakika sürebilir```",
+          message.jid,
+          loading.key
+        );
 
-      // Test 3/3
-      await message.edit(
-        "```⚡ Hız Testi\n\n[1/3] " + results.cloudflare.status + " Cloudflare tamamlandı\n[2/3] " + results.google.status + " Google tamamlandı\n[3/3] 🔵 Fast.com test ediliyor...```",
-        message.jid,
-        loading.key
-      );
-      await testFast();
+        try {
+          // Platform tespiti
+          const platform = process.platform;
+          const arch = process.arch;
 
-      // Ortalama hesapla
-      const successfulTests = Object.values(results).filter(r => r.status === "✅");
-      
-      let avgDownload = 0, avgUpload = 0, avgPing = 0;
-      if (successfulTests.length > 0) {
-        avgDownload = (successfulTests.reduce((sum, r) => sum + parseFloat(r.download), 0) / successfulTests.length).toFixed(2);
-        avgUpload = (successfulTests.reduce((sum, r) => sum + parseFloat(r.upload), 0) / successfulTests.length).toFixed(2);
-        avgPing = Math.round(successfulTests.reduce((sum, r) => sum + r.ping, 0) / successfulTests.length);
+          let downloadUrl;
+          if (platform === "linux" && arch === "x64") {
+            downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz";
+          } else if (platform === "linux" && arch === "arm64") {
+            downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-aarch64.tgz";
+          } else if (platform === "darwin") {
+            downloadUrl = "https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-macosx-universal.tgz";
+          } else {
+            throw new Error("Desteklenmeyen platform: " + platform + " " + arch);
+          }
+
+          // İndir ve çıkart
+          await execPromise(`cd ${path.dirname(speedtestPath)} && curl -Ls ${downloadUrl} | tar xz && chmod +x speedtest`);
+
+          if (!fs.existsSync(speedtestPath)) {
+            throw new Error("Speedtest binary kurulamadı");
+          }
+
+        } catch (installError) {
+          console.error("Speedtest install error:", installError);
+          throw new Error("Speedtest kurulumu başarısız: " + installError.message);
+        }
       }
 
-      // Konum bilgisi
-      let location = "Bilinmiyor";
-      try {
-        const geoResponse = await axios.get("https://ipapi.co/json/", { timeout: 5000 });
-        location = `${geoResponse.data.city || 'Unknown'}, ${geoResponse.data.country_name || 'Unknown'}`;
-      } catch (e) {}
+      // Speedtest çalıştır
+      await message.edit(
+        "```⚡ Speedtest çalışıyor...\n📊 En yakın sunucu bulunuyor...```",
+        message.jid,
+        loading.key
+      );
+
+      const { stdout } = await execPromise(`${speedtestBin} --accept-license --accept-gdpr --format=json`, {
+        timeout: 90000
+      });
+
+      const result = JSON.parse(stdout);
+
+      // Sonuçları parse et
+      const download = (result.download.bandwidth * 8 / 1000000).toFixed(2); // Mbps
+      const upload = (result.upload.bandwidth * 8 / 1000000).toFixed(2); // Mbps
+      const ping = result.ping.latency.toFixed(0);
+      const jitter = result.ping.jitter.toFixed(2);
+      const server = result.server.name;
+      const serverLocation = `${result.server.location}, ${result.server.country}`;
+      const isp = result.isp;
+      const packetLoss = result.packetLoss ? result.packetLoss.toFixed(1) : "0";
 
       // Sistem bilgileri
       const os = require("os");
@@ -302,49 +198,62 @@ Module(
       const hours = Math.floor(uptime / 3600);
       const minutes = Math.floor((uptime % 3600) / 60);
 
-      // Sonuç mesajı
-      let result = `⚡ *LADES HIZ TESTİ*\n\n`;
-      result += `╭─「 Ortalama Hız 」\n`;
-      result += `│ 📥 *İndirme:* ${avgDownload} Mbps\n`;
-      result += `│ 📤 *Yükleme:* ${avgUpload} Mbps\n`;
-      result += `│ 🏓 *Ping:* ${avgPing} ms\n`;
-      result += `│ 🌐 *Konum:* ${location}\n`;
-      result += `╰──────────────\n\n`;
-      
-      result += `╭─「 Detaylı Sonuçlar 」\n`;
-      result += `│\n`;
-      result += `│ ${results.cloudflare.status} *Cloudflare*\n`;
-      result += `│ ├ DL: ${results.cloudflare.download} Mbps\n`;
-      result += `│ ├ UP: ${results.cloudflare.upload} Mbps\n`;
-      result += `│ └ Ping: ${results.cloudflare.ping} ms\n`;
-      result += `│\n`;
-      result += `│ ${results.google.status} *Google*\n`;
-      result += `│ ├ DL: ${results.google.download} Mbps\n`;
-      result += `│ ├ UP: ${results.google.upload} Mbps\n`;
-      result += `│ └ Ping: ${results.google.ping} ms\n`;
-      result += `│\n`;
-      result += `│ ${results.fast.status} *Fast.com*\n`;
-      result += `│ ├ DL: ${results.fast.download} Mbps\n`;
-      result += `│ ├ UP: ${results.fast.upload} Mbps\n`;
-      result += `│ └ Ping: ${results.fast.ping} ms\n`;
-      result += `╰──────────────\n\n`;
-      
-      result += `╭─「 Sistem 」\n`;
-      result += `│ ⏰ *Çalışma:* ${hours}s ${minutes}d\n`;
-      result += `│ 💾 *RAM:* ${usedMem}/${totalMem} GB\n`;
-      result += `│ 🆓 *Boş:* ${freeMem} GB\n`;
-      result += `╰──────────────\n\n`;
-      result += `_✅ ${successfulTests.length}/3 test başarılı_`;
+      // Hız kategorisi
+      let speedRating = "";
+      const dlSpeed = parseFloat(download);
+      if (dlSpeed < 10) speedRating = "🐌 Yavaş";
+      else if (dlSpeed < 50) speedRating = "🚶 Orta";
+      else if (dlSpeed < 100) speedRating = "🏃 Hızlı";
+      else if (dlSpeed < 500) speedRating = "🚀 Çok Hızlı";
+      else speedRating = "⚡ Ultra Hızlı";
 
-      await message.edit(result, message.jid, loading.key);
+      let finalResult = `⚡ *SPEEDTEST SONUÇLARI*\n\n`;
+      finalResult += `╭─「 Hız Testi 」\n`;
+      finalResult += `│ 📥 *İndirme:* ${download} Mbps\n`;
+      finalResult += `│ 📤 *Yükleme:* ${upload} Mbps\n`;
+      finalResult += `│ 🏓 *Ping:* ${ping} ms\n`;
+      finalResult += `│ 📊 *Jitter:* ${jitter} ms\n`;
+      finalResult += `│ 📦 *Paket Kaybı:* ${packetLoss}%\n`;
+      finalResult += `│ ⭐ *Değerlendirme:* ${speedRating}\n`;
+      finalResult += `╰──────────────\n\n`;
+      
+      finalResult += `╭─「 Sunucu Bilgisi 」\n`;
+      finalResult += `│ 🖥️ *Sunucu:* ${server}\n`;
+      finalResult += `│ 📍 *Konum:* ${serverLocation}\n`;
+      finalResult += `│ 📡 *ISP:* ${isp}\n`;
+      finalResult += `╰──────────────\n\n`;
+      
+      finalResult += `╭─「 Sistem Durumu 」\n`;
+      finalResult += `│ ⏰ *Çalışma:* ${hours}s ${minutes}d\n`;
+      finalResult += `│ 💾 *RAM:* ${usedMem}/${totalMem} GB\n`;
+      finalResult += `│ 🆓 *Boş:* ${freeMem} GB\n`;
+      finalResult += `╰──────────────\n\n`;
+      
+      finalResult += `_✅ Test tamamlandı (Ookla Speedtest)_\n`;
+      finalResult += `_🔗 Sonuç ID: ${result.result.id}_`;
+
+      await message.edit(finalResult, message.jid, loading.key);
 
     } catch (error) {
-      console.error("Speed test error:", error);
-      await message.edit(
-        `❌ *Hız testi başarısız!*\n\n_${error.message}_\n\n💡 *Alternatif:* .ping`,
-        message.jid,
-        loading.key
-      );
+      console.error("Speedtest error:", error);
+      
+      let errorMsg = `❌ *Hız testi başarısız!*\n\n`;
+      
+      if (error.message.includes("Desteklenmeyen platform")) {
+        errorMsg += `_Platform desteklenmiyor: ${process.platform} ${process.arch}_`;
+      } else if (error.killed) {
+        errorMsg += `_Zaman aşımı! Test 90 saniyede tamamlanamadı._`;
+      } else if (error.message.includes("EACCES")) {
+        errorMsg += `_İzin hatası! Speedtest binary çalıştırılamadı._`;
+      } else if (error.message.includes("kurulumu başarısız")) {
+        errorMsg += `_Speedtest indirilemedi. İnternet bağlantınızı kontrol edin._`;
+      } else {
+        errorMsg += `_${error.message}_`;
+      }
+      
+      errorMsg += `\n\n💡 *Alternatif:* .ping komutunu deneyin`;
+      
+      await message.edit(errorMsg, message.jid, loading.key);
     }
   }
 );
