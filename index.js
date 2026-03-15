@@ -111,6 +111,14 @@ async function main() {
   const shutdownHandler = async (signal) => {
     console.log(`\n${signal} alındı, kapatılıyor...`);
     logger.info(`${signal} alındı, kapatılıyor...`);
+
+    // Eğer işlemler 8 saniyede bitmezse (PM2'nin 10s sınırından önce) zorla çık
+    const forceExit = setTimeout(() => {
+      console.log("Kapanma süresi aşıldı, process zorla kapatılıyor...");
+      process.exit(0);
+    }, 8000);
+    if (forceExit.unref) forceExit.unref();
+
     if (_memoryMonitorTimer) clearInterval(_memoryMonitorTimer);
     stopTempCleanup();
     cleanupKickBot();
@@ -120,6 +128,7 @@ async function main() {
     } catch (cacheErr) {
       logger.error({ err: cacheErr }, "Kapatma sırasında cache flush hatası");
     }
+
     if (typeof config.sequelize?.__flushBufferedQueries === 'function') {
       try {
         await config.sequelize.__flushBufferedQueries();
@@ -128,7 +137,20 @@ async function main() {
         logger.error({ err: flushErr }, "Kapatma sırasında bekleyen sorgular tamamlanamadı");
       }
     }
-    await botManager.shutdown();
+
+    try {
+      // botManager.shutdown() websocket kapanmasını beklerken sonsuza kadar asılı kalabiliyor,
+      // 3 saniye içinde tamamlanmazsa kapatıp devam etmesini sağlıyoruz.
+      await Promise.race([
+        botManager.shutdown(),
+        new Promise(resolve => setTimeout(resolve, 3000))
+      ]);
+      console.log("- Bot bağlantıları kapatıldı.");
+    } catch (botErr) {
+      console.error("- Bot sonlandırılırken hata:", botErr);
+    }
+    
+    console.log("- Tüm işlemler tamamlandı, başarılı çıkış yapılıyor.");
     process.exit(0);
   };
 
