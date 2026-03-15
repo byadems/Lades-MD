@@ -59,7 +59,7 @@ Module(
     return await m.sendReply("_" + TimeCalculator(age) + " kalan_");
   }
 );
-const FastSpeedtest = require("fast-speedtest-api");
+const axios = require("axios");
 
 Module(
   {
@@ -80,29 +80,33 @@ Module(
   {
     pattern: "hıztesti",
     use: "utility",
-    desc: "Sunucu ağ hızını (Fast.com) ölçer",
+    desc: "Sunucu ağ hızını (Cloudflare) ölçer",
   },
   async (message, match) => {
     let sent_msg = await message.sendReply("_🚀 Hız testi başlatılıyor... Lütfen bekleyin._");
     
     try {
-      const speedtest = new FastSpeedtest({
-        token: "YXNkZmFzZGZhc2RmYXNkZmFzZGY=", // Public Fast.com token
-        verbose: false,
-        timeout: 10000,
-        https: true,
-        urlCount: 5,
-        bufferSize: 8,
-        unit: FastSpeedtest.UNITS.Mbps
+      const testUrl = "https://speed.cloudflare.com/__down?bytes=15000000"; // 15MB test payload
+      const startTime = Date.now();
+      
+      const response = await axios.get(testUrl, {
+        responseType: "arraybuffer",
+        timeout: 30000,
       });
 
-      const speed = await speedtest.getSpeed();
+      const endTime = Date.now();
+      const durationSeconds = (endTime - startTime) / 1000;
+      const dataSizeMB = response.data.length / (1024 * 1024);
+      const dataSizeMb = dataSizeMB * 8;
+      const speedMbps = dataSizeMb / durationSeconds;
 
-      const text = `*❮ ꜰᴀsᴛ.ᴄᴏᴍ sᴘᴇᴇᴅᴛᴇsᴛ ❯*
+      const text = `*❮ ᴄʟᴏᴜᴅꜰʟᴀʀᴇ sᴘᴇᴇᴅᴛᴇsᴛ ❯*
 
-*📥 İndirme Hızı:* \`${speed.toFixed(2)} Mbps\`
+*📥 İndirme Hızı:* \`${speedMbps.toFixed(2)} Mbps\`
+*📦 Veri Boyutu:* \`${dataSizeMB.toFixed(0)} MB\`
+*⏱️ Süre:* \`${durationSeconds.toFixed(2)} saniye\`
 
-_Not: Fast.com (Netflix) altyapısı kullanılmıştır._`;
+_Altyapı: Cloudflare Edge Network_`;
 
       await message.edit(text, message.jid, sent_msg.key);
     } catch (error) {
