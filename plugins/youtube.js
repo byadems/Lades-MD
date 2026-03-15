@@ -183,7 +183,7 @@ Module(
         }
 
         let resultText = "🎬 _YouTube Arama Sonuçları_\n\n";
-        resultText += `_${results.length} sonuç bulundu:_ *${input}*\n\n`;
+        resultText += `🔎 _${results.length} sonuç bulundu:_ *${input}*\n\n`;
 
         results.slice(0, 10).forEach((video, index) => {
           resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
@@ -231,8 +231,8 @@ Module(
       );
       const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-      let qualityText = "🎬 _Видео Kalitesini Seçin_\n\n";
-      qualityText += `_*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
+      let qualityText = "🎬 _Video Kalitesini Seçin_\n\n";
+      qualityText += `🎬 _*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
 
       uniqueQualities.forEach((quality, index) => {
         const format = videoFormats.find((f) => f.quality === quality);
@@ -535,7 +535,7 @@ Module(
         }
 
         let resultText = "🎵 YouTube Arama Sonuçları\n\n";
-        resultText += `_${results.length} sonuç bulundu:_ *${query}*\n\n`;
+        resultText += `🔎 _${results.length} sonuç bulundu:_ *${query}*\n\n`;
 
         results.slice(0, 10).forEach((video, index) => {
           resultText += `*${index + 1}.* ${censorBadWords(video.title)}\n`;
@@ -902,7 +902,7 @@ Module(
           const uniqueQualities = [...new Set(videoFormats.map((f) => f.quality))];
           
           let qualityText = "🎬 _*Video Kalitesini Seçin*_\n\n";
-          qualityText += `_*${safeTitle}*_\n\n(${selectedVideo.id})\n\n`;
+          qualityText += `🎬 _*${safeTitle}*_\n\n(${selectedVideo.id})\n\n`;
 
           uniqueQualities.forEach((quality, index) => {
             const format = videoFormats.find((f) => f.quality === quality);
