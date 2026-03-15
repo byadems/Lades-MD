@@ -13,7 +13,7 @@ async function nx(path, opts = {}) {
     validateStatus: () => true,
     responseType: opts.buffer ? "arraybuffer" : "json",
   });
-  
+
   if (opts.buffer) {
     // If we requested a buffer but got JSON (happens on some errors or redirected tools like ssweb)
     const contentType = res.headers["content-type"] || "";
@@ -31,17 +31,17 @@ async function nx(path, opts = {}) {
     if (res.status === 200 && res.data?.byteLength > 100) {
       return Buffer.from(res.data);
     }
-    
+
     // Attempt to extract error from buffer if it's small (likely JSON error)
     if (res.data?.byteLength < 500) {
       try {
         const errJson = JSON.parse(Buffer.from(res.data).toString());
         throw new Error(errJson.error || errJson.message || `HTTP ${res.status}`);
-      } catch (e) {}
+      } catch (e) { }
     }
     throw new Error(`API hatası: HTTP ${res.status}`);
   }
-  
+
   const d = res.data;
   if (d?.status === true && d?.result !== undefined) return d.result;
   if (d?.status && d?.data !== undefined) return d.data;
@@ -86,7 +86,6 @@ Module(
     try {
       const r = await nxTry([
         `/stalker/instagram?username=${encodeURIComponent(user)}`,
-        `/stalker/instagram?user=${encodeURIComponent(user)}`,
       ]);
       const full = r.full_name || r.fullname || r.name || user;
       const bio = r.biography || r.bio || "-";
@@ -121,19 +120,18 @@ Module(
 
 Module(
   {
-    pattern: "twitterbio ?(.*)",
+    pattern: "twara ?(.*)",
     fromMe: isFromMe,
     desc: "Twitter/X kullanıcı profili bilgilerini gösterir",
-    usage: ".twitterbio username",
+    usage: ".twara kullanıcı adı",
     use: "stalker",
   },
   async (message, match) => {
     const user = (match[1] || "").trim().replace(/^@/, "");
-    if (!user) return await message.sendReply("🐦 _Kullanıcı adı girin:_ `.twitterbio username`");
+    if (!user) return await message.sendReply("🐦 _Kullanıcı adı giriniz:_ `.twara kullanıcı adı`");
     try {
       const r = await nxTry([
         `/stalker/twitter?username=${encodeURIComponent(user)}`,
-        `/stalker/twitter?user=${encodeURIComponent(user)}`,
       ]);
       const name = r.name || user;
       const bio = r.description || r.bio || r.signature || "-";
@@ -146,15 +144,15 @@ Module(
       const avatar = r.profile?.avatar || r.avatar || r.profile_image_url;
 
       const caption =
-        `🐦 *Twitter/X Profili*\n\n` +
+        `🐦 *X/Twitter Profili*\n\n` +
         `👤 *Ad:* ${name}\n` +
         `🔑 *Kullanıcı:* @${user}\n` +
-        `📝 *Bio:* ${bio}\n` +
+        `📝 *Biyografi:* ${bio}\n` +
         `👥 *Takipçi:* ${fmtCount(followers)}\n` +
         `➡️ *Takip:* ${fmtCount(following)}\n` +
         `🐦 *Tweet:* ${fmtCount(tweets)}\n` +
         `❤️ *Beğeni:* ${fmtCount(likes)}\n` +
-        `✅ *Doğrulanmış:* ${verified}`;
+        `✅ *Doğrulanmış mı?:* ${verified}`;
 
       if (avatar) {
         await message.client.sendMessage(message.jid, { image: { url: avatar }, caption }, { quoted: message.data });
@@ -162,7 +160,7 @@ Module(
         await message.sendReply(caption);
       }
     } catch (e) {
-      await message.sendReply(`❌ _Twitter profili alınamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _X profiline ulaşamadım:_ ${e.message}`);
     }
   }
 );
@@ -184,16 +182,16 @@ Module(
     const isImg = mime.startsWith("image/");
     if (!isImg) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.wasted`");
     try {
-      const wait = await message.send("💀 _İşleniyor..._");
+      const wait = await message.send("💀 _İşliyorum..._");
       const path = await message.reply_message.download();
       const { url } = await uploadToCatbox(path);
       if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
 
       const buf = await nx(`/editor/wasted?url=${encodeURIComponent(url)}`, { buffer: true });
       await message.edit("💀 *Wasted!*", message.jid, wait.key);
-      await message.client.sendMessage(message.jid, { image: buf, caption: "💀 *Wasted!*" }, { quoted: message.data });
+      await message.client.sendMessage(message.jid, { image: buf }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Wasted efekti uygulanamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Wasted efektini uygulayamadım:_ ${e.message}`);
     }
   }
 );
@@ -227,7 +225,7 @@ Module(
       const buf = await nx(`/editor/wanted?url=${encodeURIComponent(imgUrl)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: "🔫 *ARANIYOR!*" }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Wanted posteri oluşturulamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Wanted efektini uygulayamadım:_ ${e.message}`);
     }
   }
 );
@@ -242,16 +240,16 @@ async function applyEphoto(message, endpoint, caption) {
   const isImg = replyMime.startsWith("image/");
   if (!isImg) return await message.sendReply(`🖼️ _Bir görseli yanıtlayın:_ \`${endpoint}\``);
   try {
-    const wait = await message.send("⌛ _İşleniyor..._");
+    const wait = await message.send("⌛ _İşliyorum..._");
     const path = await message.reply_message.download();
     const { url } = await uploadToCatbox(path);
     if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
 
-    await message.edit("✅ _Efekt uygulanıyor..._", message.jid, wait.key);
+    await message.edit("✅ _Efekti uyguluyorum..._", message.jid, wait.key);
     const result = await nx(`${endpoint}?url=${encodeURIComponent(url)}`, { buffer: true, timeout: 90000 });
     await message.client.sendMessage(message.jid, { image: result, caption }, { quoted: message.data });
   } catch (e) {
-    await message.sendReply(`❌ _Efekt uygulanamadı:_ ${e.message}`);
+    await message.sendReply(`❌ _Tüh! Efekti uygulayamadım:_ ${e.message}`);
   }
 }
 
@@ -349,10 +347,10 @@ Module(
 
 Module(
   {
-    pattern: "screenshot ?(.*)",
+    pattern: "ss ?(.*)",
     fromMe: isFromMe,
     desc: "Web sitesinin ekran görüntüsünü alır",
-    usage: ".screenshot https://google.com",
+    usage: ".ss https://fenomensen.net",
     use: "tools",
   },
   async (message, match) => {
@@ -361,21 +359,20 @@ Module(
       const m = message.reply_message.text.match(/https?:\/\/\S+/);
       if (m) url = m[0];
     }
-    if (!url || !url.startsWith("http")) return await message.sendReply("🌐 _Web sitesi URL'si girin:_ `.screenshot https://google.com`");
+    if (!url) return await message.sendReply("🌐 _Web sitesi URL'si girin:_ `.ss https://fenomensen.net`");
+    if (!url.startsWith("http")) url = "https://" + url;
     try {
-      const sent = await message.send("📸 _Ekran görüntüsü alınıyor..._");
       const res = await nxTry([
         `/tools/ssweb?url=${encodeURIComponent(url)}`,
       ], { buffer: true, timeout: 60000 });
-      
+
       const imgData = res.url ? { url: res.url } : res;
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
       await message.client.sendMessage(message.jid, {
         image: imgData,
         caption: `🌐 *${url}*`,
       }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Ekran görüntüsü alınamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Ekran görüntüsünü alamadım:_ ${e.message}`);
     }
   }
 );
@@ -395,13 +392,13 @@ Module(
     if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.metin`");
     try {
       if (!imgUrl && isImg) {
-        const wait = await message.send("🔍 _İşleniyor..._");
+        const wait = await message.send("🔍 _İnceliyorum..._");
         const path = await message.reply_message.download();
         const { url } = await uploadToCatbox(path);
         imgUrl = url;
-        await message.edit("✅ _Metin okunuyor..._", message.jid, wait.key);
+        await message.edit("✍🏻 _Metni okuyorum..._", message.jid, wait.key);
       }
-      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı!");
 
       const result = await nxTry([
         `/tools/ocr?url=${encodeURIComponent(imgUrl)}`,
@@ -409,33 +406,33 @@ Module(
       ]);
       const text = typeof result === "string" ? result : result?.text || result?.result || JSON.stringify(result);
       if (!text || text === "null") throw new Error("Metin bulunamadı");
-      await message.sendReply(`📝 *OCR Sonucu:*\n\n${text}`);
+      await message.sendReply(`📝 *Görselde şunlar yazıyor:*\n\n${text}`);
     } catch (e) {
-      await message.sendReply(`❌ _Metin okunamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Metni okuyamadım:_ ${e.message}`);
     }
   }
 );
 
 Module(
   {
-    pattern: "upscale ?(.*)",
+    pattern: "hd ?(.*)",
     fromMe: isFromMe,
     desc: "Görseli HD kaliteye yükseltir",
-    usage: ".upscale (görsel yanıtla)",
+    usage: ".hd (görsele yanıtla)",
     use: "tools",
   },
   async (message, match) => {
     const replyMime = message.reply_message?.mimetype || "";
     const isImg = replyMime.startsWith("image/");
     let imgUrl = (match[1] || "").trim();
-    if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.upscale`");
+    if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.hd`");
     try {
       if (!imgUrl && isImg) {
-        const wait = await message.send("⬆️ _İşleniyor..._");
+        const wait = await message.send("⬆️ _İşliyorum..._");
         const path = await message.reply_message.download();
         const { url } = await uploadToCatbox(path);
         imgUrl = url;
-        await message.edit("✅ _Görsel yükseltiliyor..._", message.jid, wait.key);
+        await message.edit("😎 _Görseli yükseltiyorum..._", message.jid, wait.key);
       }
       if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
 
@@ -444,9 +441,9 @@ Module(
         `/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolution=2`,
         `/tools/upscale?image=${encodeURIComponent(imgUrl)}&resolusi=2`,
       ], { buffer: true, timeout: 90000 });
-      await message.client.sendMessage(message.jid, { image: buf, caption: "⬆️ *Görsel HD kaliteye yükseltildi!*" }, { quoted: message.data });
+      await message.client.sendMessage(message.jid, { image: buf, caption: "✨ *İşte bu kadar, HD kaliteye yükselttim!*" }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Yükseltme başarısız:_ ${e.message}`);
+      await message.sendReply(`❌ _Tüh! Yükseltme başarısız:_ ${e.message}`);
     }
   }
 );
@@ -509,7 +506,7 @@ Module(
     if (!isImg) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.meme ÜSTMETIN|ALTMETIN`");
     const [top, bottom] = input.split("|").map(s => s.trim());
     try {
-      const wait = await message.send("⌛ _Meme oluşturuluyor..._");
+      const wait = await message.send("⌛ _Meme oluşturuyorum..._");
       const path = await message.reply_message.download();
       const { url } = await uploadToCatbox(path);
       if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
@@ -518,10 +515,10 @@ Module(
         `/maker/smeme?background=${encodeURIComponent(url)}&text_atas=${encodeURIComponent(top)}&text_bawah=${encodeURIComponent(bottom || "")}`,
         { buffer: true }
       );
-      await message.edit("😂 *Meme Hazır!*", message.jid, wait.key);
+      await message.edit("😂", message.jid, wait.key);
       await message.client.sendMessage(message.jid, { image: result, caption: `😂 *${top}* — *${bottom}*` }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Meme oluşturulamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Meme oluşturamadım:_ ${e.message}`);
     }
   }
 );
@@ -537,12 +534,12 @@ Module(
   async (message, match) => {
     let code = (match[1] || "").trim();
     if (!code && message.reply_message?.text) code = message.reply_message.text.trim();
-    if (!code) return await message.sendReply("💻 _Kod girin:_ `.kodgörsel const x = 1`");
+    if (!code) return await message.sendReply("💻 _Metin girin:_ `.kodgörsel const x = 1`");
     try {
       const buf = await nx(`/maker/codesnap?code=${encodeURIComponent(code)}`, { buffer: true });
-      await message.client.sendMessage(message.jid, { image: buf, caption: "💻 *Kod Görseli*" }, { quoted: message.data });
+      await message.client.sendMessage(message.jid, { image: buf }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Kod görseli oluşturulamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Kod görselini oluşturamadım:_ ${e.message}`);
     }
   }
 );
@@ -567,23 +564,23 @@ Module(
         `/search/googleimage?q=${encodeURIComponent(query)}`,
         `/search/bingimage?q=${encodeURIComponent(query)}`,
       ]);
-      if (!results?.length) throw new Error("Sonuç bulunamadı");
+      if (!results?.length) throw new Error("Sonuç bulamadım");
       const pick = results[Math.floor(Math.random() * Math.min(results.length, 5))];
       const imgUrl = pick.url || pick.image || pick.link || pick.original || pick.thumbnail;
-      if (!imgUrl) throw new Error("Görsel URL bulunamadı");
+      if (!imgUrl) throw new Error("Görsel URL bulamadım");
       await message.client.sendMessage(message.jid, {
         image: { url: imgUrl },
         caption: `🔍 *${query}*`,
       }, { quoted: message.data });
     } catch (e) {
-      await message.sendReply(`❌ _Görsel bulunamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Görsel bulamadım:_ ${e.message}`);
     }
   }
 );
 
 Module(
   {
-    pattern: "(reçete|recete) ?(.*)",
+    pattern: "(?:reçete|recete) ?(.*)",
     fromMe: isFromMe,
     desc: "Yemek tarifi arar",
     usage: ".reçete pilav",
@@ -596,7 +593,7 @@ Module(
       const results = await nxTry([
         `/search/resep?q=${encodeURIComponent(query)}`,
       ]);
-      if (!results?.length) throw new Error("Tarif bulunamadı");
+      if (!results?.length) throw new Error("Tarif bulamadım");
       const r = results[0];
       const title = r.judul || r.title || r.name || query;
       const info = [
@@ -608,7 +605,7 @@ Module(
       ].filter(Boolean).join("\n");
       await message.sendReply(info);
     } catch (e) {
-      await message.sendReply(`❌ _Tarif bulunamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Tarif bulamadım:_ ${e.message}`);
     }
   }
 );
@@ -639,7 +636,7 @@ Module(
         await message.sendReply(`✅ *Cevap:* ${answer}`);
       }, 10000);
     } catch (e) {
-      await message.sendReply(`❌ _Soru alınamadı:_ ${e.message}`);
+      await message.sendReply(`❌ _Soruyu alamadım:_ ${e.message}`);
     }
   }
 );
@@ -732,7 +729,7 @@ Module(
 
 Module(
   {
-    pattern: "(dragonyazı|dragonyazi) ?(.*)",
+    pattern: "(?:dragonyazı|dragonyazi) ?(.*)",
     fromMe: isFromMe,
     desc: "Dragon Ball stili metin logosu oluşturur",
     usage: ".dragonyazı LADES",
@@ -752,7 +749,7 @@ Module(
 
 Module(
   {
-    pattern: "(neonyazı|neonyazi) ?(.*)",
+    pattern: "(?:neonyazı|neonyazi) ?(.*)",
     fromMe: isFromMe,
     desc: "Neon ışıklı metin logosu oluşturur",
     usage: ".neonyazı LADES",
@@ -772,7 +769,7 @@ Module(
 
 Module(
   {
-    pattern: "(grafitiyazı|grafitiyazi) ?(.*)",
+    pattern: "(?:grafitiyazı|grafitiyazi) ?(.*)",
     fromMe: isFromMe,
     desc: "Grafiti stili metin logosu oluşturur",
     usage: ".grafitiyazı LADES",
@@ -782,7 +779,7 @@ Module(
     const text = (match[1] || "").trim();
     if (!text) return await message.sendReply("🖊️ _Metin girin:_ `.grafitiyazı LADES`");
     try {
-      const buf = await nx(`/textpro/graffiti?text=${encodeURIComponent(text)}`, { buffer: true });
+      const buf = await nx(`/textpro/write-graffiti?text=${encodeURIComponent(text)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Görsel oluşturulamadı:_ ${e.message}`);
@@ -792,7 +789,7 @@ Module(
 
 Module(
   {
-    pattern: "(devilyazı|devilyazi) ?(.*)",
+    pattern: "(?:devilyazı|devilyazi) ?(.*)",
     fromMe: isFromMe,
     desc: "Şeytan kanadı stili metin logosu oluşturur",
     usage: ".devilyazı LADES",
@@ -802,8 +799,8 @@ Module(
     const text = (match[1] || "").trim();
     if (!text) return await message.sendReply("😈 _Metin girin:_ `.devilyazı LADES`");
     try {
-      const buf = await nx(`/textpro/devil?text=${encodeURIComponent(text)}`, { buffer: true });
-      await message.client.sendMessage(message.jid, { image: buf, caption: `😈 *${text}*` }, { quoted: message.data });
+      const buf = await nx(`/textpro/devil-wings?text=${encodeURIComponent(text)}`, { buffer: true });
+      await message.client.sendMessage(message.jid, { image: buf }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Görsel oluşturulamadı:_ ${e.message}`);
     }
@@ -816,7 +813,7 @@ Module(
 
 Module(
   {
-    pattern: "(müzikkartı|muzikkarti) ?(.*)",
+    pattern: "(?:müzikkartı|muzikkarti) ?(.*)",
     fromMe: isFromMe,
     desc: "Müzik kartı görseli oluşturur",
     usage: ".müzikkartı Şarkı Adı|Sanatçı|<resim_url>",
