@@ -8,7 +8,6 @@ const {
   getVideoInfo,
   convertM4aToMp3,
 } = require("./utils/yt");
-const { spotifyTrack } = require("./utils/misc");
 const { censorBadWords } = require("./utils");
 const nexray = require("./utils/nexray");
 
@@ -44,58 +43,80 @@ Module(
     use: "download",
   },
   async (message, match) => {
-    const query = match[1];
-    if (!query) {
+    const input = match[1] || message.reply_message?.text;
+    if (!input) {
       return await message.sendReply(
         "_⚠️ Lütfen bir şarkı adı veya Spotify bağlantısı girin!_\n_Örnek: .spotify despacito veya .spotify https://open.spotify.com/track/xxxx_"
       );
     }
 
+    let downloadMsg;
     try {
-      const searchMsg = await message.sendReply("_🔍 Spotify'da aranıyor..._");
-      const result = await nexray.spotifyTrack(query);
+      const isUrl = /\bhttps?:\/\/\S+/gi.test(input) && input.includes("spotify.com");
 
-      if (!result) {
-        return await message.edit(
-          "_❌ Şarkı bulunamadı veya geçersiz bağlantı!_",
-          message.jid,
-          searchMsg.key
-        );
-      }
+      if (isUrl) {
+        let url = input.match(/\bhttps?:\/\/\S+/gi)[0];
+        downloadMsg = await message.sendReply("_⏳ Spotify'dan indiriliyor..._");
+        const result = await nexray.downloadSpotify(url);
 
-      const { title, artists, album, duration, cover_url, audio_url } = result;
+        if (!result || !result.url) {
+          return await message.edit("_❌ Şarkı indirilemedi veya geçersiz bağlantı!_", message.jid, downloadMsg.key);
+        }
 
-      let caption = `🎵 *${censorBadWords(title)}*\n`;
-      caption += `🎤 *Sanatçı(lar):* ${censorBadWords(artists.join(", "))}\n`;
-      caption += `💿 *Albüm:* ${censorBadWords(album)}\n`;
-      caption += `⏳ *Süre:* ${duration}\n\n`;
-      caption += `_Şarkı indiriliyor..._`;
+        const safeTitle = censorBadWords(result.title || "Spotify Track");
+        const safeArtist = censorBadWords(result.artist || "Bilinmiyor");
 
-      await message.edit(caption, message.jid, searchMsg.key);
+        await message.edit(`_📤 *${safeArtist}* - *${safeTitle}* yükleniyor..._`, message.jid, downloadMsg.key);
 
-      if (audio_url) {
-        await message.sendAudio(audio_url, {
+        await message.client.sendMessage(message.jid, {
+          audio: { url: result.url },
           mimetype: "audio/mpeg",
-          ptt: false,
-          fileName: `${censorBadWords(title)} - ${censorBadWords(
-            artists.join(", ")
-          )}.mp3`,
-          externalAdReply: {
-            title: censorBadWords(title),
-            body: censorBadWords(artists.join(", ")),
-            thumbnail: cover_url ? await nexray.getBuffer(cover_url) : "",
-            mediaType: 2,
-            mediaUrl: query.includes("spotify.com") ? query : "",
-          },
-        });
+          fileName: `${safeArtist} - ${safeTitle}.mp3`,
+        }, { quoted: message.data });
+
+        return await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
       } else {
-        await message.sendReply("_❌ Ses dosyası bulunamadı._");
+        downloadMsg = await message.sendReply("_🔍 Spotify'da aranıyor..._");
+        const result = await nexray.spotifyPlay(input);
+
+        if (!result || !result.url) {
+          return await message.edit("_❌ Şarkı bulunamadı!_", message.jid, downloadMsg.key);
+        }
+
+        const { title, artist, thumbnail, duration, album, url: trackUrl } = result;
+        const safeTitle = censorBadWords(title);
+        const safeArtist = censorBadWords(artist);
+
+        let caption = `🎵 *${safeTitle}*\n`;
+        caption += `🎤 *Sanatçı:* ${safeArtist}\n`;
+        caption += `💿 *Albüm:* ${censorBadWords(album)}\n`;
+        caption += `⏳ *Süre:* ${duration}\n\n`;
+        caption += `_🔻 İndirilip yükleniyor..._`;
+
+        await message.edit(caption, message.jid, downloadMsg.key);
+
+        await message.client.sendMessage(message.jid, {
+          audio: { url: result.url },
+          mimetype: "audio/mpeg",
+          fileName: `${safeArtist} - ${safeTitle}.mp3`,
+          externalAdReply: {
+            title: safeTitle,
+            body: safeArtist,
+            thumbnail: thumbnail ? await nexray.getBuffer(thumbnail) : "",
+            mediaType: 2,
+            mediaUrl: trackUrl || "",
+          },
+        }, { quoted: message.data });
+
+        return await message.edit("_✅ İndirme tamamlandı!_", message.jid, downloadMsg.key);
       }
     } catch (error) {
-      console.error("Spotify arama/indirme hatası:", error);
-      await message.sendReply(
-        "_❌ Spotify işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin._"
-      );
+      console.error("Spotify indirme hatası:", error);
+      if (downloadMsg) {
+        await message.edit("_❌ Spotify işlemi başarısız oldu!_", message.jid, downloadMsg.key);
+      } else {
+        await message.sendReply("_❌ Spotify işlemi başarısız oldu._");
+      }
     }
   }
 );
@@ -167,9 +188,9 @@ Module(
     const url = extractedUrl && (extractedUrl.includes("youtube.com") || extractedUrl.includes("youtu.be"))
       ? (extractedUrl.includes("youtube.com/shorts/")
         ? (() => {
-            const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
-            return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
-          })()
+          const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
+          return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
+        })()
         : extractedUrl)
       : null;
 
@@ -217,11 +238,11 @@ Module(
         });
 
       if (videoFormats.length === 0) {
-         return await message.edit(
-           "_❌ Bu video için uygun format bulunamadı._",
-           message.jid,
-           downloadMsg.key
-         );
+        return await message.edit(
+          "_❌ Bu video için uygun format bulunamadı._",
+          message.jid,
+          downloadMsg.key
+        );
       }
 
       const uniqueQualities = [...new Set(videoFormats.map((f) => f.quality))];
@@ -231,8 +252,8 @@ Module(
       );
       const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-      let qualityText = "🎬 _Video Kalitesini Seçin_\n\n";
-      qualityText += `🎬 _*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
+      let qualityText = "✨ _Video Kalitesini Seçiniz_\n\n";
+      qualityText += `✍🏻 _*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
 
       uniqueQualities.forEach((quality, index) => {
         const format = videoFormats.find((f) => f.quality === quality);
@@ -265,12 +286,12 @@ Module(
         if (audioFormat.size) {
           const match = audioFormat.size.match(/([\d.]+)\s*(KB|MB|GB)/i);
           if (match) {
-             let value = parseFloat(match[1]);
-             let unit = match[2].toUpperCase();
-             if (unit === "KB") value *= 1024;
-             if (unit === "MB") value *= 1024 * 1024;
-             if (unit === "GB") value *= 1024 * 1024 * 1024;
-             if (value > 0) audioSizeInfo = ` ~ _${formatBytes(value)}_`;
+            let value = parseFloat(match[1]);
+            let unit = match[2].toUpperCase();
+            if (unit === "KB") value *= 1024;
+            if (unit === "MB") value *= 1024 * 1024;
+            if (unit === "GB") value *= 1024 * 1024 * 1024;
+            if (value > 0) audioSizeInfo = ` ~ _${formatBytes(value)}_`;
           }
         }
         qualityText += `*${uniqueQualities.length + 1}.* _*Sadece Ses*_${audioSizeInfo}\n`;
@@ -316,9 +337,9 @@ Module(
       (extractedUrl.includes("youtube.com") || extractedUrl.includes("youtu.be"))
       ? (extractedUrl.includes("youtube.com/shorts/")
         ? (() => {
-            const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
-            return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
-          })()
+          const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
+          return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
+        })()
         : extractedUrl)
       : null;
 
@@ -328,7 +349,7 @@ Module(
     try {
       if (normalizedUrl) {
         downloadMsg = await message.sendReply("_🔻 Video bilgileri alınıyor..._");
-        
+
         let highestQuality = "360p";
         try {
           const info = await getVideoInfo(normalizedUrl);
@@ -344,7 +365,7 @@ Module(
           if (videoFormats.length > 0) {
             highestQuality = videoFormats[0].quality;
           }
-        } catch (_) {}
+        } catch (_) { }
 
         await message.edit(`_⬇️ Video indiriliyor..._ (\`${highestQuality}\`)`, message.jid, downloadMsg.key);
         const result = await downloadVideo(normalizedUrl, highestQuality);
@@ -357,21 +378,21 @@ Module(
 
         let metadataStr = "";
         try {
-           metadataStr = `_Kanal:_ ${info.channel || "Bilinmiyor"}\n_Süre:_ \`${info.duration || "Bilinmiyor"}\` | _Görüntülenme:_ \`${info.views || "Bilinmiyor"}\`\n\n`;
-        } catch (_) {}
+          metadataStr = `_Kanal:_ ${info.channel || "Bilinmiyor"}\n_Süre:_ \`${info.duration || "Bilinmiyor"}\` | _Görüntülenme:_ \`${info.views || "Bilinmiyor"}\`\n\n`;
+        } catch (_) { }
 
         if (stats.size > VIDEO_SIZE_LIMIT) {
           const stream = fs.createReadStream(videoPath);
           await message.sendMessage({ stream }, "document", {
             fileName: `${safeTitle}.mp4`,
             mimetype: "video/mp4",
-            caption: `_*${safeTitle}*_\n\n${metadataStr}_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
+            caption: `_*${safeTitle}*_\n\n${metadataStr}_Dosya boyutu: ${formatBytes(stats.size)}_\n✨ _Kalite: ${highestQuality}_`,
           });
           stream.destroy();
         } else {
           const stream = fs.createReadStream(videoPath);
           await message.sendReply({ stream }, "video", {
-            caption: `_*${safeTitle}*_\n\n${metadataStr}_Kalite: ${highestQuality}_`,
+            caption: `_*${safeTitle}*_\n\n${metadataStr}✨ _Kalite: ${highestQuality}_`,
           });
           stream.destroy();
         }
@@ -385,7 +406,7 @@ Module(
       } else {
         downloadMsg = await message.sendReply("_🔍 Video aranıyor..._");
         const result = await nexray.ytPlayVid(input);
-        
+
         if (!result || !result.url) {
           return await message.edit("_❌ Sonuç bulunamadı!_", message.jid, downloadMsg.key);
         }
@@ -409,10 +430,10 @@ Module(
             } else {
               await message.edit("_🔎 Alternatif yöntemle aranıyor..._", message.jid, downloadMsg.key);
             }
-            
+
             const safeTitle = censorBadWords(fallback.title || "video");
             await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
-            
+
             await message.sendReply({ url: fallback.url }, "video", {
               caption: `_*${safeTitle}*_`,
             });
@@ -421,7 +442,7 @@ Module(
           }
         } catch (_) { }
       }
-      
+
       console.error("Video indirme hatası:", error);
       if (downloadMsg) {
         await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
@@ -560,9 +581,9 @@ Module(
       (extractedUrl.includes("youtube.com") || extractedUrl.includes("youtu.be"))
       ? (extractedUrl.includes("youtube.com/shorts/")
         ? (() => {
-            const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
-            return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
-          })()
+          const shortId = extractedUrl.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]+)/)?.[1];
+          return shortId ? `https://www.youtube.com/watch?v=${shortId}` : extractedUrl;
+        })()
         : extractedUrl)
       : null;
 
@@ -611,9 +632,9 @@ Module(
 
         let result;
         if (normalizedUrl) {
-           result = await nexray.downloadYtMp3(normalizedUrl);
+          result = await nexray.downloadYtMp3(normalizedUrl);
         } else {
-           result = await nexray.ytPlayAud(input);
+          result = await nexray.ytPlayAud(input);
         }
 
         if (!result || !result.url) throw new Error("Nexray failed");
@@ -896,13 +917,13 @@ Module(
             });
 
           if (videoFormats.length === 0) {
-             return await message.edit("_❌ Bu video için uygun format bulunamadı._", message.jid, downloadMsg.key);
+            return await message.edit("_❌ Bu video için uygun format bulunamadı._", message.jid, downloadMsg.key);
           }
 
           const uniqueQualities = [...new Set(videoFormats.map((f) => f.quality))];
-          
-          let qualityText = "🎬 _*Video Kalitesini Seçin*_\n\n";
-          qualityText += `🎬 _*${safeTitle}*_\n\n(${selectedVideo.id})\n\n`;
+
+          let qualityText = "✨ _*Video Kalitesini Seçin*_\n\n";
+          qualityText += `✍🏻 _*${safeTitle}*_\n\n(${selectedVideo.id})\n\n`;
 
           uniqueQualities.forEach((quality, index) => {
             const format = videoFormats.find((f) => f.quality === quality);
@@ -933,12 +954,12 @@ Module(
             if (audioFormat.size) {
               const match = audioFormat.size.match(/([\d.]+)\s*(KB|MB|GB)/i);
               if (match) {
-                 let value = parseFloat(match[1]);
-                 let unit = match[2].toUpperCase();
-                 if (unit === "KB") value *= 1024;
-                 if (unit === "MB") value *= 1024 * 1024;
-                 if (unit === "GB") value *= 1024 * 1024 * 1024;
-                 if (value > 0) audioSizeInfo = ` ~ _${formatBytes(value)}_`;
+                let value = parseFloat(match[1]);
+                let unit = match[2].toUpperCase();
+                if (unit === "KB") value *= 1024;
+                if (unit === "MB") value *= 1024 * 1024;
+                if (unit === "GB") value *= 1024 * 1024 * 1024;
+                if (value > 0) audioSizeInfo = ` ~ _${formatBytes(value)}_`;
               }
             }
             qualityText += `*${uniqueQualities.length + 1}.* _*Sadece Ses*_${audioSizeInfo}\n`;
@@ -1028,7 +1049,7 @@ Module(
 
             await new Promise((resolve) => setTimeout(resolve, 100));
             if (fs.existsSync(audioPath)) {
-              try { fs.unlinkSync(audioPath); } catch (_) {}
+              try { fs.unlinkSync(audioPath); } catch (_) { }
             }
           } catch (error) {
             console.error("YouTube video ses indirme hatası:", error);
@@ -1045,17 +1066,17 @@ Module(
                   mimetype: "audio/mpeg",
                   fileName: `${safeTitle}.mp3`,
                 }, { quoted: message.data });
-                
+
                 await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
               } else {
                 throw new Error("Fallback failed");
               }
             } catch (fallbackError) {
-               console.error("Fallback error:", fallbackError);
-               if (downloadMsg) await message.edit("_İndirme başarısız!_", message.jid, downloadMsg.key);
+              console.error("Fallback error:", fallbackError);
+              if (downloadMsg) await message.edit("_İndirme başarısız!_", message.jid, downloadMsg.key);
             }
             if (audioPath && fs.existsSync(audioPath)) {
-              try { fs.unlinkSync(audioPath); } catch (_) {}
+              try { fs.unlinkSync(audioPath); } catch (_) { }
             }
           }
         } else {
@@ -1082,13 +1103,13 @@ Module(
               await message.sendMessage({ stream }, "document", {
                 fileName: `${safeTitle}.mp4`,
                 mimetype: "video/mp4",
-                caption: `_*${safeTitle}*_\n\n_Kalite: ${selectedQuality}_`,
+                caption: `_*${safeTitle}*_\n\n ✨_Kalite: ${selectedQuality}_`,
               });
               stream.destroy();
             } else {
               const stream = fs.createReadStream(videoPath);
               await message.sendReply({ stream }, "video", {
-                caption: `_*${safeTitle}*_\n\n_Kalite: ${selectedQuality}_`,
+                caption: `_*${safeTitle}*_\n\n✨ _Kalite: ${selectedQuality}_`,
               });
               stream.destroy();
             }
@@ -1097,7 +1118,7 @@ Module(
 
             await new Promise((resolve) => setTimeout(resolve, 100));
             if (fs.existsSync(videoPath)) {
-              try { fs.unlinkSync(videoPath); } catch (_) {}
+              try { fs.unlinkSync(videoPath); } catch (_) { }
             }
           } catch (error) {
             console.error("YouTube video kalite indirme hatası:", error);
@@ -1110,19 +1131,19 @@ Module(
                 const safeTitle = censorBadWords(fallback.title || "Video");
                 await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
                 await message.sendReply({ url: fallback.url }, "video", {
-                  caption: `_*${safeTitle}*_\n\n_Kalite: Yedek Yöntem_`,
+                  caption: `_*${safeTitle}*_\n\n✨ _Kalite: Yedek Yöntem_`,
                 });
                 await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
               } else {
                 throw new Error("Fallback failed");
               }
             } catch (fallbackError) {
-               console.error("Fallback video error:", fallbackError);
-               if (downloadMsg) await message.edit("_İndirme başarısız!_", message.jid, downloadMsg.key);
+              console.error("Fallback video error:", fallbackError);
+              if (downloadMsg) await message.edit("_İndirme başarısız!_", message.jid, downloadMsg.key);
             }
 
             if (videoPath && fs.existsSync(videoPath)) {
-              try { fs.unlinkSync(videoPath); } catch (_) {}
+              try { fs.unlinkSync(videoPath); } catch (_) { }
             }
           }
         }
@@ -1134,99 +1155,3 @@ Module(
   }
 );
 
-Module(
-  {
-    pattern: "spotify ?(.*)",
-    fromMe: fromMe,
-    desc: "Spotify bağlantısından ses indir",
-    usage: ".spotify <spotify link>",
-    use: "download",
-  },
-  async (message, match) => {
-    let url = match[1] || message.reply_message?.text;
-
-    if (url && /\bhttps?:\/\/\S+/gi.test(url)) {
-      url = url.match(/\bhttps?:\/\/\S+/gi)[0];
-    }
-
-    if (!url || !url.includes("spotify.com")) {
-      return await message.sendReply("_⚠️ Lütfen geçerli bir Spotify bağlantısı verin!_\n_Örnek: .spotify https://open.spotify.com/track/xxxxx_"
-      );
-    }
-
-    let downloadMsg;
-    let audioPath;
-
-    try {
-      downloadMsg = await message.sendReply("_⏳ Spotify bilgileri alınıyor..._");
-      const spotifyInfo = await spotifyTrack(url);
-      const { title, artist } = spotifyInfo;
-
-      const safeTitle = censorBadWords(title);
-      await message.edit(
-        `_⬇️ *${artist}* - *${safeTitle}* indiriliyor..._`,
-        message.jid,
-        downloadMsg.key
-      );
-
-      const query = `${title} ${artist}`;
-      const results = await nexray.searchYoutube(query);
-
-      if (!results || results.length === 0) {
-        return await message.edit(
-          "_❌ YouTube'da eşleşen şarkı bulunamadı!_",
-          message.jid,
-          downloadMsg.key
-        );
-      }
-
-      const video = results[0];
-      const result = await nexray.downloadYtMp3(video.url);
-      if (!result || !result.url) throw new Error("Nexray failed");
-
-      await message.edit(
-        `_🔻 İndirilip yükleniyor..._ *${censorBadWords(result.title)}*`,
-        message.jid,
-        downloadMsg.key
-      );
-
-      await message.client.sendMessage(message.jid, {
-        audio: { url: result.url },
-        mimetype: "audio/mpeg",
-        fileName: `${censorBadWords(result.title)}.mp3`,
-      }, { quoted: message.data });
-
-      await message.edit(
-        `_✅ Hazır!_`,
-        message.jid,
-        downloadMsg.key
-      );
-    } catch (error) {
-      console.error("Spotify indirme hatası:", error);
-      try {
-        const fallback = await nexray.downloadSpotify(url);
-        if (fallback?.url) {
-          if (!downloadMsg) downloadMsg = await message.sendReply("_🔎 Alternatif yöntemle aranıyor..._");
-          await message.edit("_🔻 İndirilip yükleniyor..._", message.jid, downloadMsg.key);
-          await message.client.sendMessage(message.jid, {
-            audio: { url: fallback.url },
-            mimetype: "audio/mpeg",
-            fileName: `${censorBadWords(fallback.title || "Spotify")}.mp3`,
-          }, { quoted: message.data });
-          await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
-          return;
-        }
-      } catch (_) { }
-      console.error("Spotify indirme hatası:", error);
-      if (downloadMsg) {
-        await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
-      } else {
-        await message.sendReply("_❌ İndirme başarısız oldu. Lütfen tekrar deneyin._");
-      }
-
-      if (audioPath && fs.existsSync(audioPath)) {
-        fs.unlinkSync(audioPath);
-      }
-    }
-  }
-);

@@ -222,9 +222,9 @@ async function downloadTwitter(url) {
 }
 
 /**
- * Spotify indirme (doğrudan ses indirir)
+ * Spotify indirme (URL ile doğrudan ses indirir)
  * @param {string} url - Spotify track URL
- * @returns {Promise<{url?: string, title?: string}|null>}
+ * @returns {Promise<{url?: string, title?: string, artist?: string}|null>}
  */
 async function downloadSpotify(url) {
   try {
@@ -235,11 +235,41 @@ async function downloadSpotify(url) {
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
-      const dl = r.download_url || r.audio_url || r.url;
-      return dl ? { url: dl, title: r.title || r.name } : null;
+      const dl = r.url || r.download_url || r.audio_url;
+      return dl ? { url: dl, title: r.title || r.name, artist: r.artist } : null;
     }
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray spotify]", e?.message);
+  }
+  return null;
+}
+
+/**
+ * Spotify Play (Arama terimi ile doğrudan indirir)
+ * @param {string} query - Arama terimi
+ * @returns {Promise<{url?: string, title?: string, artist?: string, thumbnail?: string, duration?: string, album?: string}|null>}
+ */
+async function spotifyPlay(query) {
+  try {
+    const res = await axios.get(`${BASE}/downloader/spotifyplay`, {
+      params: { q: String(query).trim() },
+      timeout: TIMEOUT,
+    });
+    const data = res.data;
+    if (data?.status && data?.result) {
+      const r = data.result;
+      const dl = r.download_url || r.url;
+      return dl ? {
+        url: dl,
+        title: r.title,
+        artist: r.artist,
+        thumbnail: r.thumbnail,
+        duration: r.duration,
+        album: r.album
+      } : null;
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray spotifyPlay]", e?.message);
   }
   return null;
 }
@@ -337,6 +367,21 @@ async function ytPlayVid(query) {
  * @param {string} query - Arama terimi
  * @returns {Promise<any[]|null>}
  */
+/**
+ * URL üzerinden buffer alır.
+ * @param {string} url - İndirilecek görsel/dosya URL'si
+ * @returns {Promise<Buffer|string>} Buffer veya hata durumunda boş string
+ */
+async function getBuffer(url) {
+  try {
+    const res = await axios.get(url, { responseType: "arraybuffer", timeout: TIMEOUT });
+    return Buffer.from(res.data);
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[Nexray getBuffer]", e?.message);
+    return "";
+  }
+}
+
 async function searchYoutube(query) {
   try {
     const res = await axios.get(`${BASE}/search/youtube`, {
@@ -363,9 +408,11 @@ module.exports = {
   downloadPinterest,
   downloadTwitter,
   downloadSpotify,
+  spotifyPlay,
   downloadYtMp4,
   downloadYtMp3,
   ytPlayAud,
   ytPlayVid,
   searchYoutube,
+  getBuffer,
 };
