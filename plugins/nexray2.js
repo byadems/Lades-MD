@@ -33,43 +33,6 @@ async function nx(path, opts = {}) {
 
 Module(
   {
-    pattern: "tiktokbio ?(.*)",
-    fromMe: isFromMe,
-    desc: "TikTok kullanıcı profili bilgilerini gösterir",
-    usage: ".tiktokbio username",
-    use: "stalker",
-  },
-  async (message, match) => {
-    const user = (match[1] || "").trim().replace(/^@/, "");
-    if (!user) return await message.sendReply("🔍 _Kullanıcı adı girin:_ `.tiktokbio username`");
-    try {
-      const r = await nx(`/stalker/tiktok?username=${encodeURIComponent(user)}`);
-      const nick = r.nickname || r.name || r.username || user;
-      const bio = r.signature || r.bio || "-";
-      const followers = r.followerCount ?? r.fans ?? "-";
-      const following = r.followingCount ?? r.following ?? "-";
-      const likes = r.heartCount ?? r.likes ?? "-";
-      const videos = r.videoCount ?? r.videos ?? "-";
-      const verified = r.verified ? "✅" : "❌";
-      await message.sendReply(
-        `🎵 *TikTok Profili*\n\n` +
-        `👤 *Ad:* ${nick}\n` +
-        `🔑 *Kullanıcı:* @${user}\n` +
-        `📝 *Bio:* ${bio}\n` +
-        `👥 *Takipçi:* ${Number(followers).toLocaleString()}\n` +
-        `➡️ *Takip:* ${Number(following).toLocaleString()}\n` +
-        `❤️ *Beğeni:* ${Number(likes).toLocaleString()}\n` +
-        `🎬 *Video:* ${videos}\n` +
-        `✅ *Doğrulanmış:* ${verified}`
-      );
-    } catch (e) {
-      await message.sendReply(`❌ _TikTok profili alınamadı:_ ${e.message}`);
-    }
-  }
-);
-
-Module(
-  {
     pattern: "igbio ?(.*)",
     fromMe: isFromMe,
     desc: "Instagram kullanıcı profili bilgilerini gösterir",
@@ -101,43 +64,6 @@ Module(
       );
     } catch (e) {
       await message.sendReply(`❌ _Instagram profili alınamadı:_ ${e.message}`);
-    }
-  }
-);
-
-Module(
-  {
-    pattern: "githubprofil ?(.*)",
-    fromMe: isFromMe,
-    desc: "GitHub kullanıcı profili bilgilerini gösterir",
-    usage: ".githubprofil username",
-    use: "stalker",
-  },
-  async (message, match) => {
-    const user = (match[1] || "").trim().replace(/^@/, "");
-    if (!user) return await message.sendReply("🐙 _Kullanıcı adı girin:_ `.githubprofil username`");
-    try {
-      const r = await nx(`/stalker/github?username=${encodeURIComponent(user)}`);
-      const name = r.name || user;
-      const bio = r.bio || "-";
-      const repos = r.public_repos ?? r.repos ?? "-";
-      const followers = r.followers ?? "-";
-      const following = r.following ?? "-";
-      const location = r.location || "-";
-      const blog = r.blog || "-";
-      await message.sendReply(
-        `🐙 *GitHub Profili*\n\n` +
-        `👤 *Ad:* ${name}\n` +
-        `🔑 *Kullanıcı:* @${user}\n` +
-        `📝 *Bio:* ${bio}\n` +
-        `📍 *Konum:* ${location}\n` +
-        `🔗 *Blog:* ${blog}\n` +
-        `📦 *Repository:* ${repos}\n` +
-        `👥 *Takipçi:* ${Number(followers).toLocaleString()}\n` +
-        `➡️ *Takip:* ${Number(following).toLocaleString()}`
-      );
-    } catch (e) {
-      await message.sendReply(`❌ _GitHub profili alınamadı:_ ${e.message}`);
     }
   }
 );
@@ -299,7 +225,7 @@ Module(
 
 Module(
   {
-    pattern: "sinema ?(.*)",
+    pattern: "efektsinema ?(.*)",
     fromMe: isFromMe,
     desc: "Fotoğrafa sinematik film efekti uygular",
     usage: ".sinema (görsel yanıtla)",
@@ -310,10 +236,10 @@ Module(
 
 Module(
   {
-    pattern: "sokakgraffiti ?(.*)",
+    pattern: "grafitisokak ?(.*)",
     fromMe: isFromMe,
     desc: "Fotoğrafı sokak grafiti sanatına dönüştürür",
-    usage: ".sokakgraffiti (görsel yanıtla)",
+    usage: ".grafitisokak (görsel yanıtla)",
     use: "ephoto",
   },
   async (message) => applyEphoto(message, "/ephoto/graffiti", "🎨 *Grafiti dönüşümü tamamlandı!*")
@@ -416,34 +342,6 @@ Module(
 
 Module(
   {
-    pattern: "arkaplankaldır ?(.*)",
-    fromMe: isFromMe,
-    desc: "Görselin arka planını kaldırır",
-    usage: ".arkaplankaldır (görsel yanıtla)",
-    use: "tools",
-  },
-  async (message, match) => {
-    const replyMime = message.reply_message?.mimetype || "";
-    const isImg = replyMime.startsWith("image/");
-    let imgUrl = (match[1] || "").trim();
-    if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.arkaplankaldır`");
-    try {
-      if (!imgUrl && isImg) {
-        const buf = await message.reply_message.download();
-        imgUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
-      }
-      const sent = await message.send("🔄 _Arka plan kaldırılıyor..._");
-      const buf = await nx(`/tools/removebg?url=${encodeURIComponent(imgUrl)}`, { buffer: true, timeout: 60000 });
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
-      await message.client.sendMessage(message.jid, { image: buf, caption: "✂️ *Arka plan kaldırıldı!*" }, { quoted: message.data });
-    } catch (e) {
-      await message.sendReply(`❌ _Arka plan kaldırılamadı:_ ${e.message}`);
-    }
-  }
-);
-
-Module(
-  {
     pattern: "upscale ?(.*)",
     fromMe: isFromMe,
     desc: "Görseli HD kaliteye yükseltir",
@@ -470,77 +368,16 @@ Module(
   }
 );
 
-Module(
-  {
-    pattern: "renklendir ?(.*)",
-    fromMe: isFromMe,
-    desc: "Siyah-beyaz görseli renklendirir",
-    usage: ".renklendir (görsel yanıtla)",
-    use: "tools",
-  },
-  async (message, match) => {
-    const replyMime = message.reply_message?.mimetype || "";
-    const isImg = replyMime.startsWith("image/");
-    let imgUrl = (match[1] || "").trim();
-    if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.renklendir`");
-    try {
-      if (!imgUrl && isImg) {
-        const buf = await message.reply_message.download();
-        imgUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
-      }
-      const sent = await message.send("🎨 _Renklendirilıyor..._");
-      const buf = await nx(`/tools/colorize?url=${encodeURIComponent(imgUrl)}`, { buffer: true, timeout: 60000 });
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
-      await message.client.sendMessage(message.jid, { image: buf, caption: "🎨 *Renklendirildi!*" }, { quoted: message.data });
-    } catch (e) {
-      await message.sendReply(`❌ _Renklendirme başarısız:_ ${e.message}`);
-    }
-  }
-);
-
 // ════════════════════════════════════════════════════════════
 // DOWNLOADER KOMUTLarı (yeni)
 // ════════════════════════════════════════════════════════════
 
 Module(
   {
-    pattern: "facebookindir ?(.*)",
-    fromMe: isFromMe,
-    desc: "Facebook videosu indirir",
-    usage: ".facebookindir <bağlantı>",
-    use: "download",
-  },
-  async (message, match) => {
-    let url = (match[1] || "").trim();
-    if (!url && message.reply_message?.text) {
-      const m = message.reply_message.text.match(/https?:\/\/\S+/);
-      if (m) url = m[0];
-    }
-    if (!url || !url.includes("facebook")) return await message.sendReply("📘 _Facebook bağlantısı girin:_ `.facebookindir <url>`");
-    try {
-      const sent = await message.send("⬇️ _İndiriliyor..._");
-      const result = await nx(`/downloader/facebook?url=${encodeURIComponent(url)}`);
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
-      const videoUrl =
-        result?.hd || result?.sd || result?.url || result?.video ||
-        (Array.isArray(result) ? result[0]?.url : null);
-      if (!videoUrl) throw new Error("Video URL bulunamadı");
-      await message.client.sendMessage(message.jid, {
-        video: { url: videoUrl },
-        caption: "📘 *Facebook Video*",
-      }, { quoted: message.data });
-    } catch (e) {
-      await message.sendReply(`❌ _Facebook indirme başarısız:_ ${e.message}`);
-    }
-  }
-);
-
-Module(
-  {
-    pattern: "capcutindir ?(.*)",
+    pattern: "capcut ?(.*)",
     fromMe: isFromMe,
     desc: "CapCut videosu indirir",
-    usage: ".capcutindir <bağlantı>",
+    usage: ".capcut <bağlantı>",
     use: "download",
   },
   async (message, match) => {
@@ -549,7 +386,7 @@ Module(
       const m = message.reply_message.text.match(/https?:\/\/\S+/);
       if (m) url = m[0];
     }
-    if (!url || !url.includes("capcut")) return await message.sendReply("🎬 _CapCut bağlantısı girin:_ `.capcutindir <url>`");
+    if (!url || !url.includes("capcut")) return await message.sendReply("🎬 _CapCut bağlantısı girin:_ `.capcut <url>`");
     try {
       const sent = await message.send("⬇️ _İndiriliyor..._");
       const result = await nx(`/downloader/capcut?url=${encodeURIComponent(url)}`);
@@ -562,39 +399,6 @@ Module(
       }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _CapCut indirme başarısız:_ ${e.message}`);
-    }
-  }
-);
-
-Module(
-  {
-    pattern: "pinterestindir ?(.*)",
-    fromMe: isFromMe,
-    desc: "Pinterest görsel/video indirir",
-    usage: ".pinterestindir <bağlantı>",
-    use: "download",
-  },
-  async (message, match) => {
-    let url = (match[1] || "").trim();
-    if (!url && message.reply_message?.text) {
-      const m = message.reply_message.text.match(/https?:\/\/\S+/);
-      if (m) url = m[0];
-    }
-    if (!url || !url.includes("pinterest")) return await message.sendReply("📌 _Pinterest bağlantısı girin:_ `.pinterestindir <url>`");
-    try {
-      const sent = await message.send("⬇️ _İndiriliyor..._");
-      const result = await nx(`/downloader/pinterest?url=${encodeURIComponent(url)}`);
-      await message.edit("✅ _Tamamlandı!_", message.jid, sent.key);
-      const mediaUrl = result?.url || result?.image || result?.video || (Array.isArray(result) ? result[0]?.url : null);
-      if (!mediaUrl) throw new Error("Medya URL bulunamadı");
-      const isVideo = mediaUrl.includes(".mp4") || mediaUrl.includes("video");
-      if (isVideo) {
-        await message.client.sendMessage(message.jid, { video: { url: mediaUrl }, caption: "📌 *Pinterest Video*" }, { quoted: message.data });
-      } else {
-        await message.client.sendMessage(message.jid, { image: { url: mediaUrl }, caption: "📌 *Pinterest Görsel*" }, { quoted: message.data });
-      }
-    } catch (e) {
-      await message.sendReply(`❌ _Pinterest indirme başarısız:_ ${e.message}`);
     }
   }
 );
@@ -659,15 +463,15 @@ Module(
 
 Module(
   {
-    pattern: "googleresim ?(.*)",
+    pattern: "resim ?(.*)",
     fromMe: isFromMe,
     desc: "Google'dan resim arar",
-    usage: ".googleresim kedi",
+    usage: ".resim kedi",
     use: "search",
   },
   async (message, match) => {
     const query = (match[1] || "").trim();
-    if (!query) return await message.sendReply("🔍 _Konu girin:_ `.googleresim kedi`");
+    if (!query) return await message.sendReply("🔍 _Konu girin:_ `.resim kedi`");
     try {
       const results = await nx(`/search/google?q=${encodeURIComponent(query)}`);
       if (!results?.length) throw new Error("Sonuç bulunamadı");
@@ -686,15 +490,15 @@ Module(
 
 Module(
   {
-    pattern: "recete ?(.*)",
+    pattern: "reçete ?(.*)",
     fromMe: isFromMe,
     desc: "Yemek tarifi arar",
-    usage: ".recete pilav",
+    usage: ".reçete pilav",
     use: "search",
   },
   async (message, match) => {
     const query = (match[1] || "").trim();
-    if (!query) return await message.sendReply("🍲 _Yemek adı girin:_ `.recete pilav`");
+    if (!query) return await message.sendReply("🍲 _Yemek adı girin:_ `.reçete pilav`");
     try {
       const results = await nx(`/search/resepkoki?q=${encodeURIComponent(query)}`);
       if (!results?.length) throw new Error("Tarif bulunamadı");
@@ -773,10 +577,10 @@ Module(
 
 Module(
   {
-    pattern: "kimiasorulu",
+    pattern: "kimyasoru",
     fromMe: isFromMe,
     desc: "Rastgele kimya sorusu gönderir",
-    usage: ".kimiasorulu",
+    usage: ".kimyasoru",
     use: "games",
   },
   async (message) => {
@@ -832,15 +636,15 @@ Module(
 
 Module(
   {
-    pattern: "dragonsöz ?(.*)",
+    pattern: "dragonyazı ?(.*)",
     fromMe: isFromMe,
     desc: "Dragon Ball stili metin logosu oluşturur",
-    usage: ".dragonsöz LADES",
+    usage: ".dragonyazı LADES",
     use: "fun",
   },
   async (message, match) => {
     const text = (match[1] || "").trim();
-    if (!text) return await message.sendReply("🐉 _Metin girin:_ `.dragonsöz LADES`");
+    if (!text) return await message.sendReply("🐉 _Metin girin:_ `.dragonyazı LADES`");
     try {
       const buf = await nx(`/textpro/dragonball?text=${encodeURIComponent(text)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: `🐉 *${text}*` }, { quoted: message.data });
@@ -852,15 +656,15 @@ Module(
 
 Module(
   {
-    pattern: "neonmetin ?(.*)",
+    pattern: "neonyazı ?(.*)",
     fromMe: isFromMe,
     desc: "Neon ışıklı metin logosu oluşturur",
-    usage: ".neonmetin LADES",
+    usage: ".neonyazı LADES",
     use: "fun",
   },
   async (message, match) => {
     const text = (match[1] || "").trim();
-    if (!text) return await message.sendReply("💡 _Metin girin:_ `.neonmetin LADES`");
+    if (!text) return await message.sendReply("💡 _Metin girin:_ `.neonyazı LADES`");
     try {
       const buf = await nx(`/textpro/typography?text=${encodeURIComponent(text)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: `💡 *${text}*` }, { quoted: message.data });
@@ -872,15 +676,15 @@ Module(
 
 Module(
   {
-    pattern: "grafiti ?(.*)",
+    pattern: "grafitiyazı ?(.*)",
     fromMe: isFromMe,
     desc: "Grafiti stili metin logosu oluşturur",
-    usage: ".grafiti LADES",
+    usage: ".grafitiyazı LADES",
     use: "fun",
   },
   async (message, match) => {
     const text = (match[1] || "").trim();
-    if (!text) return await message.sendReply("🖊️ _Metin girin:_ `.grafiti LADES`");
+    if (!text) return await message.sendReply("🖊️ _Metin girin:_ `.grafitiyazı LADES`");
     try {
       const buf = await nx(`/textpro/graffiti?text=${encodeURIComponent(text)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: `🖊️ *${text}*` }, { quoted: message.data });
@@ -892,15 +696,15 @@ Module(
 
 Module(
   {
-    pattern: "devilmetin ?(.*)",
+    pattern: "devilyazı ?(.*)",
     fromMe: isFromMe,
     desc: "Şeytan kanadı stili metin logosu oluşturur",
-    usage: ".devilmetin LADES",
+    usage: ".devilyazı LADES",
     use: "fun",
   },
   async (message, match) => {
     const text = (match[1] || "").trim();
-    if (!text) return await message.sendReply("😈 _Metin girin:_ `.devilmetin LADES`");
+    if (!text) return await message.sendReply("😈 _Metin girin:_ `.devilyazı LADES`");
     try {
       const buf = await nx(`/textpro/devil?text=${encodeURIComponent(text)}`, { buffer: true });
       await message.client.sendMessage(message.jid, { image: buf, caption: `😈 *${text}*` }, { quoted: message.data });
