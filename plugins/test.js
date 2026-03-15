@@ -59,6 +59,8 @@ Module(
     return await m.sendReply("_" + TimeCalculator(age) + " kalan_");
   }
 );
+const speedTest = require("speedtest-net");
+
 Module(
   {
     pattern: "ping",
@@ -71,5 +73,39 @@ Module(
     const diff = process.hrtime(start);
     const ms = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(2);
     await message.edit("*🚀 ᴛᴇᴘᴋɪ sᴜ̈ʀᴇsɪ: " + ms + " _ᴍs_*", message.jid, sent_msg.key);
+  }
+);
+
+Module(
+  {
+    pattern: "hıztesti",
+    use: "utility",
+    desc: "Sunucu ağ hızını (Speedtest.net) ölçer",
+  },
+  async (message, match) => {
+    let sent_msg = await message.sendReply("_🚀 Hız testi başlatılıyor... Lütfen bekleyin._");
+    
+    try {
+      const result = await speedTest({
+        acceptLicense: true,
+        acceptGdpr: true,
+      });
+
+      const text = `*❮ sᴘᴇᴇᴅᴛᴇsᴛ.ɴᴇᴛ ʀᴇsᴜʟᴛs ❯*
+
+*📡 İss:* \`${result.isp}\`
+*📍 Sunucu:* \`${result.server.location} (${result.server.name})\`
+
+*📥 İndirme:* \`${(result.download.bandwidth / 125000).toFixed(2)} Mbps\`
+*📤 Yükleme:* \`${(result.upload.bandwidth / 125000).toFixed(2)} Mbps\`
+*⏱️ Gecikme:* \`${result.ping.latency.toFixed(0)} ms (Jitter: ${result.ping.jitter.toFixed(0)} ms)\`
+
+_Sponsor: ${result.server.sponsor || "Bilinmiyor"}_`;
+
+      await message.edit(text, message.jid, sent_msg.key);
+    } catch (error) {
+      console.error("Speedtest error:", error);
+      await message.edit("_❌ Hız testi başarısız oldu!_\n_Hata: " + (error.message || "Bilinmeyen hata") + "_", message.jid, sent_msg.key);
+    }
   }
 );

@@ -39,6 +39,7 @@
     "sequelize": "^6.37.7",
     "simple-git": "^3.27.0",
     "sqlite3": "^5.1.7",
+    "speedtest-net": "^2.2.0",
     "youtube-sr": "^4.3.11"
   }
 }

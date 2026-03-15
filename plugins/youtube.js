@@ -1131,7 +1131,7 @@ Module(
                 const safeTitle = censorBadWords(fallback.title || "Video");
                 await message.edit(`_🔻 İndirilip yükleniyor..._ *${safeTitle}*`, message.jid, downloadMsg.key);
                 await message.sendReply({ url: fallback.url }, "video", {
-                  caption: `_*${safeTitle}*_\n\n✨ _Kalite: Yedek Yöntem_`,
+                  caption: `_*${safeTitle}*_\n\n✨ _Kalite: ${selectedQuality}_`,
                 });
                 await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
               } else {
