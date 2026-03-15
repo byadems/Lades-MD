@@ -150,7 +150,7 @@ Module(
   {
     pattern: "ytvideo ?(.*)",
     fromMe: fromMe,
-    desc: "Video arama veya bağlantıdan doğrudan en yüksek kaliteyi indirir",
+    desc: "Video arayarak veya bağlantıdan doğrudan en yüksek kaliteyi indirir",
     usage: ".ytvideo <sorgu/bağlantı>",
     use: "download",
   },
@@ -182,7 +182,7 @@ Module(
           return await message.edit("_❌ Sonuç bulunamadı!_", message.jid, searchMsg.key);
         }
 
-        let resultText = "🎵 YouTube Arama Sonuçları\n\n";
+        let resultText = "🎬 _YouTube Arama Sonuçları_\n\n";
         resultText += `_${results.length} sonuç bulundu:_ *${input}*\n\n`;
 
         results.slice(0, 10).forEach((video, index) => {
@@ -191,11 +191,11 @@ Module(
           resultText += `   _Kanal:_ ${video.channel}\n\n`;
         });
 
-        resultText += "_Video indirmek için bir numara (1-10) ile yanıtlayın_";
+        resultText += "▶️ _Videoyu indirmek için seçiminizi bir numara (1-10) ile yanıtlayın._";
         return await message.edit(resultText, message.jid, searchMsg.key);
       } catch (error) {
         console.error("ytvideo arama hatası:", error);
-        return await message.sendReply("_❌ Arama başarısız oldu._");
+        return await message.sendReply("_❌ Arama başarısız oldu, farklı şekilde deneyin._");
       }
     }
 
@@ -203,7 +203,7 @@ Module(
     let videoPath;
 
     try {
-      downloadMsg = await message.sendReply("_📊 Video bilgileri alınıyor..._");
+      downloadMsg = await message.sendReply("_🔻 Video bilgileri alınıyor..._");
       const info = await getVideoInfo(url);
 
       const videoFormats = info.formats
@@ -224,41 +224,61 @@ Module(
          );
       }
 
-      const highestQuality = videoFormats[0].quality;
-      const safeTitle = censorBadWords(info.title || "Video");
+      const uniqueQualities = [...new Set(videoFormats.map((f) => f.quality))];
 
-      await message.edit(
-        `_🔻 İndirilip yükleniyor..._ *${safeTitle}*\n_Kalite:_ \`${highestQuality}\``,
-        message.jid,
-        downloadMsg.key
+      const videoIdMatch = url.match(
+        /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&\s/?]+)/
       );
+      const videoId = videoIdMatch ? videoIdMatch[1] : info.videoId || "";
 
-      const result = await downloadVideo(url, highestQuality);
-      videoPath = result.path;
-      const stats = fs.statSync(videoPath);
+      let qualityText = "🎬 _*Video Kalitesini Seçin*_\n\n";
+      qualityText += `_*${censorBadWords(info.title)}*_\n\n(${videoId})\n\n`;
 
-      if (stats.size > VIDEO_SIZE_LIMIT) {
-        const stream = fs.createReadStream(videoPath);
-        await message.sendMessage({ stream }, "document", {
-          fileName: `${safeTitle}.mp4`,
-          mimetype: "video/mp4",
-          caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
-        });
-        stream.destroy();
-      } else {
-        const stream = fs.createReadStream(videoPath);
-        await message.sendReply({ stream }, "video", {
-          caption: `_*${safeTitle}*_\n\n_Kalite: ${highestQuality}_`,
-        });
-        stream.destroy();
+      uniqueQualities.forEach((quality, index) => {
+        const format = videoFormats.find((f) => f.quality === quality);
+        const audioFormat = info.formats.find((f) => f.type === "audio");
+
+        let sizeInfo = "";
+        if (format.size && audioFormat?.size) {
+          const parseSize = (sizeStr) => {
+            if (!sizeStr) return 0;
+            const match = sizeStr.match(/([\d.]+)\s*(KB|MB|GB)/i);
+            if (!match) return 0;
+            const value = parseFloat(match[1]);
+            const unit = match[2].toUpperCase();
+            if (unit === "KB") return value * 1024;
+            if (unit === "MB") return value * 1024 * 1024;
+            if (unit === "GB") return value * 1024 * 1024 * 1024;
+            return value;
+          };
+          const totalSize = parseSize(format.size) + parseSize(audioFormat.size);
+          if (totalSize > 0) {
+            sizeInfo = ` ~ _${formatBytes(totalSize)}_`;
+          }
+        }
+        qualityText += `*${index + 1}.* _*${quality}*_${sizeInfo}\n`;
+      });
+
+      const audioFormat = info.formats.find((f) => f.type === "audio");
+      if (audioFormat) {
+        let audioSizeInfo = "";
+        if (audioFormat.size) {
+          const match = audioFormat.size.match(/([\d.]+)\s*(KB|MB|GB)/i);
+          if (match) {
+             let value = parseFloat(match[1]);
+             let unit = match[2].toUpperCase();
+             if (unit === "KB") value *= 1024;
+             if (unit === "MB") value *= 1024 * 1024;
+             if (unit === "GB") value *= 1024 * 1024 * 1024;
+             if (value > 0) audioSizeInfo = ` ~ _${formatBytes(value)}_`;
+          }
+        }
+        qualityText += `*${uniqueQualities.length + 1}.* _*Sadece Ses*_${audioSizeInfo}\n`;
       }
 
-      await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
+      qualityText += "\n▶️ _İndirmek için seçiminizi bir numara ile yanıtlayın._";
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      if (fs.existsSync(videoPath)) {
-        fs.unlinkSync(videoPath);
-      }
+      await message.edit(qualityText, message.jid, downloadMsg.key);
     } catch (error) {
       console.error("YouTube ytvideo indirme hatası:", error);
       if (downloadMsg) {
@@ -307,8 +327,27 @@ Module(
 
     try {
       if (normalizedUrl) {
-        downloadMsg = await message.sendReply("_⬇️ Video indiriliyor..._");
-        const result = await downloadVideo(normalizedUrl, "360p");
+        downloadMsg = await message.sendReply("_🔻 Video bilgileri alınıyor..._");
+        
+        let highestQuality = "360p";
+        try {
+          const info = await getVideoInfo(normalizedUrl);
+          const videoFormats = info.formats
+            .filter((f) => f.type === "video" && f.quality)
+            .sort((a, b) => {
+              const getRes = (q) => {
+                const match = q.match(/(\d+)/);
+                return match ? parseInt(match[1]) : 0;
+              };
+              return getRes(b.quality) - getRes(a.quality);
+            });
+          if (videoFormats.length > 0) {
+            highestQuality = videoFormats[0].quality;
+          }
+        } catch (_) {}
+
+        await message.edit(`_⬇️ Video indiriliyor..._ (\`${highestQuality}\`)`, message.jid, downloadMsg.key);
+        const result = await downloadVideo(normalizedUrl, highestQuality);
         videoPath = result.path;
 
         await message.edit("_📤 Video yükleniyor..._", message.jid, downloadMsg.key);
@@ -321,13 +360,13 @@ Module(
           await message.sendMessage({ stream }, "document", {
             fileName: `${safeTitle}.mp4`,
             mimetype: "video/mp4",
-            caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: 360p_`,
+            caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
           });
           stream.destroy();
         } else {
           const stream = fs.createReadStream(videoPath);
           await message.sendReply({ stream }, "video", {
-            caption: `_*${safeTitle}*_\n\n_Kalite: 360p_`,
+            caption: `_*${safeTitle}*_\n\n_Kalite: ${highestQuality}_`,
           });
           stream.destroy();
         }
@@ -855,42 +894,56 @@ Module(
              return await message.edit("_❌ Bu video için uygun format bulunamadı._", message.jid, downloadMsg.key);
           }
 
-          const highestQuality = videoFormats[0].quality;
+          const uniqueQualities = [...new Set(videoFormats.map((f) => f.quality))];
+          
+          let qualityText = "🎬 _*Video Kalitesini Seçin*_\n\n";
+          qualityText += `_*${safeTitle}*_\n\n(${selectedVideo.id})\n\n`;
 
-          await message.edit(
-            `_🔻 İndirilip yükleniyor..._ *${safeTitle}*\n_Kalite:_ \`${highestQuality}\``,
-            message.jid,
-            downloadMsg.key
-          );
+          uniqueQualities.forEach((quality, index) => {
+            const format = videoFormats.find((f) => f.quality === quality);
+            const audioFormat = info.formats.find((f) => f.type === "audio");
 
-          const result = await downloadVideo(selectedVideo.url, highestQuality);
-          const videoPath = result.path;
-          const stats = fs.statSync(videoPath);
+            let sizeInfo = "";
+            if (format.size && audioFormat?.size) {
+              const parseSize = (sizeStr) => {
+                if (!sizeStr) return 0;
+                const match = sizeStr.match(/([\d.]+)\s*(KB|MB|GB)/i);
+                if (!match) return 0;
+                const value = parseFloat(match[1]);
+                const unit = match[2].toUpperCase();
+                if (unit === "KB") return value * 1024;
+                if (unit === "MB") return value * 1024 * 1024;
+                if (unit === "GB") return value * 1024 * 1024 * 1024;
+                return value;
+              };
+              const totalSize = parseSize(format.size) + parseSize(audioFormat.size);
+              if (totalSize > 0) sizeInfo = ` ~ _${formatBytes(totalSize)}_`;
+            }
+            qualityText += `*${index + 1}.* _*${quality}*_${sizeInfo}\n`;
+          });
 
-          if (stats.size > VIDEO_SIZE_LIMIT) {
-             const stream = fs.createReadStream(videoPath);
-             await message.sendMessage({ stream }, "document", {
-               fileName: `${safeTitle}.mp4`,
-               mimetype: "video/mp4",
-               caption: `_*${safeTitle}*_\n\n_Dosya boyutu: ${formatBytes(stats.size)}_\n_Kalite: ${highestQuality}_`,
-             });
-             stream.destroy();
-          } else {
-             const stream = fs.createReadStream(videoPath);
-             await message.sendReply({ stream }, "video", {
-               caption: `_*${safeTitle}*_\n\n_Kalite: ${highestQuality}_`,
-             });
-             stream.destroy();
+          const audioFormat = info.formats.find((f) => f.type === "audio");
+          if (audioFormat) {
+            let audioSizeInfo = "";
+            if (audioFormat.size) {
+              const match = audioFormat.size.match(/([\d.]+)\s*(KB|MB|GB)/i);
+              if (match) {
+                 let value = parseFloat(match[1]);
+                 let unit = match[2].toUpperCase();
+                 if (unit === "KB") value *= 1024;
+                 if (unit === "MB") value *= 1024 * 1024;
+                 if (unit === "GB") value *= 1024 * 1024 * 1024;
+                 if (value > 0) audioSizeInfo = ` ~ _${formatBytes(value)}_`;
+              }
+            }
+            qualityText += `*${uniqueQualities.length + 1}.* _*Sadece Ses*_${audioSizeInfo}\n`;
           }
 
-          await message.edit(`_✅ Hazır!_ *${safeTitle}*`, message.jid, downloadMsg.key);
+          qualityText += "\n▶️ _İndirmek için seçiminizi bir numara ile yanıtlayın._";
 
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          if (fs.existsSync(videoPath)) {
-            try { fs.unlinkSync(videoPath); } catch (_) { }
-          }
+          await message.edit(qualityText, message.jid, downloadMsg.key);
         } catch (error) {
-          console.error("Video (highest quality) indirme hatası:", error);
+          console.error("Video bilgi alma hatası:", error);
           if (downloadMsg) {
             await message.edit(
               "_⚠️ İndirme başarısız! Lütfen tekrar deneyin._",
@@ -900,8 +953,137 @@ Module(
           }
         }
       } catch (error) {
-        console.error("Video (highest quality) seçim hatası:", error);
+        console.error("Video seçim hatası:", error);
         await message.sendReply("_❌ Seçiminiz işlenemedi._");
+      }
+    } else if (
+      repliedText.includes("Video Kalitesini Seçin") &&
+      repliedText.includes("İndirmek için seçiminizi bir numara ile yanıtlayın")
+    ) {
+      try {
+        const lines = repliedText.split("\n");
+        let videoId = "";
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+
+          if (
+            line.startsWith("(") &&
+            line.endsWith(")") &&
+            line.length >= 13 &&
+            !line.match(/^\*\d+\./)
+          ) {
+            videoId = line.replace(/[()]/g, "").trim();
+            if (videoId.length >= 10) break;
+          }
+        }
+
+        if (!videoId || videoId.length < 10) {
+          return await message.sendReply("_🎬 Video kimliği alınamadı._");
+        }
+
+        const url = `https://www.youtube.com/watch?v=${videoId}`;
+        const titleMatch = repliedText.match(/_\*([^*]+)\*_/);
+        if (!titleMatch) return;
+
+        const qualityLines = lines.filter((line) => line.match(/^\*\d+\./));
+
+        if (!qualityLines[selectedNumber - 1]) {
+          return await message.sendReply("_❌ Geçersiz kalite seçimi!_");
+        }
+
+        const selectedLine = qualityLines[selectedNumber - 1];
+        const isAudioOnly = selectedLine.includes("Sadece Ses");
+
+        if (isAudioOnly) {
+          let downloadMsg;
+          let audioPath;
+
+          try {
+            downloadMsg = await message.sendReply("_⬇️ Yüksek kaliteli ses indiriliyor..._");
+
+            const result = await downloadAudio(url);
+            audioPath = result.path;
+
+            const mp3Path = await convertM4aToMp3(audioPath);
+            audioPath = mp3Path;
+
+            await message.edit("_🔻 İndirilip yükleniyor..._", message.jid, downloadMsg.key);
+
+            const safeTitle = censorBadWords(result.title);
+            const stream = fs.createReadStream(audioPath);
+            await message.sendMessage({ stream }, "document", {
+              fileName: `${safeTitle}.mp3`,
+              mimetype: "audio/mpeg",
+              caption: `_*${safeTitle}*_`,
+            });
+            stream.destroy();
+
+            await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            if (fs.existsSync(audioPath)) {
+              try { fs.unlinkSync(audioPath); } catch (_) {}
+            }
+          } catch (error) {
+            console.error("YouTube video ses indirme hatası:", error);
+            if (downloadMsg) await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
+            if (audioPath && fs.existsSync(audioPath)) {
+              try { fs.unlinkSync(audioPath); } catch (_) {}
+            }
+          }
+        } else {
+          const qualityMatch = selectedLine.match(/(\d+p)/);
+          if (!qualityMatch) return;
+
+          const selectedQuality = qualityMatch[1];
+          let downloadMsg;
+          let videoPath;
+
+          try {
+            downloadMsg = await message.sendReply(`_⬇️ *${selectedQuality}* kalitesinde video indiriliyor..._`);
+
+            const result = await downloadVideo(url, selectedQuality);
+            videoPath = result.path;
+
+            await message.edit("_🔻 İndirilip yükleniyor..._", message.jid, downloadMsg.key);
+
+            const stats = fs.statSync(videoPath);
+            const safeTitle = censorBadWords(result.title);
+
+            if (stats.size > VIDEO_SIZE_LIMIT) {
+              const stream = fs.createReadStream(videoPath);
+              await message.sendMessage({ stream }, "document", {
+                fileName: `${safeTitle}.mp4`,
+                mimetype: "video/mp4",
+                caption: `_*${safeTitle}*_\n\n_Kalite: ${selectedQuality}_`,
+              });
+              stream.destroy();
+            } else {
+              const stream = fs.createReadStream(videoPath);
+              await message.sendReply({ stream }, "video", {
+                caption: `_*${safeTitle}*_\n\n_Kalite: ${selectedQuality}_`,
+              });
+              stream.destroy();
+            }
+
+            await message.edit("_✅ Hazır!_", message.jid, downloadMsg.key);
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            if (fs.existsSync(videoPath)) {
+              try { fs.unlinkSync(videoPath); } catch (_) {}
+            }
+          } catch (error) {
+            console.error("YouTube video kalite indirme hatası:", error);
+            if (downloadMsg) await message.edit("_❌ İndirme başarısız!_", message.jid, downloadMsg.key);
+            if (videoPath && fs.existsSync(videoPath)) {
+              try { fs.unlinkSync(videoPath); } catch (_) {}
+            }
+          }
+        }
+      } catch (error) {
+        console.error("YouTube kalite seçim hatası:", error);
+        await message.sendReply("_❌ Kalite seçimi işlenemedi._");
       }
     }
   }
