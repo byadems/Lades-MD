@@ -8,6 +8,17 @@ const cache = {
   expiry: 6 * 60 * 60 * 1000,
 };
 
+function normalizeDate(dateStr, fallback = moment().format('DD.MM.YYYY')) {
+  if (!dateStr) return fallback;
+
+  const normalized = moment(dateStr, ['DD-MM-YYYY', 'DD.MM.YYYY'], true);
+  if (normalized.isValid()) {
+    return normalized.format('DD.MM.YYYY');
+  }
+
+  return fallback;
+}
+
 async function getPrayerTimes(cityInput, type = 'ezan', date = moment().format('DD.MM.YYYY')) {
   const normalizedCityInput = normalize(cityInput);
   const cityId = cities[normalizedCityInput] || cities[cityInput];
@@ -20,26 +31,28 @@ async function getPrayerTimes(cityInput, type = 'ezan', date = moment().format('
 
   cityName = capitalizeTurkish(cityName);
 
-  const cacheKey = `${cityId}_${type}_${date}`;
+  const normalizedDate = normalizeDate(date, date);
+  const cacheKey = `${cityId}_${type}_${normalizedDate}`;
 
   const cachedData = cache.data[cacheKey];
   if (cachedData && moment().diff(cachedData.timestamp) < cache.expiry) {
-    return { cityName, today: date, ...cachedData.data };
+    return { cityName, today: normalizedDate, ...cachedData.data };
   }
 
   // 1. Birincil: eMushaf (Diyanet)
   const emushafUrl = `https://ezanvakti.emushaf.net/vakitler/${cityId}`;
   try {
     const response = await axios.get(emushafUrl, { timeout: 8000 });
-    const vakit = response.data.find(vakit => vakit.MiladiTarihKisa === date);
+    const vakit = response.data.find(vakit => normalizeDate(vakit.MiladiTarihKisa, '') === normalizedDate);
     if (vakit) {
+      const sourceDate = normalizeDate(vakit.MiladiTarihKisa, normalizedDate);
       let data;
       if (type === 'ezan') data = vakit;
       else if (type === 'iftar') data = { Aksam: vakit.Aksam, HicriTarihUzun: vakit.HicriTarihUzun };
       else if (type === 'sahur') data = { Imsak: vakit.Imsak, HicriTarihUzun: vakit.HicriTarihUzun };
 
       cache.data[cacheKey] = { data: { ...data }, timestamp: moment() };
-      return { cityName, today: date, ...data };
+      return { cityName, today: sourceDate, ...data };
     }
   } catch (_) {}
 
@@ -54,16 +67,17 @@ async function getPrayerTimes(cityInput, type = 'ezan', date = moment().format('
       const vakit = {
         Imsak: t.imsak, Gunes: t.gunes, Ogle: t.ogle,
         Ikindi: t.ikindi, Aksam: t.aksam, Yatsi: t.yatsi,
-        MiladiTarihKisa: moment(dayData.date).format('DD.MM.YYYY'),
+        MiladiTarihKisa: normalizeDate(moment(dayData.date).format('DD.MM.YYYY'), normalizedDate),
         HicriTarihUzun: h?.full_date || '',
       };
+      const sourceDate = normalizeDate(vakit.MiladiTarihKisa, normalizedDate);
       let data;
       if (type === 'ezan') data = vakit;
       else if (type === 'iftar') data = { Aksam: vakit.Aksam, HicriTarihUzun: vakit.HicriTarihUzun };
       else if (type === 'sahur') data = { Imsak: vakit.Imsak, HicriTarihUzun: vakit.HicriTarihUzun };
 
       cache.data[cacheKey] = { data: { ...data }, timestamp: moment() };
-      return { cityName, today: date, ...data };
+      return { cityName, today: sourceDate, ...data };
     }
   } catch (_) {}
 
@@ -77,16 +91,17 @@ async function getPrayerTimes(cityInput, type = 'ezan', date = moment().format('
       const vakit = {
         Imsak: t.Imsak, Gunes: t.Sunrise, Ogle: t.Dhuhr,
         Ikindi: t.Asr, Aksam: t.Maghrib, Yatsi: t.Isha,
-        MiladiTarihKisa: d?.gregorian?.date || date,
+        MiladiTarihKisa: normalizeDate(d?.gregorian?.date, normalizedDate),
         HicriTarihUzun: d?.hijri ? `${d.hijri.day} ${d.hijri.month?.en || ''} ${d.hijri.year}` : '',
       };
+      const sourceDate = normalizeDate(vakit.MiladiTarihKisa, normalizedDate);
       let data;
       if (type === 'ezan') data = vakit;
       else if (type === 'iftar') data = { Aksam: vakit.Aksam, HicriTarihUzun: vakit.HicriTarihUzun };
       else if (type === 'sahur') data = { Imsak: vakit.Imsak, HicriTarihUzun: vakit.HicriTarihUzun };
 
       cache.data[cacheKey] = { data: { ...data }, timestamp: moment() };
-      return { cityName, today: date, ...data };
+      return { cityName, today: sourceDate, ...data };
     }
   } catch (_) {}
 
@@ -110,12 +125,16 @@ Module({
   }
 
   const now = moment();
-  const imsakTime = moment(`${today} ${Imsak}`, 'DD.MM.YYYY HH:mm');
-  const gunesTime = moment(`${today} ${Gunes}`, 'DD.MM.YYYY HH:mm');
-  const ogleTime = moment(`${today} ${Ogle}`, 'DD.MM.YYYY HH:mm');
-  const ikindiTime = moment(`${today} ${Ikindi}`, 'DD.MM.YYYY HH:mm');
-  const aksamTime = moment(`${today} ${Aksam}`, 'DD.MM.YYYY HH:mm');
-  const yatsiTime = moment(`${today} ${Yatsi}`, 'DD.MM.YYYY HH:mm');
+  const imsakTime = moment(`${today} ${Imsak}`, 'DD.MM.YYYY HH:mm', true);
+  const gunesTime = moment(`${today} ${Gunes}`, 'DD.MM.YYYY HH:mm', true);
+  const ogleTime = moment(`${today} ${Ogle}`, 'DD.MM.YYYY HH:mm', true);
+  const ikindiTime = moment(`${today} ${Ikindi}`, 'DD.MM.YYYY HH:mm', true);
+  const aksamTime = moment(`${today} ${Aksam}`, 'DD.MM.YYYY HH:mm', true);
+  const yatsiTime = moment(`${today} ${Yatsi}`, 'DD.MM.YYYY HH:mm', true);
+
+  if ([imsakTime, gunesTime, ogleTime, ikindiTime, aksamTime, yatsiTime].some(t => !t.isValid())) {
+    return await message.sendReply('⚠️ Vakit verisi beklenen tarih/saat formatında değil. Lütfen birazdan tekrar deneyiniz.');
+  }
 
   let upcomingPrayerTime = null;
   let prayerName = '';
@@ -182,7 +201,10 @@ Module({
   }
 
   const now = moment();
-  let imsakTime = moment(`${vakitDate} ${Imsak}`, 'DD.MM.YYYY HH:mm');
+  let imsakTime = moment(`${vakitDate} ${Imsak}`, 'DD.MM.YYYY HH:mm', true);
+  if (!imsakTime.isValid()) {
+    return await message.sendReply('⚠️ Sahur vakti verisi geçersiz formatta geldi. Lütfen birazdan tekrar deneyiniz.');
+  }
   let remaining = moment.duration(imsakTime.diff(now));
 
   if (remaining.asSeconds() < 0) {
@@ -196,7 +218,10 @@ Module({
     HicriTarihUzun = tomorrowData.HicriTarihUzun;
     vakitDate = tomorrowData.today;
 
-    imsakTime = moment(`${vakitDate} ${Imsak}`, 'DD.MM.YYYY HH:mm');
+    imsakTime = moment(`${vakitDate} ${Imsak}`, 'DD.MM.YYYY HH:mm', true);
+    if (!imsakTime.isValid()) {
+      return await message.sendReply('⚠️ Yarın için sahur vakti verisi geçersiz formatta geldi. Lütfen birazdan tekrar deneyiniz.');
+    }
     remaining = moment.duration(imsakTime.diff(now));
   }
 
@@ -231,7 +256,10 @@ Module({
   }
 
   const now = moment();
-  let aksamTime = moment(`${vakitDate} ${Aksam}`, 'DD.MM.YYYY HH:mm');
+  let aksamTime = moment(`${vakitDate} ${Aksam}`, 'DD.MM.YYYY HH:mm', true);
+  if (!aksamTime.isValid()) {
+    return await message.sendReply('⚠️ İftar vakti verisi geçersiz formatta geldi. Lütfen birazdan tekrar deneyiniz.');
+  }
   let remaining = moment.duration(aksamTime.diff(now));
 
   if (remaining.asSeconds() < 0) {
@@ -245,7 +273,10 @@ Module({
     HicriTarihUzun = tomorrowData.HicriTarihUzun;
     vakitDate = tomorrowData.today;
 
-    aksamTime = moment(`${vakitDate} ${Aksam}`, 'DD.MM.YYYY HH:mm');
+    aksamTime = moment(`${vakitDate} ${Aksam}`, 'DD.MM.YYYY HH:mm', true);
+    if (!aksamTime.isValid()) {
+      return await message.sendReply('⚠️ Yarın için iftar vakti verisi geçersiz formatta geldi. Lütfen birazdan tekrar deneyiniz.');
+    }
     remaining = moment.duration(aksamTime.diff(now));
   }
 
