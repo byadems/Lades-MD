@@ -8,7 +8,7 @@ Module({
 }, async (m, t) => {
   await m.sendReply(
     "📣 *GENEL KOMUTLAR*\n" +
-    "🧑 .afk\nSizi AFK (Uzakta) yapar. Etiketlenirseniz Bot sizin yerinize cevap verir.\n\n" +
+    "🧑 .uzakta\nSizi AFK (Uzakta) yapar. Etiketlenirseniz Bot sizin yerinize cevap verir.\n\n" +
     "💻 .alive\nBotun çalışıp çalışmadığını kontrol etmenizi sağlar.\n\n" +
     "📶 .ping\nPing süresini (tepki hızını) ölçer.\n\n" +
     "⏱️ .uptime\nSistem (OS) ve işlem çalışma süresini gösterir.\n\n" +
@@ -32,6 +32,12 @@ Module({
     "🖋️ .fancy\nŞık yazı tipleri oluşturur.\n\n" +
     "🔁 .retry\nYanıtlanan komutu tekrar çalıştırır.\n\n" +
     "📣 .bildir\nBot hakkında istek, şikayet, hata bildirimi, öneri veya talep iletir.\nÖrnek: .bildir öneri Müzik komutu eklensin\n\n" +
+    "🧠 *YAPAY ZEKA KOMUTLARI*\n" +
+    "🤖 .yz / .yzayar\nGemini Yapay Zeka'ya soru sorun veya botu yapılandırın.\n\n" +
+    "🎨 .yzgörsel\nMetni görsele dönüştürür.\n\n" +
+    "🖌️ .yzdüzenle\nFotoğrafı talimata göre Yapay Zeka ile düzenler.\n\n" +
+    "🎭 .animeçiz\nFotoğrafı anime stiline çevirir.\n\n" +
+    "🧩 .soruçöz\nSınav sorularını Yapay Zeka ile çözer.\n\n" +
     "📸 *MEDYA KOMUTLARI*\n" +
     "🎶 .şarkı\nYouTube'dan şarkı indirir.\nÖrnek: .şarkı Şarkı Adı\n\n" +
     "🎧 .spotify\nSpotify'dan şarkı indirir.\nÖrnek: .spotify Şarkı Bağlantısı\n\n" +

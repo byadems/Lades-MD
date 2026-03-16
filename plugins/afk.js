@@ -132,7 +132,7 @@ function getAFKData(userJid) {
 Module(
   {
     pattern: "uzakta ?(.*)",
-    fromMe: true,
+    fromMe: false,
     desc: "Kendinizi AFK (Klavyeden Uzakta) olarak ayarlayın",
     usage:
       ".uzakta [sebep] - _İsteğe bağlı sebeple AFK ol_\n.uzakta - _Mevcut durumu kontrol et_\n.uzakta list - _Tüm AFK kullanıcıları göster_",
@@ -280,7 +280,7 @@ Module(
           await incrementMessageCount(botOwnerJid);
 
           const afkReply =
-            `*_🌙 Bot sahibi şu anda AFK_*\n\n` +
+            `*_🌙 Bot geliştiricisi şu anda AFK!_*\n\n` +
             `📝 _Sebep:_ \`${afkData.reason}\`\n` +
             `⏰ _AFK süresi:_ \`${timeAFK}\`\n` +
             `👁️ _Son görülme:_ \`${lastSeen}\`\n` +
