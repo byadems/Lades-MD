@@ -125,7 +125,8 @@ Module(
         await message.sendReply(caption);
       }
     } catch (e) {
-      await message.sendReply(`❌ _Instagram profili alınamadı:_ ${e.message}`);
+      const msg = e.message.includes("429") ? "⚠️ _Instagram yoğunluk nedeniyle cevap vermiyor, lütfen biraz sonra tekrar deneyin._" : `❌ _Instagram profili alınamadı:_ ${e.message}`;
+      await message.sendReply(msg);
     }
   }
 );
@@ -748,7 +749,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const text = (match[1] || "").trim();
+    const text = trToEn((match[1] || "").trim());
     if (!text) return await message.sendReply("🐉 _Metin girin:_ `.dragonyazı LADES`");
     try {
       const buf = await nx(`/textpro/dragonball?text=${encodeURIComponent(text)}`, { buffer: true });
@@ -788,7 +789,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const text = (match[1] || "").trim();
+    const text = trToEn((match[1] || "").trim());
     if (!text) return await message.sendReply("🖊️ _Metin girin:_ `.grafitiyazı LADES`");
     try {
       const buf = await nx(`/textpro/write-graffiti?text=${encodeURIComponent(text)}`, { buffer: true });
@@ -846,7 +847,7 @@ Module(
         if (url && !url.includes("hata")) imageUrl = url;
       }
       const buf = await nx(
-        `/canvas/musiccard?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}&image=${encodeURIComponent(imageUrl)}`,
+        `/canvas/musiccard?judul=${encodeURIComponent(title)}&nama=${encodeURIComponent(artist)}&image_url=${encodeURIComponent(imageUrl)}`,
         { buffer: true }
       );
       await message.client.sendMessage(message.jid, {
