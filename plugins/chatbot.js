@@ -409,6 +409,26 @@ async function clearAllContexts(target) {
   }
 }
 
+// Periyodik bellek temizliği: devre dışı sohbetlerin context'ini ve
+// süresi dolmuş model cooldown'larını her 30 dakikada bir temizle.
+const _chatbotCleanupTimer = setInterval(() => {
+  const now = Date.now();
+  // Süresi dolmuş cooldown'ları temizle (5 dakikadan eski)
+  for (const [jid, until] of modelCooldowns.entries()) {
+    if (until < now - 5 * 60 * 1000) {
+      modelCooldowns.delete(jid);
+    }
+  }
+  // Kapalı sohbetlerin geçmişini temizle
+  for (const [jid, enabled] of chatbotStates.entries()) {
+    if (!enabled) {
+      chatContexts.delete(jid);
+      modelStates.delete(jid);
+    }
+  }
+}, 30 * 60 * 1000); // 30 dakikada bir
+if (_chatbotCleanupTimer.unref) _chatbotCleanupTimer.unref();
+
 initChatbotData();
 logValidGeminiModels();
 

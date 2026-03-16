@@ -461,6 +461,16 @@ function pruneMap(map) {
   }
 }
 
+// Periyodik cache temizliği: her 20 dakikada bir tüm cache Map'lerini prune et.
+// pruneMap normalde sadece set() çağrısında tetiklenir; bu timer yazma
+// işlemlerinin azaldığı saatlerde süregelen bellek şişmesini önler.
+const _cacheCleanupTimer = setInterval(() => {
+  pruneMap(chatCache);
+  pruneMap(userCache);
+  pruneMap(userStatsCache);
+}, 20 * 60 * 1000);
+if (_cacheCleanupTimer.unref) _cacheCleanupTimer.unref();
+
 async function shutdownCache() {
   let store;
   try {

@@ -37,10 +37,57 @@ const {
 } = require("./core/helpers");
 const { applyDatabaseCaching, shutdownCache } = require("./core/db-cache");
 
-const MEMORY_CHECK_INTERVAL = 3 * 60 * 1000;
+const MEMORY_CHECK_INTERVAL = 3 * 60 * 1000; // 3 dakikada bir
 const HEAP_WARN_THRESHOLD_MB = 300;
+// Her JID için tutulacak maksimum mesaj sayısı
+const MAX_MESSAGES_PER_JID = 30;
+// Store'da tutulacak maksimum JID (sohbet) sayısı
+const MAX_STORE_JIDS = 200;
 
 let _memoryMonitorTimer = null;
+
+function trimBaileysStore(botManager) {
+  if (!botManager || !botManager.bots) return 0;
+  let totalTrimmed = 0;
+
+  for (const [sessionId, bot] of botManager.bots.entries()) {
+    if (!bot || !bot.store || !bot.store.messages) continue;
+    const msgs = bot.store.messages;
+    const jids = Object.keys(msgs);
+
+    // Eğer çok fazla JID varsa en eski sohbetleri sil
+    if (jids.length > MAX_STORE_JIDS) {
+      // Mesaj arrayleri boş olanları veya en az mesajı olanları temizle
+      const sortedJids = jids.sort((a, b) => {
+        const aLen = msgs[a]?.array?.length || 0;
+        const bLen = msgs[b]?.array?.length || 0;
+        return aLen - bLen;
+      });
+      const toDelete = sortedJids.slice(0, jids.length - MAX_STORE_JIDS);
+      for (const jid of toDelete) {
+        delete msgs[jid];
+        totalTrimmed++;
+      }
+      logger.info({ session: sessionId, deleted: toDelete.length }, "Aşırı JID sayısı nedeniyle store sohbetleri temizlendi");
+    }
+
+    // Her JID için mesaj geçmişini kırp
+    let trimmedMsgs = 0;
+    for (const jid of Object.keys(msgs)) {
+      const chatMessages = msgs[jid];
+      if (chatMessages && chatMessages.array && chatMessages.array.length > MAX_MESSAGES_PER_JID) {
+        const toRemove = chatMessages.array.length - MAX_MESSAGES_PER_JID;
+        chatMessages.array.splice(0, toRemove);
+        trimmedMsgs += toRemove;
+      }
+    }
+    if (trimmedMsgs > 0) {
+      totalTrimmed += trimmedMsgs;
+      logger.info({ session: sessionId, trimmed: trimmedMsgs }, "Store mesajları kırpıldı");
+    }
+  }
+  return totalTrimmed;
+}
 
 function startMemoryMonitor(botManager) {
   _memoryMonitorTimer = setInterval(() => {
@@ -51,32 +98,19 @@ function startMemoryMonitor(botManager) {
     if (heapMB > HEAP_WARN_THRESHOLD_MB) {
       logger.warn({ heapMB, rssMB }, `Yüksek bellek kullanımı tespit edildi`);
       console.warn(`[Bellek] Heap: ${heapMB}MB / RSS: ${rssMB}MB — yüksek kullanım!`);
-      // GC zorlamayı kaldırdık, çünkü PM2 veya Node V8 otomatik yapmalı
-      // Manuel çağrı, main thread'i dondurarak botu yavaşlatıyor
     }
-    
-    // Baileys Store Cleanup: Her grupta/sohbette son 50 mesaj dışındaki eski mesajları RAM'den temizle
-    if (botManager && botManager.bots) {
-      for (const [sessionId, bot] of botManager.bots.entries()) {
-        if (bot && bot.store && bot.store.messages) {
-          let trimmedCount = 0;
-          for (const jid of Object.keys(bot.store.messages)) {
-            const chatMessages = bot.store.messages[jid];
-            // Eğer bir sohbette 50'den fazla mesaj bellekte tutuluyorsa, eskileri kes
-            if (chatMessages && chatMessages.array && chatMessages.array.length > 50) {
-              const toRemove = chatMessages.array.length - 50;
-              chatMessages.array.splice(0, toRemove);
-              trimmedCount += toRemove;
-            }
-          }
-          if (trimmedCount > 0) {
-            logger.info({ session: sessionId, trimmed: trimmedCount }, "Store mesajları temizlendi (Bellek sızıntısı önlemi)");
-          }
-        }
+
+    // Baileys Store Cleanup: Her grupta/sohbette son MAX_MESSAGES_PER_JID mesaj dışındaki eskileri temizle
+    const trimmed = trimBaileysStore(botManager);
+    if (trimmed > 0) {
+      console.log(`[Bellek] Store temizlendi: ${trimmed} eski mesaj/kayıt silindi.`);
+      // V8 GC manuel tetikle (eğer --expose-gc ile başlatılmışsa)
+      if (typeof global.gc === "function") {
+        try { global.gc(); } catch (_) { /* sessizce geç */ }
       }
     }
     
-  }, 10 * 60 * 1000); // 3 dakika yerine 10 dakikada bir kontrol
+  }, MEMORY_CHECK_INTERVAL);
 
   if (_memoryMonitorTimer.unref) _memoryMonitorTimer.unref();
 }

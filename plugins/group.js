@@ -265,7 +265,7 @@ Module(
 );
 
 
-Module(
+/*Module(
   {
     pattern: "ekle ?(.*)",
     fromMe: true,
@@ -296,6 +296,8 @@ Module(
     await message.client.groupAdd(user, message);
   }
 );
+*/
+
 Module(
   {
     pattern: "yetkiver ?(.*)",
@@ -386,7 +388,7 @@ Module(
       return;
     }
     let msg =
-      "*_Grup katılma istekleri_*\n\n_(.istekler hepsini onayla|reddet kullanın)_\n\n";
+      "*_Grup katılma istekleri_*\n\n_(.istekler hepsini onayla|reddet şeklinde kullanın)_\n\n";
     const requestType = (type_, requestor) => {
       switch (type_) {
         case "linked_group_join":
@@ -426,8 +428,6 @@ Module(
     if (!message.isGroup)
       return await message.sendReply("_ℹ️ Nereden çıkayım? Bu bir grup komutu!_"
       );
-    // Tepki (reaction) gruptayken gönderilsin diye groupLeave'i erteliyoruz.
-    // Aksi halde bot ayrıldıktan sonra tepki gönderilmeye çalışılır ve 403 hatası oluşur.
     const jid = message.jid;
     setImmediate(() => message.client.groupLeave(jid));
   }
@@ -625,11 +625,11 @@ Module({pattern: 'davet', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (
 
 Module(
   {
-    pattern: "bağlantıyenile",
+    pattern: "davetyenile",
     fromMe: false,
     use: "group",
     desc: Lang.REVOKE_DESC,
-    usage: ".bağlantıyenile (grup davet bağlantısını sıfırlar)",
+    usage: ".davetyenile (grup davet bağlantısını sıfırlar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -644,11 +644,11 @@ Module(
 );
 Module(
   {
-    pattern: "glock ?(.*)",
+    pattern: "gayaryt ?(.*)",
     fromMe: false,
     use: "group",
     desc: "Grup ayarlarını sadece yöneticilerin düzenleyebileceği şekilde değiştirir!",
-    usage: ".glock (grup ayarlarını kilitler)",
+    usage: ".gayaryt (grup ayarlarını kilitler)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -662,11 +662,11 @@ Module(
 );
 Module(
   {
-    pattern: "gunlock ?(.*)",
+    pattern: "gayarherkes ?(.*)",
     fromMe: false,
     use: "group",
     desc: "Grup ayarlarını herkesin düzenleyebileceği şekilde değiştirir!",
-    usage: ".gunlock (grup ayarlarının kilidini açar)",
+    usage: ".gayarherkes (grup ayarlarının kilidini açar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -825,12 +825,12 @@ Module(
 );
 Module(
   {
-    pattern: "tag(all|admin)? ?(.*)?",
+    pattern: "tag(all|yt)? ?(.*)?",
     fromMe: false,
     desc: Lang.TAGALL_DESC,
     use: "group",
     usage:
-      ".tag metin\n.tag (mesaja yanıtla)\n.tagall (herkesi etiketle)\n.tagadmin (sadece yöneticileri etiketle)\n.tag 120363355307899193@g.us (belirli grupta etiketle)",
+      ".tag metin\n.tag (mesaja yanıtla)\n.tagall (herkesi etiketle)\n.tagyt (sadece yöneticileri etiketle)\n.tag 120363355307899193@g.us (belirli grupta etiketle)",
   },
   async (message, match) => {
     const groupJidMatch = match[2]?.match(/(\d+@g\.us)/);
@@ -1102,9 +1102,9 @@ Module(
     const command = args[0]?.toLowerCase();
     if (!command || (command !== "all" && command !== "recent")) {
       return await message.sendReply("*Kullanım:*\n" +
-          "• `.getjids all` - Tüm grup JID'lerini göster\n" +
-          "• `.getjids recent` - Son sohbet JID'lerini göster (varsayılan 10)\n" +
-          "• `.getjids recent 15` - Son 15 sohbet JID'sini göster"
+          "• `.tümjid hepsi` - Tüm grup JID'lerini göster\n" +
+          "• `.tümjid son` - Son sohbet JID'lerini göster (varsayılan 10)\n" +
+          "• `.tümjid son 15` - Son 15 sohbet JID'sini göster"
       );
     }
     if (command === "all") {
@@ -1654,10 +1654,6 @@ ${index + 1}. @${jid.split('@')[0]}`;
 });
 
 Module({pattern: 'ytetiket', use: 'group', fromMe: false, desc: 'Tüm yöneticileri etiketler.'}, async (message, match) => {
-    const userIsAdmin = await isAdmin(message, message.sender);
-    if (!userIsAdmin && !message.fromOwner) return await message.sendReply("❌ _Üzgünüm! Öncelikle yönetici olmalısınız._");
-    if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
-
     var target = message.jid;
     var group = await message.client.groupMetadata(target);
     var admins = group.participants.filter(v => v.admin !== null).map(x => x.id);
