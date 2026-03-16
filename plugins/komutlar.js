@@ -33,10 +33,10 @@ Module({
     "🔁 .retry\nYanıtlanan komutu tekrar çalıştırır.\n\n" +
     "📣 .bildir\nBot hakkında istek, şikayet, hata bildirimi, öneri veya talep iletir.\nÖrnek: .bildir öneri Müzik komutu eklensin\n\n" +
     "🧠 *YAPAY ZEKA KOMUTLARI*\n" +
-    "🤖 .yz / .yzayar\nGemini Yapay Zeka'ya soru sorun veya botu yapılandırın.\n\n" +
+    "🤖 .yz\nGemini Yapay Zeka'ya soru sorun.\n\n" +
     "🎨 .yzgörsel\nMetni görsele dönüştürür.\n\n" +
     "🖌️ .yzdüzenle\nFotoğrafı talimata göre Yapay Zeka ile düzenler.\n\n" +
-    "🎭 .animeçiz\nFotoğrafı anime stiline çevirir.\n\n" +
+    "🎭 .yzanime\nFotoğrafı anime stiline çevirir.\n\n" +
     "🧩 .soruçöz\nSınav sorularını Yapay Zeka ile çözer.\n\n" +
     "📸 *MEDYA KOMUTLARI*\n" +
     "🎶 .şarkı\nYouTube'dan şarkı indirir.\nÖrnek: .şarkı Şarkı Adı\n\n" +

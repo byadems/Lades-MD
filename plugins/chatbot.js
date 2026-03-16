@@ -974,14 +974,14 @@ Module({
 );
 
 Module({
-  pattern: "animeçiz ?(.*)",
+  pattern: "yzanime ?(.*)",
   fromMe: false,
   desc: "Fotoğrafı Yapay Zeka ile anime stiline dönüştürür.",
   type: "ai",
 },
   async (message, match) => {
     if (!message.reply_message?.image) {
-      return await message.sendReply("❗ *Lütfen bir fotoğrafa yanıt vererek `.animeçiz` yazın.*");
+      return await message.sendReply("❗ *Lütfen bir fotoğrafa yanıt vererek `.yzanime` yazın.*");
     }
     let sent;
     let tempFile = null;
