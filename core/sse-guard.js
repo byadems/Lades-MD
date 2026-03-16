@@ -2,7 +2,7 @@ const Module = require("module");
 const { logger } = require("../config");
 const { withLogThrottle } = require("./auth-health");
 
-const RECOVERABLE_SSE_REGEX = /(terminated:\s*other side closed|econnreset|socket hang up)/i;
+const RECOVERABLE_SSE_REGEX = /(terminated:\s*other side closed|other side closed|econnreset|socket hang up)/i;
 const BASE_BACKOFF_MS = [1000, 2000, 5000];
 const MAX_BACKOFF_MS = 30000;
 const JITTER_RATIO = 0.2;

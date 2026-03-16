@@ -31,6 +31,7 @@ Lades-MD is a WhatsApp bot built on Node.js (CommonJS) using the Baileys library
 - PM2 is required globally (`npm install -g pm2`).
 - System dependency `webp` (cwebp/dwebp) is needed for sticker functionality.
 - Runtime-generated plugin files (e.g. `temel.js`, `sosyal.js`, `yapayzeka.js`) are created by the bot during initialization — they are not tracked in git and should not be committed.
+- `SUPPRESS_DECRYPTION_LOGS` (default: true) — "No session found to decrypt" / "transaction failed, rolling back" gibi Baileys loglarını trace seviyesine indirir. `SUPPRESS_DECRYPTION_LOGS=false` ile tam log alınır.
 
 ### WhatsApp session troubleshooting
 
