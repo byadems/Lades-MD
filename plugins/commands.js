@@ -597,7 +597,7 @@ const getBildirimJid = () => BILDIRIM_JID || null;
 const KATEGORILER = {
   istek: { emoji: "🙏", label: "İstek" },
   sikayet: { emoji: "😤", label: "Şikayet" },
-  hata: { emoji: "🐛", label: "Hata Bildirimi" },
+  hata: { emoji: "🐛", label: "Hata" },
   oneri: { emoji: "💡", label: "Öneri" },
   talep: { emoji: "📋", label: "Talep" },
 };
