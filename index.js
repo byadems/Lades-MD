@@ -48,12 +48,121 @@ const MAX_STORE_JIDS = 200;
 let _memoryMonitorTimer = null;
 let _runtimeWatchdogTimer = null;
 
-const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || "500", 10);
-const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || "2000", 10);
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || (IS_PRODUCTION ? "1000" : "700"), 10);
+const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || (IS_PRODUCTION ? "12000" : "6000"), 10);
 const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "60000", 10);
-const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(15 * 60 * 1000), 10);
+const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String((IS_PRODUCTION ? 45 : 20) * 60 * 1000), 10);
+const EVENT_LOOP_BREACH_WINDOW = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_WINDOW || "5", 10), 1);
+const EVENT_LOOP_BREACH_REQUIRED = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_REQUIRED || "3", 10), 1);
+const EVENT_LOOP_MITIGATION_COOLDOWN_MS = parseInt(process.env.EVENT_LOOP_MITIGATION_COOLDOWN_MS || "120000", 10);
+const EXIT_GUARD_WINDOW_MS = parseInt(process.env.WATCHDOG_EXIT_GUARD_MS || String(5 * 60 * 1000), 10);
 
 let _allBotsDownSince = null;
+let _eventLoopBreachHistory = [];
+let _lastMitigationAt = 0;
+let _intakeResumeTimer = null;
+let _lastExitAt = 0;
+let _scheduledExitTimer = null;
+let _manualReauthMode = false;
+
+function isLikelyPermanentAuthError(text) {
+  if (!text) return false;
+  return /(invalid\s*pre\s*key|prekey\s*id|session\s+logged\s+out|logged\s*out|manual\s*re-?auth|device\s*removed|bad\s*session|session\s*invalid|401\b|unauthori[sz]ed)/i.test(text);
+}
+
+function getBotAuthProblem(bot) {
+  const candidates = [
+    bot?.lastDisconnect,
+    bot?.connectionUpdate,
+    bot?.lastError,
+    bot?.authError,
+    bot?.error,
+    bot?.sock?.lastDisconnect,
+    bot?.sock?.ws?.closeReason,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const text = typeof candidate === "string"
+      ? candidate
+      : [candidate?.message, candidate?.error?.message, candidate?.reason, candidate?.output?.statusCode, candidate?.statusCode]
+          .filter(Boolean)
+          .join(" ");
+    if (isLikelyPermanentAuthError(text)) return text;
+  }
+  return null;
+}
+
+function applyCommandIntakeBackpressure(botManager, reason) {
+  const pauseMs = EVENT_LOOP_MITIGATION_COOLDOWN_MS;
+  const pauseUntil = Date.now() + pauseMs;
+  global.__LADES_WATCHDOG_INTAKE_PAUSED_UNTIL = pauseUntil;
+
+  const pausedSessions = [];
+  for (const [sessionId, bot] of botManager.bots.entries()) {
+    const socket = bot?.sock?.ws?._socket;
+    if (socket && typeof socket.pause === "function") {
+      try {
+        socket.pause();
+        pausedSessions.push(sessionId);
+      } catch (_) {
+        // best effort
+      }
+    }
+  }
+
+  if (_intakeResumeTimer) clearTimeout(_intakeResumeTimer);
+  _intakeResumeTimer = setTimeout(() => {
+    for (const [, bot] of botManager.bots.entries()) {
+      const socket = bot?.sock?.ws?._socket;
+      if (socket && typeof socket.resume === "function") {
+        try {
+          socket.resume();
+        } catch (_) {
+          // best effort
+        }
+      }
+    }
+    global.__LADES_WATCHDOG_INTAKE_PAUSED_UNTIL = 0;
+    logger.info({ reason, pauseMs }, "Watchdog backpressure kaldırıldı, komut alımı normale dönüyor");
+  }, pauseMs);
+  if (_intakeResumeTimer.unref) _intakeResumeTimer.unref();
+
+  logger.warn({ reason, pauseMs, pausedSessions }, "Watchdog: yeni komut alımı geçici olarak yavaşlatıldı/durduruldu");
+}
+
+function triggerSelfHeal(reason) {
+  process.emit("watchdog:queue-drain", { reason, at: Date.now() });
+  if (typeof config.sequelize?.__flushBufferedQueries === "function") {
+    config.sequelize.__flushBufferedQueries().catch((err) => {
+      logger.warn({ err }, "Watchdog self-heal sırasında buffered query flush başarısız");
+    });
+  }
+}
+
+function guardedExit(code, reason, details = {}) {
+  const now = Date.now();
+  const sinceLast = now - _lastExitAt;
+  const cooldownLeft = Math.max(EXIT_GUARD_WINDOW_MS - sinceLast, 0);
+
+  if (_lastExitAt > 0 && cooldownLeft > 0) {
+    logger.error({ reason, cooldownLeftMs: cooldownLeft, guardWindowMs: EXIT_GUARD_WINDOW_MS, ...details }, "Exit guard aktif: PM2 restart fırtınasını azaltmak için çıkış ertelendi");
+    if (!_scheduledExitTimer) {
+      _scheduledExitTimer = setTimeout(() => {
+        _lastExitAt = Date.now();
+        logger.fatal({ reason }, "Exit guard bekleme süresi doldu, process çıkıyor");
+        process.exit(code);
+      }, cooldownLeft);
+      if (_scheduledExitTimer.unref) _scheduledExitTimer.unref();
+    }
+    return;
+  }
+
+  _lastExitAt = now;
+  logger.fatal({ reason, guardWindowMs: EXIT_GUARD_WINDOW_MS, ...details }, "Watchdog process çıkışı başlatıyor");
+  process.exit(code);
+}
 
 function getBotSocketState(bot) {
   const wsReadyState = bot?.sock?.ws?.readyState;
@@ -77,9 +186,21 @@ function startRuntimeWatchdog(botManager) {
       logger.warn({ p99LagMs, threshold: EVENT_LOOP_WARN_MS }, "Event loop gecikmesi yüksek");
     }
 
-    if (p99LagMs > EVENT_LOOP_RESTART_MS) {
-      logger.fatal({ p99LagMs, threshold: EVENT_LOOP_RESTART_MS }, "Event loop kilitlenmesi tespit edildi, process yeniden başlatılıyor");
-      process.exit(1);
+    const restartBreach = p99LagMs > EVENT_LOOP_RESTART_MS;
+    _eventLoopBreachHistory.push(restartBreach);
+    if (_eventLoopBreachHistory.length > EVENT_LOOP_BREACH_WINDOW) _eventLoopBreachHistory.shift();
+    const breachCount = _eventLoopBreachHistory.filter(Boolean).length;
+
+    if (restartBreach && breachCount >= EVENT_LOOP_BREACH_REQUIRED) {
+      const now = Date.now();
+      if (now - _lastMitigationAt >= EVENT_LOOP_MITIGATION_COOLDOWN_MS) {
+        _lastMitigationAt = now;
+        logger.error({ p99LagMs, threshold: EVENT_LOOP_RESTART_MS, breachCount, window: EVENT_LOOP_BREACH_WINDOW }, "Sürekli event-loop tıkanması tespit edildi; önce mitigation uygulanıyor");
+        applyCommandIntakeBackpressure(botManager, "event-loop-lag");
+        triggerSelfHeal("event-loop-lag");
+      } else {
+        logger.warn({ p99LagMs, breachCount, cooldownMs: EVENT_LOOP_MITIGATION_COOLDOWN_MS }, "Event-loop breach devam ediyor, mitigation cooldown aktif");
+      }
     }
 
     const states = [];
@@ -99,11 +220,24 @@ function startRuntimeWatchdog(botManager) {
         logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları bağlı değil (" + Math.round(downForMs / 60000) + " dk)");
       }
       if (downForMs > ALL_BOTS_DOWN_RESTART_MS) {
-        logger.fatal({ downForMs, sessions: states }, "Oturumlar uzun süredir kapalı, process yeniden başlatılıyor");
-        process.exit(1);
+        const authIssues = states
+          .map(({ session }) => ({ session, issue: getBotAuthProblem(botManager.bots.get(session)) }))
+          .filter((x) => x.issue);
+        const allPermanentAuth = authIssues.length === states.length && states.length > 0;
+
+        if (allPermanentAuth) {
+          if (!_manualReauthMode) {
+            _manualReauthMode = true;
+            logger.error({ downForMs, authIssues }, "Kalıcı auth hatası tespit edildi (session invalid/prekey). Restart loop engellendi, manual re-auth gerekli");
+          }
+        } else {
+          logger.fatal({ downForMs, sessions: states, authIssues }, "Oturumlar uzun süredir kapalı, kontrollü process restart uygulanıyor");
+          guardedExit(1, "all-bots-down", { downForMs, sessionCount: states.length });
+        }
       }
     } else {
       _allBotsDownSince = null;
+      _manualReauthMode = false;
     }
   }, WATCHDOG_INTERVAL_MS);
 
@@ -237,6 +371,7 @@ async function main() {
 
     if (_memoryMonitorTimer) clearInterval(_memoryMonitorTimer);
     if (_runtimeWatchdogTimer) clearInterval(_runtimeWatchdogTimer);
+    if (_intakeResumeTimer) clearTimeout(_intakeResumeTimer);
     stopTempCleanup();
     cleanupKickBot();
     try {
