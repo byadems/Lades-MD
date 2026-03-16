@@ -1,6 +1,5 @@
 const { Module } = require("../main");
 const fs = require("fs");
-const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 const https = require("https");
 const { getTempPath, getTempSubdir } = require("../core/helpers");
@@ -51,8 +50,6 @@ async function transcribeVoiceMessage(message, targetMessage) {
     }
     processingMsg = await message.send("🎙️ _Ses analiz ediliyor..._");
     const audioBuffer = await voiceMsg.download("buffer");
-    const tempFile = path.join(__dirname, `audio_${Date.now()}.ogg`);
-    fs.writeFileSync(tempFile, audioBuffer);
     const boundary = `----WebKitFormBoundary${Date.now()}`;
     const chunks = [];
 
