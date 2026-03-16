@@ -4,8 +4,10 @@ const {
   downloadGram,
   pinterestDl,
   tiktok,
-  igStalk,
   fb,
+  nx,
+  nxTry,
+  fmtCount,
 } = require("./utils");
 const nexray = require("./utils/nexray");
 const botConfig = require("../config");
@@ -171,38 +173,95 @@ Module(
 
 Module(
   {
-    pattern: "ig ?(.*)",
+    pattern: "igbio ?(.*)",
     fromMe: isFromMe,
-    desc: "Instagram'dan hesap bilgilerini alır",
-    usage: "ig kullanıcı adı",
-    excludeFromCommands: true,
-    use: "search",
+    desc: "Instagram kullanıcı profili bilgilerini gösterir",
+    usage: ".igbio username",
+    use: "stalker",
   },
   async (message, match) => {
-    if (!match[1]) return await message.sendReply("_⚠️ Instagram kullanıcı adı gerekli!_");
-
-    if (match[1].startsWith("https") && match[1].includes("instagram")) {
-      const usernameRegex = /instagram\.com\/([^/?]+)/i;
-      const usernameMatch = match[1].match(usernameRegex);
-      match[1] = usernameMatch && usernameMatch[1];
-    }
-
+    const user = (match[1] || "").trim().replace(/^@/, "");
+    if (!user) return await message.sendReply("📸 _Kullanıcı adı girin:_ `.igbio username`");
     try {
-      var accountInfo = await igStalk(encodeURIComponent(match[1]));
-    } catch {
-      return await message.sendReply("_⚠️ Sunucu meşgul!_");
-    }
+      const r = await nxTry([
+        `/stalker/instagram?username=${encodeURIComponent(user)}`,
+      ]);
+      const full = r.full_name || r.fullname || r.name || user;
+      const bio = r.biography || r.bio || "-";
+      const followers = r.follower_count ?? r.followers ?? "-";
+      const following = r.following_count ?? r.following ?? "-";
+      const posts = r.media_count ?? r.posts ?? "-";
+      const priv = r.is_private ? "🔒 Gizli" : "🌐 Açık";
+      const verified = r.is_verified ? "✅" : "❌";
+      const avatar = r.profile_pic_url || r.profile_pic || r.avatar || r.profile?.avatar;
 
-    await message.sendMessage({ url: accountInfo.profile_pic }, "image", {
-      caption: `_*İsim:*_ ${accountInfo.full_name}\n_*Takipçi:*_ ${
-        accountInfo.followers
-      }\n_*Takip:*_ ${accountInfo.following}\n_*Biyografi:*_ ${
-        accountInfo.bio
-      }\n_*Gizli hesap:*_ ${
-        accountInfo.is_private ? "Evet" : "Hayır"
-      }\n_*Gönderi:*_ ${accountInfo.posts}`,
-      quoted: message.data,
-    });
+      const caption =
+        `📸 *Instagram Profili*\n\n` +
+        `👤 *Ad:* ${full}\n` +
+        `🔑 *Kullanıcı:* @${user}\n` +
+        `📝 *Bio:* ${bio}\n` +
+        `👥 *Takipçi:* ${fmtCount(followers)}\n` +
+        `➡️ *Takip:* ${fmtCount(following)}\n` +
+        `📷 *Gönderi:* ${posts}\n` +
+        `🔐 *Hesap:* ${priv}\n` +
+        `✅ *Doğrulanmış:* ${verified}`;
+
+      if (avatar) {
+        await message.client.sendMessage(message.jid, { image: { url: avatar }, caption }, { quoted: message.data });
+      } else {
+        await message.sendReply(caption);
+      }
+    } catch (e) {
+      const msg = e.message.includes("429") ? "⚠️ _Instagram yoğunluk nedeniyle cevap vermiyor, lütfen biraz sonra tekrar deneyin._" : `❌ _Instagram profili alınamadı:_ ${e.message}`;
+      await message.sendReply(msg);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "twara ?(.*)",
+    fromMe: isFromMe,
+    desc: "Twitter/X kullanıcı profili bilgilerini gösterir",
+    usage: ".twara kullanıcı adı",
+    use: "stalker",
+  },
+  async (message, match) => {
+    const user = (match[1] || "").trim().replace(/^@/, "");
+    if (!user) return await message.sendReply("🐦 _Kullanıcı adı giriniz:_ `.twara kullanıcı adı`");
+    try {
+      const r = await nxTry([
+        `/stalker/twitter?username=${encodeURIComponent(user)}`,
+      ]);
+      const name = r.name || user;
+      const bio = r.description || r.bio || r.signature || "-";
+      const stats = r.stats || {};
+      const followers = stats.followers ?? r.followers_count ?? r.followers ?? "-";
+      const following = stats.following ?? r.friends_count ?? r.following ?? "-";
+      const tweets = stats.tweets ?? r.statuses_count ?? r.tweets ?? "-";
+      const likes = stats.likes ?? r.favourites_count ?? "-";
+      const verified = r.verified ? "✅" : "❌";
+      const avatar = r.profile?.avatar || r.avatar || r.profile_image_url;
+
+      const caption =
+        `🐦 *X/Twitter Profili*\n\n` +
+        `👤 *Ad:* ${name}\n` +
+        `🔑 *Kullanıcı:* @${user}\n` +
+        `📝 *Biyografi:* ${bio}\n` +
+        `👥 *Takipçi:* ${fmtCount(followers)}\n` +
+        `➡️ *Takip:* ${fmtCount(following)}\n` +
+        `🐦 *Tweet:* ${fmtCount(tweets)}\n` +
+        `❤️ *Beğeni:* ${fmtCount(likes)}\n` +
+        `✅ *Doğrulanmış mı?:* ${verified}`;
+
+      if (avatar) {
+        await message.client.sendMessage(message.jid, { image: { url: avatar }, caption }, { quoted: message.data });
+      } else {
+        await message.sendReply(caption);
+      }
+    } catch (e) {
+      await message.sendReply(`❌ _X profiline ulaşamadım:_ ${e.message}`);
+    }
   }
 );
 
@@ -413,6 +472,41 @@ Module(
       } catch (_) {
         await message.sendReply("_⚠️ Bir şeyler ters gitti, Lütfen tekrar deneyin!_");
       }
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "capcut ?(.*)",
+    fromMe: isFromMe,
+    desc: "CapCut şablon/video indirici",
+    usage: ".capcut (bağlantı)",
+    use: "download",
+  },
+  async (message, match) => {
+    let url = match[1] !== "" ? match[1] : message.reply_message?.text;
+    if (!url) return await message.sendReply("🎬 _CapCut video/şablon bağlantısı gönderin:_ `.capcut URL`");
+    url = url.match(/\bhttps?:\/\/\S+/gi)?.[0];
+    if (!url || !url.includes("capcut")) return await message.sendReply("🎬 _Geçerli bir CapCut bağlantısı gönderin_");
+    
+    try {
+      const r = await nxTry([
+        `/downloader/capcut?url=${encodeURIComponent(url)}`,
+      ]);
+      const video = r.video_url || r.video || r.url || r.download_url;
+      if (!video) throw new Error("Video bağlantısı alınamadı");
+      
+      const title = r.title || r.name || "CapCut Video";
+      const desc = r.description || r.desc || "";
+      const usage = r.usage || r.uses || "-";
+      let caption = `🎬 *${title}*\n`;
+      if (desc) caption += `📝 ${desc}\n`;
+      if (usage !== "-") caption += `📈 *Kullanım:* ${fmtCount(usage)}`;
+      
+      await message.client.sendMessage(message.jid, { video: { url: video }, caption }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _CapCut videosu indirilemedi:_ ${e.message}`);
     }
   }
 );

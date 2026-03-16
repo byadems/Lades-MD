@@ -8,9 +8,10 @@ const { getTempPath, getTempSubdir } = require("../core/helpers");
 const config = require("../config"),
   MODE = config.MODE;
 const { getString } = require("./utils/lang");
-const { avMix, circle, rotate, trim, uploadToImgbb } = require("./utils");
+const { avMix, circle, rotate, trim, uploadToImgbb, nx, nxTry, uploadToCatbox } = require("./utils");
 const nexray = require("./utils/nexray");
 const { censorBadWords } = require("./utils/censor");
+const isFromMe = MODE === "public" ? false : true;
 const acrcloud = require("acrcloud");
 const acr = new acrcloud({
   host: "identify-eu-west-1.acrcloud.com",
@@ -606,5 +607,162 @@ Module(
       fs.readFileSync(await rotate(file, angle)),
       "video"
     );
+  }
+);
+
+Module(
+  {
+    pattern: "ss ?(.*)",
+    fromMe: isFromMe,
+    desc: "Web sitesinin ekran görüntüsünü alır",
+    usage: ".ss https://fenomensen.net",
+    use: "tools",
+  },
+  async (message, match) => {
+    let url = (match[1] || "").trim();
+    if (message.reply_message?.text && !url) {
+      const m = message.reply_message.text.match(/https?:\/\/\S+/);
+      if (m) url = m[0];
+    }
+    if (!url) return await message.sendReply("🌐 _Web sitesi URL'si girin:_ `.ss https://fenomensen.net`");
+    if (!url.startsWith("http")) url = "https://" + url;
+    try {
+      const res = await nxTry([
+        `/tools/ssweb?url=${encodeURIComponent(url)}`,
+      ], { buffer: true, timeout: 60000 });
+
+      const imgData = res.url ? { url: res.url } : res;
+      await message.client.sendMessage(message.jid, {
+        image: imgData,
+        caption: `🌐 *${url}*`,
+      }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Ekran görüntüsünü alamadım:_ ${e.message}`);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "metin ?(.*)",
+    fromMe: isFromMe,
+    desc: "Görseldeki metni okur (OCR)",
+    usage: ".metin (görsel yanıtla)",
+    use: "tools",
+  },
+  async (message, match) => {
+    const replyMime = message.reply_message?.mimetype || "";
+    const isImg = replyMime.startsWith("image/");
+    let imgUrl = (match[1] || "").trim();
+    if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.metin`");
+    try {
+      if (!imgUrl && isImg) {
+        const wait = await message.send("🔍 _İnceliyorum..._");
+        const path = await message.reply_message.download();
+        const { url } = await uploadToCatbox(path);
+        imgUrl = url;
+        await message.edit("✍🏻 _Metni okuyorum..._", message.jid, wait.key);
+      }
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı!");
+
+      const result = await nxTry([
+        `/tools/ocr?url=${encodeURIComponent(imgUrl)}`,
+        `/tools/ocr?image=${encodeURIComponent(imgUrl)}`,
+      ]);
+      const text = typeof result === "string" ? result : result?.text || result?.result || JSON.stringify(result);
+      if (!text || text === "null") throw new Error("Metin bulunamadı");
+      await message.sendReply(`📝 *Görselde şunlar yazıyor:*\n\n${text}`);
+    } catch (e) {
+      await message.sendReply(`❌ _Metni okuyamadım:_ ${e.message}`);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "hd ?(.*)",
+    fromMe: isFromMe,
+    desc: "Görseli HD kaliteye yükseltir",
+    usage: ".hd (görsele yanıtla)",
+    use: "tools",
+  },
+  async (message, match) => {
+    const replyMime = message.reply_message?.mimetype || "";
+    const isImg = replyMime.startsWith("image/");
+    let imgUrl = (match[1] || "").trim();
+    if (!isImg && !imgUrl.startsWith("http")) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.hd`");
+    try {
+      if (!imgUrl && isImg) {
+        const wait = await message.send("⬆️ _İşliyorum..._");
+        const path = await message.reply_message.download();
+        const { url } = await uploadToCatbox(path);
+        imgUrl = url;
+        await message.edit("😎 _Görseli yükseltiyorum..._", message.jid, wait.key);
+      }
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
+
+      const buf = await nxTry([
+        `/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolusi=2`,
+        `/tools/upscale?url=${encodeURIComponent(imgUrl)}&resolution=2`,
+        `/tools/upscale?image=${encodeURIComponent(imgUrl)}&resolusi=2`,
+      ], { buffer: true, timeout: 90000 });
+      await message.client.sendMessage(message.jid, { image: buf, caption: "✨ *İşte bu kadar, HD kaliteye yükselttim!*" }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Tüh! Yükseltme başarısız:_ ${e.message}`);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "meme ?(.*)",
+    fromMe: isFromMe,
+    desc: "Meme görseli oluşturur (üst ve alt metin)",
+    usage: ".meme ÜSTMETIN|ALTMETIN (görsel yanıtla)",
+    use: "fun",
+  },
+  async (message, match) => {
+    const input = (match[1] || "").trim();
+    const replyMime = message.reply_message?.mimetype || "";
+    const isImg = replyMime.startsWith("image/");
+    if (!input || !input.includes("|")) return await message.sendReply("😂 _Kullanım:_ `.meme ÜSTMETIN|ALTMETIN` _(görsel yanıtlayarak)_");
+    if (!isImg) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.meme ÜSTMETIN|ALTMETIN`");
+    const [top, bottom] = input.split("|").map(s => s.trim());
+    try {
+      const wait = await message.send("⌛ _Meme oluşturuyorum..._");
+      const path = await message.reply_message.download();
+      const { url } = await uploadToCatbox(path);
+      if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
+
+      const result = await nx(
+        `/maker/smeme?background=${encodeURIComponent(url)}&text_atas=${encodeURIComponent(top)}&text_bawah=${encodeURIComponent(bottom || "")}`,
+        { buffer: true }
+      );
+      await message.edit("😂", message.jid, wait.key);
+      await message.client.sendMessage(message.jid, { image: result, caption: `😂 *${top}* — *${bottom}*` }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Meme oluşturamadım:_ ${e.message}`);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "kodgörsel ?(.*)",
+    fromMe: isFromMe,
+    desc: "Kodu güzel bir görsel olarak oluşturur",
+    usage: ".kodgörsel const x = 1",
+    use: "fun",
+  },
+  async (message, match) => {
+    let code = (match[1] || "").trim();
+    if (!code && message.reply_message?.text) code = message.reply_message.text.trim();
+    if (!code) return await message.sendReply("💻 _Metin girin:_ `.kodgörsel const x = 1`");
+    try {
+      const buf = await nx(`/maker/codesnap?code=${encodeURIComponent(code)}`, { buffer: true });
+      await message.client.sendMessage(message.jid, { image: buf }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Kod görselini oluşturamadım:_ ${e.message}`);
+    }
   }
 );

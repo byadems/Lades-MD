@@ -10,6 +10,7 @@ const { setVar } = require("./manage");
 const { getTotalUserCount } = require("../core/store");
 const { parseAliveMessage, sendAliveMessage } = require("./utils/alive-parser");
 const { badWords, censorBadWords } = require("./utils/censor");
+const { nxTry } = require("./utils");
 
 const isPrivateMode = MODE === "private";
 
@@ -962,3 +963,77 @@ Module({
     );
   }
 });
+
+Module(
+  {
+    pattern: "resim ?(.*)",
+    fromMe: isPrivateMode,
+    desc: "Google'dan resim arar",
+    usage: ".resim kedi",
+    use: "search",
+  },
+  async (message, match) => {
+    const query = (match[1] || "").trim();
+    if (!query) return await message.sendReply("🔍 _Konu girin:_ `.resim kedi`");
+    try {
+      const results = await nxTry([
+        `/search/googleimage?q=${encodeURIComponent(query)}`,
+        `/search/bingimage?q=${encodeURIComponent(query)}`,
+      ]);
+      if (!results?.length) throw new Error("Sonuç bulamadım");
+      const pick = results[Math.floor(Math.random() * Math.min(results.length, 5))];
+      const imgUrl = pick.url || pick.image || pick.link || pick.original || pick.thumbnail;
+      if (!imgUrl) throw new Error("Görsel URL bulamadım");
+      await message.client.sendMessage(message.jid, {
+        image: { url: imgUrl },
+        caption: `🔍 *${query}*`,
+      }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Görsel bulamadım:_ ${e.message}`);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "(?:reçete|recete) ?(.*)",
+    fromMe: isPrivateMode,
+    desc: "Yemek tarifi arar",
+    usage: ".reçete pilav",
+    use: "search",
+  },
+  async (message, match) => {
+    const query = (match[1] || "").trim();
+    if (!query) return await message.sendReply("🍳 _Yemek adı girin:_ `.reçete pilav`");
+    try {
+      const wait = await message.send("🍳 _Tarif aranıyor..._");
+      const r = await nxTry([
+        `/search/resep?q=${encodeURIComponent(query)}`,
+      ]);
+      const title = r.title || r.judul || query;
+      const desc = r.desc || r.description || "";
+      const time = r.waktu || r.time || r.duration || "-";
+      const portions = r.porsi || r.portions || "-";
+      const diff = r.kesulitan || r.difficulty || "-";
+      const thumb = r.thumb || r.thumbnail || r.image;
+      
+      let caption = `🍳 *${title}*\n\n`;
+      if (desc) caption += `📝 ${desc}\n\n`;
+      caption += `⏱️ *Süre:* ${time}\n`;
+      caption += `🍽️ *Porsiyon:* ${portions}\n`;
+      caption += `📊 *Zorluk:* ${diff}\n\n`;
+      
+      if (r.bahan || r.ingredients) caption += `🛒 *Malzemeler:*\n${r.bahan || r.ingredients}\n\n`;
+      if (r.cara || r.instructions || r.steps) caption += `👨‍🍳 *Hazırlanışı:*\n${r.cara || r.instructions || r.steps}`;
+      
+      await message.edit("✅ _Bulundu!_", message.jid, wait.key);
+      if (thumb) {
+        await message.client.sendMessage(message.jid, { image: { url: thumb }, caption }, { quoted: message.data });
+      } else {
+        await message.client.sendMessage(message.jid, { text: caption }, { quoted: message.data });
+      }
+    } catch (e) {
+      await message.sendReply(`❌ _Tarif bulunamadı:_ ${e.message}`);
+    }
+  }
+);

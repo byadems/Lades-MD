@@ -81,6 +81,8 @@ const fancy = require("./fancy");
 
 const { censorBadWords, badWords } = require("./censor");
 
+const { nx, nxTry, fmtCount, trToEn } = require("./nexray");
+
 module.exports = {
   // Database Operations
   syncWarnsSequence,
@@ -157,4 +159,10 @@ module.exports = {
   // Küfür sansürü (tüm pluginlerden erişilebilir)
   censorBadWords,
   badWords,
+
+  // Nexray Utilities
+  nx,
+  nxTry,
+  fmtCount,
+  trToEn,
 };

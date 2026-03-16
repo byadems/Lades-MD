@@ -1,6 +1,6 @@
 const { Module } = require("../main");
 const { MODE } = require("../config");
-const { getBuffer } = require("./utils");
+const { getBuffer, nx, uploadToCatbox } = require("./utils");
 const { uploadToImgbb } = require("./utils/upload");
 
 const x = MODE == "public" ? false : true;
@@ -141,3 +141,171 @@ function registerEffect(command, desc, route) {
 for (const effect of EFFECTS) {
   registerEffect(effect.command, effect.desc, effect.route);
 }
+
+Module(
+  {
+    pattern: "wasted ?(.*)",
+    fromMe: x,
+    desc: "GTA tarzı 'Wasted' efekti uygular",
+    usage: ".wasted (görsel gönder veya yanıtla)",
+    use: "editor",
+  },
+  async (message, match) => {
+    const mime = message.reply_message?.mimetype || message.mimetype || "";
+    const isImg = mime.startsWith("image/");
+    if (!isImg) return await message.sendReply("🖼️ _Bir görseli yanıtlayın:_ `.wasted`");
+    try {
+      const wait = await message.send("💀 _İşliyorum..._");
+      const path = await message.reply_message.download();
+      const { url } = await uploadToCatbox(path);
+      if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
+
+      const buf = await nx(`/editor/wasted?url=${encodeURIComponent(url)}`, { buffer: true });
+      await message.edit("💀 *Wasted!*", message.jid, wait.key);
+      await message.client.sendMessage(message.jid, { image: buf }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Wasted efektini uygulayamadım:_ ${e.message}`);
+    }
+  }
+);
+
+Module(
+  {
+    pattern: "wanted ?(.*)",
+    fromMe: x,
+    desc: "Aranıyor posteri oluşturur",
+    usage: ".wanted (görsel gönder veya yanıtla)",
+    use: "editor",
+  },
+  async (message, match) => {
+    const replyMime = message.reply_message?.mimetype || "";
+    const isImg = replyMime.startsWith("image/");
+    let imgUrl = (match[1] || "").trim();
+
+    if (!isImg && !imgUrl.startsWith("http")) {
+      return await message.sendReply("🖼️ _Bir görseli yanıtlayın veya URL girin:_ `.wanted`");
+    }
+    try {
+      if (!imgUrl && isImg) {
+        const wait = await message.send("🔫 _İşleniyor..._");
+        const path = await message.reply_message.download();
+        const { url } = await uploadToCatbox(path);
+        imgUrl = url;
+        await message.edit("✅ _Görsel yüklendi, poster oluşturuluyor..._", message.jid, wait.key);
+      }
+      if (!imgUrl || imgUrl.includes("hata")) throw new Error("Görsel URL alınamadı");
+
+      const buf = await nx(`/editor/wanted?url=${encodeURIComponent(imgUrl)}`, { buffer: true });
+      await message.client.sendMessage(message.jid, { image: buf, caption: "🔫 *ARANIYOR!*" }, { quoted: message.data });
+    } catch (e) {
+      await message.sendReply(`❌ _Wanted efektini uygulayamadım:_ ${e.message}`);
+    }
+  }
+);
+
+// Yardımcı: URL olan resimli mesaja ephoto efekti uygula
+async function applyEphoto(message, endpoint, caption) {
+  const replyMime = message.reply_message?.mimetype || "";
+  const isImg = replyMime.startsWith("image/");
+  if (!isImg) return await message.sendReply(`🖼️ _Bir görseli yanıtlayın:_ \`${endpoint}\``);
+  try {
+    const wait = await message.send("⌛ _İşliyorum..._");
+    const path = await message.reply_message.download();
+    const { url } = await uploadToCatbox(path);
+    if (!url || url.includes("hata")) throw new Error("Görsel yüklenemedi");
+
+    await message.edit("✅ _Efekti uyguluyorum..._", message.jid, wait.key);
+    const result = await nx(`${endpoint}?url=${encodeURIComponent(url)}`, { buffer: true, timeout: 90000 });
+    await message.client.sendMessage(message.jid, { image: result, caption }, { quoted: message.data });
+  } catch (e) {
+    await message.sendReply(`❌ _Tüh! Efekti uygulayamadım:_ ${e.message}`);
+  }
+}
+
+Module(
+  {
+    pattern: "anime ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı anime stiline dönüştürür",
+    usage: ".anime (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/anime", "🎌 *Anime dönüşümü tamamlandı!*")
+);
+
+Module(
+  {
+    pattern: "ghiblistil ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı Studio Ghibli stiline dönüştürür",
+    usage: ".ghiblistil (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/ghibli", "🌿 *Studio Ghibli dönüşümü tamamlandı!*")
+);
+
+Module(
+  {
+    pattern: "chibi ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı chibi stiline dönüştürür",
+    usage: ".chibi (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/chibi", "🧸 *Chibi dönüşümü tamamlandı!*")
+);
+
+Module(
+  {
+    pattern: "efektsinema ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafa sinematik film efekti uygular",
+    usage: ".sinema (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/cinematic", "🎬 *Sinematik efekt uygulandı!*")
+);
+
+Module(
+  {
+    pattern: "grafitisokak ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı sokak grafiti sanatına dönüştürür",
+    usage: ".grafitisokak (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/street", "🎨 *Grafiti dönüşümü tamamlandı!*")
+);
+
+Module(
+  {
+    pattern: "pikselart ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı piksel NFT sanatına dönüştürür",
+    usage: ".pikselart (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/nft", "👾 *Piksel sanat dönüşümü tamamlandı!*")
+);
+
+Module(
+  {
+    pattern: "komik ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı çizgi roman stiline dönüştürür",
+    usage: ".komik (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/comic", "💥 *Çizgi roman dönüşümü tamamlandı!*")
+);
+
+Module(
+  {
+    pattern: "mafia ?(.*)",
+    fromMe: x,
+    desc: "Fotoğrafı mafia stiline dönüştürür",
+    usage: ".mafia (görsel yanıtla)",
+    use: "ephoto",
+  },
+  async (message) => applyEphoto(message, "/ephoto/mafia", "🕴️ *Mafia dönüşümü tamamlandı!*")
+);

@@ -96,9 +96,6 @@ Module(
   async (m, t) => {
     if (!m.reply_message)
       return await m.sendReply("_💬 Bir komut mesajını yanıtlayın_");
-    // Küçük bir gecikme ekleyerek tepki gönderimindeki yarış koşulunu önlüyoruz.
-    // Baileys, tepkiyi göndermeden önce groupMetadata'yı çağırıyor,
-    // bu süre zarfında önceki olay döngüsü tamamlanmamış olabiliyor.
     await new Promise(resolve => setTimeout(resolve, 500));
     await m.client.ev.emit("messages.upsert", {
       messages: [m.quoted],

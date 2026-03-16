@@ -8,6 +8,79 @@ const FormData = require("form-data");
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 60000;
 
+async function nx(path, opts = {}) {
+  const res = await axios.get(`${BASE}${path}`, {
+    timeout: opts.timeout || TIMEOUT,
+    validateStatus: () => true,
+    responseType: opts.buffer ? "arraybuffer" : "json",
+  });
+
+  if (opts.buffer) {
+    // If we requested a buffer but got JSON (happens on some errors or redirected tools like ssweb)
+    const contentType = res.headers["content-type"] || "";
+    if (res.status === 200 && contentType.includes("application/json")) {
+      const jsonStr = Buffer.from(res.data).toString();
+      try {
+        const d = JSON.parse(jsonStr);
+        if (d.result?.file_url) return { url: d.result.file_url };
+        if (d.status === false) throw new Error(d.error || d.message || "API Hatası");
+      } catch (e) {
+        // Not JSON after all or no file_url, continue to size check
+      }
+    }
+
+    if (res.status === 200 && res.data?.byteLength > 100) {
+      return Buffer.from(res.data);
+    }
+
+    // Attempt to extract error from buffer if it's small (likely JSON error)
+    if (res.data?.byteLength < 500) {
+      try {
+        const errJson = JSON.parse(Buffer.from(res.data).toString());
+        throw new Error(errJson.error || errJson.message || `HTTP ${res.status}`);
+      } catch (e) { }
+    }
+    throw new Error(`API hatası: HTTP ${res.status}`);
+  }
+
+  const d = res.data;
+  if (d?.status === true && d?.result !== undefined) return d.result;
+  if (d?.status && d?.data !== undefined) return d.data;
+  if (d?.result !== undefined) return d.result;
+  if (d?.data !== undefined) return d.data;
+  if (res.status === 200 && d && typeof d === "object") return d;
+  throw new Error(d?.message || d?.error || `API hatası: HTTP ${res.status}`);
+}
+
+async function nxTry(paths, opts = {}) {
+  const errors = [];
+  for (const path of paths) {
+    try {
+      return await nx(path, opts);
+    } catch (e) {
+      errors.push(`${path} → ${e.message}`);
+    }
+  }
+  throw new Error(errors.length ? errors.join(" | ") : "API isteği başarısız");
+}
+
+function fmtCount(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toLocaleString() : "-";
+}
+
+function trToEn(text) {
+  const tr = {
+    'ç': 'c', 'Ç': 'C',
+    'ğ': 'g', 'Ğ': 'G',
+    'ı': 'i', 'İ': 'I',
+    'ö': 'o', 'Ö': 'O',
+    'ş': 's', 'Ş': 'S',
+    'ü': 'u', 'Ü': 'U'
+  };
+  return text.split('').map(c => tr[c] || c).join('');
+}
+
 /**
  * Siyah-beyaz fotoğrafı renklendirir.
  * @param {string} imageUrl - Görsel URL'si
@@ -415,4 +488,8 @@ module.exports = {
   ytPlayVid,
   searchYoutube,
   getBuffer,
+  nx,
+  nxTry,
+  fmtCount,
+  trToEn,
 };
