@@ -76,6 +76,8 @@ function applyDatabaseCaching() {
     return;
   }
 
+  alignUserStatsModel(UserStats);
+
   // ═══════════════════════════════════════════════════════════════════════════
   // 1. AntiDeleteCache → tamamen in-memory, DB'ye hiç gitmez
   // ═══════════════════════════════════════════════════════════════════════════
@@ -391,7 +393,9 @@ function applyDatabaseCaching() {
 
       try {
         if (_origStatsUpsert) {
-          await _origStatsUpsert(instance.dataValues);
+          await _origStatsUpsert(instance.dataValues, {
+            conflictFields: ["userJid", "chatJid"],
+          });
         } else if (_origStatsSave && typeof instance.changed === "function") {
           await _origStatsSave.call(instance);
         } else {
@@ -449,6 +453,53 @@ function applyDatabaseCaching() {
 
   logger.info("db-cache: Veritabanı önbellekleme katmanı aktif");
   console.log("- DB önbellekleme aktif (AntiDelete=bellek, Chat/User/Stats=cache)");
+}
+
+function alignUserStatsModel(UserStats) {
+  try {
+    const attrs = UserStats.rawAttributes || {};
+
+    if (attrs.userJid?.unique) delete attrs.userJid.unique;
+    if (attrs.chatJid?.unique) delete attrs.chatJid.unique;
+
+    const indexes = Array.isArray(UserStats.options?.indexes)
+      ? UserStats.options.indexes
+      : [];
+
+    const filteredIndexes = indexes.filter((idx) => {
+      if (!idx?.unique) return true;
+      const fields = (idx.fields || []).map((f) =>
+        typeof f === "string" ? f : (f?.name || f?.attribute)
+      ).filter(Boolean);
+      return !(
+        fields.length === 1 &&
+        (fields[0] === "userJid" || fields[0] === "chatJid")
+      );
+    });
+
+    const hasCompositeUnique = filteredIndexes.some((idx) => {
+      if (!idx?.unique) return false;
+      const fields = (idx.fields || []).map((f) =>
+        typeof f === "string" ? f : (f?.name || f?.attribute)
+      );
+      return fields.length === 2 && fields[0] === "userJid" && fields[1] === "chatJid";
+    });
+
+    if (!hasCompositeUnique) {
+      filteredIndexes.push({
+        name: "userstats_userjid_chatjid_unique",
+        unique: true,
+        fields: ["userJid", "chatJid"],
+      });
+    }
+
+    UserStats.options.indexes = filteredIndexes;
+    if (typeof UserStats.refreshAttributes === "function") {
+      UserStats.refreshAttributes();
+    }
+  } catch (e) {
+    logger.warn({ err: e }, "db-cache: UserStats model hizalama başarısız");
+  }
 }
 
 function pruneMap(map) {
