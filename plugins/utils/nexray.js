@@ -8,12 +8,17 @@ const FormData = require("form-data");
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 60000;
 
+function withSignal(options = {}, signal) {
+  if (!signal) return options;
+  return { ...options, signal };
+}
+
 async function nx(path, opts = {}) {
-  const res = await axios.get(`${BASE}${path}`, {
+  const res = await axios.get(`${BASE}${path}`, withSignal({
     timeout: opts.timeout || TIMEOUT,
     validateStatus: () => true,
     responseType: opts.buffer ? "arraybuffer" : "json",
-  });
+  }, opts.signal));
 
   if (opts.buffer) {
     // If we requested a buffer but got JSON (happens on some errors or redirected tools like ssweb)
@@ -86,13 +91,13 @@ function trToEn(text) {
  * @param {string} imageUrl - Görsel URL'si
  * @returns {Promise<Buffer|null>} Renklendirilmiş görsel buffer veya null
  */
-async function colorize(imageUrl) {
+async function colorize(imageUrl, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/tools/colorize`, {
+    const res = await axios.get(`${BASE}/tools/colorize`, withSignal({
       params: { url: imageUrl },
       responseType: "arraybuffer",
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     if (res.status === 200 && res.data?.length) {
       return Buffer.from(res.data);
     }
@@ -109,20 +114,20 @@ async function colorize(imageUrl) {
  * @param {string} [mimetype] - Görsel MIME tipi (varsayılan: image/jpeg)
  * @returns {Promise<Buffer|null>} Düzenlenmiş görsel buffer veya null
  */
-async function gptImage(imageBuffer, prompt, mimetype = "image/jpeg") {
+async function gptImage(imageBuffer, prompt, mimetype = "image/jpeg", options = {}) {
   try {
     const ext = mimetype.split("/")[1] || "jpg";
     const form = new FormData();
     form.append("image", imageBuffer, { filename: `image.${ext}`, contentType: mimetype });
     form.append("param", String(prompt).trim());
 
-    const res = await axios.post(`${BASE}/ai/gptimage`, form, {
+    const res = await axios.post(`${BASE}/ai/gptimage`, form, withSignal({
       headers: form.getHeaders(),
       responseType: "arraybuffer",
       timeout: 90000,
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
-    });
+    }, options.signal));
     if (res.status === 200 && res.data?.length) {
       return Buffer.from(res.data);
     }
@@ -137,13 +142,13 @@ async function gptImage(imageBuffer, prompt, mimetype = "image/jpeg") {
  * @param {string} prompt - Görsel açıklaması
  * @returns {Promise<Buffer|null>} Oluşturulan görsel buffer veya null
  */
-async function deepImg(prompt) {
+async function deepImg(prompt, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/ai/deepimg`, {
+    const res = await axios.get(`${BASE}/ai/deepimg`, withSignal({
       params: { prompt: String(prompt).trim() },
       responseType: "arraybuffer",
       timeout: 90000,
-    });
+    }, options.signal));
     if (res.status === 200 && res.data?.length) {
       return Buffer.from(res.data);
     }
@@ -158,13 +163,13 @@ async function deepImg(prompt) {
  * @param {string} url - Instagram URL
  * @returns {Promise<string[]|null>} Medya URL listesi veya null
  */
-async function downloadInstagram(url) {
+async function downloadInstagram(url, options = {}) {
   // v1 endpoint
   try {
-    const res = await axios.get(`${BASE}/downloader/instagram`, {
+    const res = await axios.get(`${BASE}/downloader/instagram`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -182,10 +187,10 @@ async function downloadInstagram(url) {
 
   // v2 endpoint (daha zengin veri, yedek)
   try {
-    const res = await axios.get(`${BASE}/downloader/v2/instagram`, {
+    const res = await axios.get(`${BASE}/downloader/v2/instagram`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -206,12 +211,12 @@ async function downloadInstagram(url) {
  * @param {string} url - TikTok URL
  * @returns {Promise<{url?: string, video?: string}|null>} Video URL veya null
  */
-async function downloadTiktok(url) {
+async function downloadTiktok(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/tiktok`, {
+    const res = await axios.get(`${BASE}/downloader/tiktok`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -228,12 +233,12 @@ async function downloadTiktok(url) {
  * @param {string} url - Facebook URL
  * @returns {Promise<{url?: string}|null>}
  */
-async function downloadFacebook(url) {
+async function downloadFacebook(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/facebook`, {
+    const res = await axios.get(`${BASE}/downloader/facebook`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -251,12 +256,12 @@ async function downloadFacebook(url) {
  * @param {string} url - Pinterest URL
  * @returns {Promise<string|null>} Medya URL veya null
  */
-async function downloadPinterest(url) {
+async function downloadPinterest(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/pinterest`, {
+    const res = await axios.get(`${BASE}/downloader/pinterest`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -273,12 +278,12 @@ async function downloadPinterest(url) {
  * @param {string} url - Twitter/X URL
  * @returns {Promise<{url?: string, video?: string}|null>}
  */
-async function downloadTwitter(url) {
+async function downloadTwitter(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/twitter`, {
+    const res = await axios.get(`${BASE}/downloader/twitter`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -299,12 +304,12 @@ async function downloadTwitter(url) {
  * @param {string} url - Spotify track URL
  * @returns {Promise<{url?: string, title?: string, artist?: string}|null>}
  */
-async function downloadSpotify(url) {
+async function downloadSpotify(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/spotify`, {
+    const res = await axios.get(`${BASE}/downloader/spotify`, withSignal({
       params: { url },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -322,12 +327,12 @@ async function downloadSpotify(url) {
  * @param {string} query - Arama terimi
  * @returns {Promise<{url?: string, title?: string, artist?: string, thumbnail?: string, duration?: string, album?: string}|null>}
  */
-async function spotifyPlay(query) {
+async function spotifyPlay(query, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/spotifyplay`, {
+    const res = await axios.get(`${BASE}/downloader/spotifyplay`, withSignal({
       params: { q: String(query).trim() },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -352,12 +357,12 @@ async function spotifyPlay(query) {
  * @param {string} url - YouTube URL
  * @returns {Promise<{url?: string, title?: string}|null>}
  */
-async function downloadYtMp4(url) {
+async function downloadYtMp4(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/ytmp4`, {
+    const res = await axios.get(`${BASE}/downloader/ytmp4`, withSignal({
       params: { url },
       timeout: 90000,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -374,12 +379,12 @@ async function downloadYtMp4(url) {
  * @param {string} url - YouTube URL
  * @returns {Promise<{url?: string, title?: string}|null>}
  */
-async function downloadYtMp3(url) {
+async function downloadYtMp3(url, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/ytmp3`, {
+    const res = await axios.get(`${BASE}/downloader/ytmp3`, withSignal({
       params: { url },
       timeout: 90000,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -396,12 +401,12 @@ async function downloadYtMp3(url) {
  * @param {string} query - Arama terimi
  * @returns {Promise<{url?: string, title?: string}|null>}
  */
-async function ytPlayAud(query) {
+async function ytPlayAud(query, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/ytplay`, {
+    const res = await axios.get(`${BASE}/downloader/ytplay`, withSignal({
       params: { q: String(query).trim() },
       timeout: 90000,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -418,12 +423,12 @@ async function ytPlayAud(query) {
  * @param {string} query - Arama terimi
  * @returns {Promise<{url?: string, title?: string}|null>}
  */
-async function ytPlayVid(query) {
+async function ytPlayVid(query, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/downloader/ytplayvid`, {
+    const res = await axios.get(`${BASE}/downloader/ytplayvid`, withSignal({
       params: { q: String(query).trim() },
       timeout: 90000,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && data?.result) {
       const r = data.result;
@@ -445,9 +450,12 @@ async function ytPlayVid(query) {
  * @param {string} url - İndirilecek görsel/dosya URL'si
  * @returns {Promise<Buffer|string>} Buffer veya hata durumunda boş string
  */
-async function getBuffer(url) {
+async function getBuffer(url, options = {}) {
   try {
-    const res = await axios.get(url, { responseType: "arraybuffer", timeout: TIMEOUT });
+    const res = await axios.get(
+      url,
+      withSignal({ responseType: "arraybuffer", timeout: TIMEOUT }, options.signal)
+    );
     return Buffer.from(res.data);
   } catch (e) {
     if (process.env.DEBUG) console.error("[Nexray getBuffer]", e?.message);
@@ -455,12 +463,12 @@ async function getBuffer(url) {
   }
 }
 
-async function searchYoutube(query) {
+async function searchYoutube(query, options = {}) {
   try {
-    const res = await axios.get(`${BASE}/search/youtube`, {
+    const res = await axios.get(`${BASE}/search/youtube`, withSignal({
       params: { q: String(query).trim() },
       timeout: TIMEOUT,
-    });
+    }, options.signal));
     const data = res.data;
     if (data?.status && Array.isArray(data?.result)) {
       return data.result;

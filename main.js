@@ -18,29 +18,85 @@ const COMMAND_TIMEOUT_MS = parseInt(
 );
 
 let commandActiveCount = 0;
+let commandTimedOutCount = 0;
+let commandZombieCount = 0;
 const commandQueue = [];
+
+function logQueueMetrics(reason, extra = {}) {
+  const metrics = {
+    reason,
+    queueLength: commandQueue.length,
+    activeCount: commandActiveCount,
+    timedOutCount: commandTimedOutCount,
+    zombieCount: commandZombieCount,
+    ...extra,
+  };
+  console.log("[QueueMetrics]", JSON.stringify(metrics));
+}
+
+function getDispatchLoad() {
+  return commandActiveCount + commandZombieCount;
+}
+
+class CommandTimeoutError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "CommandTimeoutError";
+  }
+}
 
 function runCommandQueue() {
   while (
-    commandActiveCount < COMMAND_MAX_CONCURRENCY &&
+    getDispatchLoad() < COMMAND_MAX_CONCURRENCY &&
     commandQueue.length > 0
   ) {
     const queued = commandQueue.shift();
     commandActiveCount++;
+    logQueueMetrics("dispatch", { jobId: queued.id, command: queued.commandName });
 
     Promise.resolve()
       .then(() => queued.task())
+      .then((result) => {
+        if (result?.timedOut) {
+          commandTimedOutCount++;
+          console.warn(
+            `[Queue] Komut zaman aşımına uğradı (${queued.commandName || "unknown"}, job=${queued.id})`
+          );
+        }
+
+        if (result?.stillRunningPromise) {
+          commandZombieCount++;
+          console.warn(
+            `[Queue] Timeout sonrası hala çalışan iş (zombi) tespit edildi (${queued.commandName || "unknown"}, job=${queued.id})`
+          );
+          logQueueMetrics("zombie_detected", { jobId: queued.id, command: queued.commandName });
+
+          result.stillRunningPromise
+            .catch(() => {})
+            .finally(() => {
+              commandZombieCount = Math.max(0, commandZombieCount - 1);
+              logQueueMetrics("zombie_resolved", {
+                jobId: queued.id,
+                command: queued.commandName,
+              });
+              setImmediate(runCommandQueue);
+            });
+        }
+      })
       .catch((e) => {
         console.error("Komut hatası:", e?.message || e);
       })
       .finally(() => {
         commandActiveCount = Math.max(0, commandActiveCount - 1);
+        logQueueMetrics("complete", { jobId: queued.id, command: queued.commandName });
         setImmediate(runCommandQueue);
       });
   }
 }
 
-function enqueueCommand(task) {
+let commandTaskId = 0;
+
+function enqueueCommand(task, meta = {}) {
   if (commandQueue.length >= COMMAND_QUEUE_LIMIT) {
     // Kuyruk dolarsa en eskiyi atarak anlık mesajlara öncelik ver.
     commandQueue.shift();
@@ -48,22 +104,60 @@ function enqueueCommand(task) {
       `[Queue] Komut kuyruğu doldu (${COMMAND_QUEUE_LIMIT}), en eski görev düşürüldü.`
     );
   }
-  commandQueue.push({ task });
+  const id = ++commandTaskId;
+  commandQueue.push({
+    id,
+    task,
+    commandName: meta.commandName || "unknown",
+  });
+  logQueueMetrics("enqueue", { jobId: id, command: meta.commandName || "unknown" });
   setImmediate(runCommandQueue);
 }
 
-async function runWithTimeout(func, args) {
+async function runWithTimeout(func, args, context = {}) {
+  const controller = new AbortController();
   let timeoutId;
+  let timedOut = false;
+  let settled = false;
+
+  const executionPromise = Promise.resolve()
+    .then(() =>
+      func(...args, {
+        signal: controller.signal,
+        commandContext: context,
+      })
+    )
+    .finally(() => {
+      settled = true;
+    });
+
   try {
     const timeoutPromise = new Promise((_, reject) => {
       timeoutId = setTimeout(
-        () => reject(new Error(`Komut zaman aşımı (${COMMAND_TIMEOUT_MS}ms)`)),
+        () => {
+          timedOut = true;
+          controller.abort();
+          reject(new CommandTimeoutError(`Komut zaman aşımı (${COMMAND_TIMEOUT_MS}ms)`));
+        },
         COMMAND_TIMEOUT_MS
       );
       if (timeoutId.unref) timeoutId.unref();
     });
 
-    await Promise.race([Promise.resolve(func(...args)), timeoutPromise]);
+    await Promise.race([executionPromise, timeoutPromise]);
+    return {
+      timedOut: false,
+      stillRunningPromise: null,
+    };
+  } catch (error) {
+    if (!timedOut) {
+      throw error;
+    }
+
+    return {
+      timedOut: true,
+      stillRunningPromise: settled ? null : executionPromise,
+    };
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
   }
@@ -118,7 +212,15 @@ function Module(info, func) {
 
   const wrappedFunc = config.PARALLEL_COMMANDS
     ? async (...args) => {
-        enqueueCommand(() => runWithTimeout(func, args));
+        const commandName = info.pattern || info.on || "message";
+        enqueueCommand(
+          () =>
+            runWithTimeout(func, args, {
+              commandName,
+              enqueuedAt: Date.now(),
+            }),
+          { commandName }
+        );
       }
     : func;
 
