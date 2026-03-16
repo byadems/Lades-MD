@@ -23,7 +23,7 @@ const isKoyeb = !!process.env.KOYEB_PUBLIC_DOMAIN;
 const isHeroku = __dirname.startsWith("/lds") && !isKoyeb;
 const isVPS = !isHeroku && !isKoyeb && !isRailway;
 
-const logger = P({ level: process.env.LOG_LEVEL || "silent" });
+const logger = P({ level: process.env.LOG_LEVEL || "warn" });
 
 function applyPostgresResilience(sequelizeInstance) {
   if (!sequelizeInstance || sequelizeInstance.__pgGuardsApplied) {
@@ -57,6 +57,8 @@ function applyPostgresResilience(sequelizeInstance) {
     }
   }, PG_BUFFER_FLUSH_MS);
 
+  const DB_QUERY_TIMEOUT_MS = 30000; // 30s — asılı sorgu deadlock'unu önle
+
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
       return;
@@ -67,7 +69,10 @@ function applyPostgresResilience(sequelizeInstance) {
     while (writeQueue.length > 0) {
       const { task, resolve, reject, isBuffered } = writeQueue.shift();
       try {
-        const result = await task();
+        const result = await Promise.race([
+          task(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout (30s)')), DB_QUERY_TIMEOUT_MS))
+        ]);
         if (resolve) resolve(result);
       } catch (error) {
         if (!isBuffered) {
@@ -246,6 +251,8 @@ function applySQLiteResilience(sequelizeInstance) {
     }
   }, SQLITE_BUFFER_FLUSH_MS);
 
+  const DB_QUERY_TIMEOUT_MS = 30000; // 30s — asılı sorgu deadlock'unu önle
+
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
       return;
@@ -256,7 +263,10 @@ function applySQLiteResilience(sequelizeInstance) {
     while (writeQueue.length > 0) {
       const { task, resolve, reject, isBuffered } = writeQueue.shift();
       try {
-        const result = await task();
+        const result = await Promise.race([
+          task(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout (30s)')), DB_QUERY_TIMEOUT_MS))
+        ]);
         if (resolve) resolve(result);
       } catch (error) {
         if (!isBuffered) {

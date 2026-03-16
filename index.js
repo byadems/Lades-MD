@@ -48,10 +48,10 @@ const MAX_STORE_JIDS = 200;
 let _memoryMonitorTimer = null;
 let _runtimeWatchdogTimer = null;
 
-const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || "700", 10);
-const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || "2500", 10);
-const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "60000", 10);
-const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(8 * 60 * 1000), 10);
+const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || "500", 10);
+const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || "2000", 10);
+const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "30000", 10);
+const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(5 * 60 * 1000), 10);
 
 let _allBotsDownSince = null;
 

@@ -1,3 +1,7 @@
+if (process.env.DISABLE_NETLER === 'true') {
+  return;
+}
+
 const {Module} = require('../main');
 const {MODE} = require('../config');
 let auto = MODE == 'public' ? false : true
