@@ -50,8 +50,8 @@ let _runtimeWatchdogTimer = null;
 
 const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || "500", 10);
 const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || "2000", 10);
-const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "30000", 10);
-const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(5 * 60 * 1000), 10);
+const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "60000", 10);
+const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(15 * 60 * 1000), 10);
 
 let _allBotsDownSince = null;
 
@@ -95,7 +95,9 @@ function startRuntimeWatchdog(botManager) {
         _allBotsDownSince = Date.now();
       }
       const downForMs = Date.now() - _allBotsDownSince;
-      logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları bağlı değil");
+      if (downForMs > 3 * 60 * 1000) {
+        logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları bağlı değil (" + Math.round(downForMs / 60000) + " dk)");
+      }
       if (downForMs > ALL_BOTS_DOWN_RESTART_MS) {
         logger.fatal({ downForMs, sessions: states }, "Oturumlar uzun süredir kapalı, process yeniden başlatılıyor");
         process.exit(1);
