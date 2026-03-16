@@ -3,6 +3,7 @@ const { logger, SESSION } = require('../config');
 const { sequelize } = require("./database");
 const { CustomAuthState } = require("./auth");
 const { flushQueueOnShutdown, stopFlushTimer } = require("./store");
+const { wrapGroupOpsForSession } = require("./auth-health");
 
 class BotManager {
     constructor() {
@@ -18,6 +19,7 @@ class BotManager {
                 const bot = new WhatsAppBot(sessionId);
                 await bot.initialize(); 
                 if (bot.sock) { 
+                    wrapGroupOpsForSession(bot, sessionId);
                     this.bots.set(sessionId, bot);
                     logger.info({ session: sessionId }, `Bot başlatma planlandı. Bağlantı durumu takip edilecek.`);
                 } else {
