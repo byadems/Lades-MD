@@ -12,13 +12,38 @@ async function nexGet(path, opts = {}) {
     validateStatus: () => true,
     responseType: opts.buffer ? "arraybuffer" : "json",
   });
-  if (opts.buffer && res.status === 200 && res.data?.length > 1000) {
-    return Buffer.from(res.data);
+
+  let payload = res.data;
+  const contentType = (res.headers?.["content-type"] || "").toLowerCase();
+
+  if (opts.buffer) {
+    const buf = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data || []);
+
+    if (contentType.includes("application/json") || contentType.includes("text/json")) {
+      try {
+        payload = JSON.parse(buf.toString("utf-8"));
+      } catch {
+        payload = null;
+      }
+    }
+
+    if (res.status === 200 && buf.length > 0 && !contentType.includes("json")) {
+      return buf;
+    }
   }
-  if (res.data?.status && res.data?.result !== undefined) {
-    return res.data.result;
+
+  if (payload?.status && payload?.result !== undefined) {
+    return payload.result;
   }
-  throw new Error(res.data?.error || `HTTP ${res.status}`);
+
+  const errorMsg =
+    payload?.error?.message ||
+    payload?.error ||
+    payload?.message ||
+    payload?.result?.message ||
+    `HTTP ${res.status}`;
+
+  throw new Error(errorMsg);
 }
 
 // ══════════════════════════════════════════════════════════
