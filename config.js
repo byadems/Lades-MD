@@ -23,7 +23,38 @@ const isKoyeb = !!process.env.KOYEB_PUBLIC_DOMAIN;
 const isHeroku = __dirname.startsWith("/lds") && !isKoyeb;
 const isVPS = !isHeroku && !isKoyeb && !isRailway;
 
-const logger = P({ level: process.env.LOG_LEVEL || "warn" });
+const baseLogger = P({ level: process.env.LOG_LEVEL || "warn" });
+
+// Baileys/Signal decryption hataları ve transaction rollback'leri sık görülür;
+// "No session found" / "No matching sessions" genelde LID/session senkronizasyonundan
+// kaynaklanır, kritik değildir. Bu logları debug seviyesine indirerek gürültüyü azalt.
+const SUPPRESS_DECRYPTION_LOGS = process.env.SUPPRESS_DECRYPTION_LOGS !== "false";
+const NOISY_ERROR_PATTERNS = [
+  "failed to decrypt",
+  "transaction failed",
+];
+
+function wrapLogger(log) {
+  if (!log || !SUPPRESS_DECRYPTION_LOGS) return log;
+  const origError = log.error.bind(log);
+  const origChild = log.child?.bind(log);
+  Object.assign(log, {
+    error(...args) {
+      const msg = typeof args[0] === "string" ? args[0] : args[1];
+      if (typeof msg === "string" && NOISY_ERROR_PATTERNS.some((p) => msg.includes(p))) {
+        return log.trace(...args);
+      }
+      return origError(...args);
+    },
+    child(...args) {
+      const child = origChild ? origChild(...args) : log;
+      return wrapLogger(child);
+    },
+  });
+  return log;
+}
+
+const logger = wrapLogger(baseLogger);
 
 function applyPostgresResilience(sequelizeInstance) {
   if (!sequelizeInstance || sequelizeInstance.__pgGuardsApplied) {
