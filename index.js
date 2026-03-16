@@ -65,6 +65,7 @@ let _intakeResumeTimer = null;
 let _lastExitAt = 0;
 let _scheduledExitTimer = null;
 let _manualReauthMode = false;
+const _botConnectionStateMap = new Map();
 
 function isLikelyPermanentAuthError(text) {
   if (!text) return false;
@@ -164,14 +165,37 @@ function guardedExit(code, reason, details = {}) {
   process.exit(code);
 }
 
-function getBotSocketState(bot) {
+function getBotSocketState(bot, sessionId) {
+  const trackedState = sessionId ? _botConnectionStateMap.get(sessionId) : null;
+  if (trackedState?.state) {
+    return {
+      state: trackedState.state,
+      source: "connection.update",
+    };
+  }
+
   const wsReadyState = bot?.sock?.ws?.readyState;
   // ws.readyState: 1 => OPEN
-  if (wsReadyState === 1) return "open";
-  if (wsReadyState === 0) return "connecting";
-  if (wsReadyState === 2) return "closing";
-  if (wsReadyState === 3) return "closed";
-  return "unknown";
+  if (wsReadyState === 1) return { state: "open", source: "ws.readyState" };
+  if (wsReadyState === 0) return { state: "connecting", source: "ws.readyState" };
+  if (wsReadyState === 2) return { state: "closing", source: "ws.readyState" };
+  if (wsReadyState === 3) return { state: "closed", source: "ws.readyState" };
+  return { state: "unknown", source: "ws.readyState" };
+}
+
+function setupConnectionStateTracking(botManager) {
+  for (const [sessionId, bot] of botManager.bots.entries()) {
+    const ev = bot?.sock?.ev;
+    if (!ev || typeof ev.on !== "function") continue;
+
+    ev.on("connection.update", ({ connection }) => {
+      if (!connection) return;
+      _botConnectionStateMap.set(sessionId, {
+        state: connection,
+        updatedAt: Date.now(),
+      });
+    });
+  }
 }
 
 function startRuntimeWatchdog(botManager) {
@@ -205,19 +229,33 @@ function startRuntimeWatchdog(botManager) {
 
     const states = [];
     let openCount = 0;
+    let unknownCount = 0;
+    let knownNonOpenCount = 0;
     for (const [sessionId, bot] of botManager.bots.entries()) {
-      const state = getBotSocketState(bot);
+      const { state, source } = getBotSocketState(bot, sessionId);
       if (state === "open") openCount += 1;
-      states.push({ session: sessionId, state });
+      if (state === "unknown") unknownCount += 1;
+      if (state !== "open" && state !== "unknown") knownNonOpenCount += 1;
+      states.push({ session: sessionId, state, source });
     }
 
     if (states.length > 0 && openCount === 0) {
+      if (unknownCount > 0 && knownNonOpenCount === 0) {
+        _allBotsDownSince = null;
+        logger.warn({ unknownCount, sessionCount: states.length, sessions: states }, "Watchdog state unknown (telemetry eksik)");
+        return;
+      }
+
+      if (unknownCount > 0) {
+        logger.debug({ unknownCount, sessions: states }, "Watchdog: bazı oturumların state bilgisi unknown (telemetry eksik)");
+      }
+
       if (!_allBotsDownSince) {
         _allBotsDownSince = Date.now();
       }
       const downForMs = Date.now() - _allBotsDownSince;
       if (downForMs > 3 * 60 * 1000) {
-        logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları bağlı değil (" + Math.round(downForMs / 60000) + " dk)");
+        logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları kesin down durumda (" + Math.round(downForMs / 60000) + " dk)");
       }
       if (downForMs > ALL_BOTS_DOWN_RESTART_MS) {
         const authIssues = states
@@ -412,6 +450,7 @@ async function main() {
   await botManager.initializeBots();
   console.log("- Bot başlatma tamamlandı.");
   logger.info("Bot başlatma tamamlandı");
+  setupConnectionStateTracking(botManager);
 
   initializeKickBot();
 
