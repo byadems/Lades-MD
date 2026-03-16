@@ -6,8 +6,10 @@ if (fs.existsSync("./config.env")) {
 }
 
 const { suppressLibsignalLogs } = require("./core/helpers");
+const { installSSEGuard } = require("./core/sse-guard");
 
 suppressLibsignalLogs();
+installSSEGuard();
 
 // PostgreSQL savepoint rollback gürültüsünü azalt (bağlantı havuzu otomatik düzeltiyor)
 if (process.env.SUPPRESS_PG_SAVEPOINT_LOG !== "false") {
