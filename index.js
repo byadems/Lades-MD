@@ -37,6 +37,7 @@ const {
   stopTempCleanup,
 } = require("./core/helpers");
 const { applyDatabaseCaching, shutdownCache } = require("./core/db-cache");
+const { noteError, hasAnyDegradedSession, withLogThrottle } = require("./core/auth-health");
 
 const MEMORY_CHECK_INTERVAL = 3 * 60 * 1000; // 3 dakikada bir
 const HEAP_WARN_THRESHOLD_MB = 300;
@@ -68,7 +69,7 @@ let _manualReauthMode = false;
 
 function isLikelyPermanentAuthError(text) {
   if (!text) return false;
-  return /(invalid\s*pre\s*key|prekey\s*id|session\s+logged\s+out|logged\s*out|manual\s*re-?auth|device\s*removed|bad\s*session|session\s*invalid|401\b|unauthori[sz]ed)/i.test(text);
+  return /(invalid\s*pre\s*key|prekey\s*id|session\s+logged\s+out|logged\s*out|manual\s*re-?auth|device\s*removed|bad\s*session|session\s*invalid|401\b|unauthori[sz]ed|no\s+session\s+found\s+to\s+decrypt\s+message|failed\s+to\s+decrypt)/i.test(text);
 }
 
 function getBotAuthProblem(bot) {
@@ -92,6 +93,21 @@ function getBotAuthProblem(bot) {
     if (isLikelyPermanentAuthError(text)) return text;
   }
   return null;
+}
+
+
+function attachProcessAuthErrorMonitor(botManager) {
+  process.on("unhandledRejection", (reason) => {
+    try {
+      const text = reason?.message || String(reason || "");
+      if (!isLikelyPermanentAuthError(text)) return;
+      for (const [sessionId] of botManager.bots.entries()) {
+        noteError(sessionId, reason, { source: "unhandledRejection" });
+      }
+    } catch (_) {
+      // best effort
+    }
+  });
 }
 
 function applyCommandIntakeBackpressure(botManager, reason) {
@@ -224,11 +240,18 @@ function startRuntimeWatchdog(botManager) {
           .map(({ session }) => ({ session, issue: getBotAuthProblem(botManager.bots.get(session)) }))
           .filter((x) => x.issue);
         const allPermanentAuth = authIssues.length === states.length && states.length > 0;
+        const anyDegradedAuth = hasAnyDegradedSession(states.map((x) => x.session));
 
-        if (allPermanentAuth) {
+        if (allPermanentAuth || anyDegradedAuth) {
           if (!_manualReauthMode) {
             _manualReauthMode = true;
-            logger.error({ downForMs, authIssues }, "Kalıcı auth hatası tespit edildi (session invalid/prekey). Restart loop engellendi, manual re-auth gerekli");
+            const modeReason = allPermanentAuth ? "permanent-auth" : "degraded-auth-health";
+            withLogThrottle(
+              `all-bots-down-manual-reauth:${modeReason}`,
+              "error",
+              { downForMs, authIssues, sessions: states, modeReason },
+              "All-bots-down: restart yerine manual re-auth uyarısı tercih edildi"
+            );
           }
         } else {
           logger.fatal({ downForMs, sessions: states, authIssues }, "Oturumlar uzun süredir kapalı, kontrollü process restart uygulanıyor");
@@ -410,6 +433,7 @@ async function main() {
   process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
 
   await botManager.initializeBots();
+  attachProcessAuthErrorMonitor(botManager);
   console.log("- Bot başlatma tamamlandı.");
   logger.info("Bot başlatma tamamlandı");
 
