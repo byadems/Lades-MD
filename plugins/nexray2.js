@@ -68,6 +68,18 @@ function fmtCount(v) {
   return Number.isFinite(n) ? n.toLocaleString() : "-";
 }
 
+function trToEn(text) {
+  const tr = {
+    'ç': 'c', 'Ç': 'C',
+    'ğ': 'g', 'Ğ': 'G',
+    'ı': 'i', 'İ': 'I',
+    'ö': 'o', 'Ö': 'O',
+    'ş': 's', 'Ş': 'S',
+    'ü': 'u', 'Ü': 'U'
+  };
+  return text.split('').map(c => tr[c] || c).join('');
+}
+
 // ════════════════════════════════════════════════════════════
 // STALKER KOMUTLarı
 // ════════════════════════════════════════════════════════════
@@ -736,7 +748,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const text = (match[1] || "").trim();
+    const text = trToEn((match[1] || "").trim());
     if (!text) return await message.sendReply("🐉 _Metin girin:_ `.dragonyazı LADES`");
     try {
       const buf = await nx(`/textpro/dragonball?text=${encodeURIComponent(text)}`, { buffer: true });
@@ -756,7 +768,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const text = (match[1] || "").trim();
+    const text = trToEn((match[1] || "").trim());
     if (!text) return await message.sendReply("💡 _Metin girin:_ `.neonyazı LADES`");
     try {
       const buf = await nx(`/textpro/typography?text=${encodeURIComponent(text)}`, { buffer: true });
@@ -776,7 +788,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const text = (match[1] || "").trim();
+    const text = trToEn((match[1] || "").trim());
     if (!text) return await message.sendReply("🖊️ _Metin girin:_ `.grafitiyazı LADES`");
     try {
       const buf = await nx(`/textpro/write-graffiti?text=${encodeURIComponent(text)}`, { buffer: true });
@@ -796,7 +808,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const text = (match[1] || "").trim();
+    const text = trToEn((match[1] || "").trim());
     if (!text) return await message.sendReply("😈 _Metin girin:_ `.devilyazı LADES`");
     try {
       const buf = await nx(`/textpro/devil-wings?text=${encodeURIComponent(text)}`, { buffer: true });
@@ -820,7 +832,7 @@ Module(
     use: "fun",
   },
   async (message, match) => {
-    const parts = (match[1] || "").split("|").map(s => s.trim());
+    const parts = (match[1] || "").split("|").map(s => trToEn(s.trim()));
     if (parts.length < 2) return await message.sendReply("🎵 _Kullanım:_ `.müzikkartı Şarkı Adı|Sanatçı` veya `Şarkı|Sanatçı|<resim_url>`");
     const [title, artist, img] = parts;
     let imageUrl = img || "https://i.imgur.com/Y3KqMfn.jpg";
