@@ -33,6 +33,31 @@ async function findMusic(file) {
 }
 const Lang = getString("media");
 
+function safeParseErrorBody(data) {
+  if (!data) return null;
+  if (typeof data === "object") return data;
+  if (typeof data === "string") {
+    try {
+      return JSON.parse(data);
+    } catch (_err) {
+      return data;
+    }
+  }
+  return null;
+}
+
+function resolveApiErrorMessage(errorData, fallbackError) {
+  const parsed = safeParseErrorBody(errorData);
+  const apiMessage = parsed && typeof parsed === "object"
+    ? parsed.error?.message || parsed.message || parsed.error
+    : null;
+  if (apiMessage) return apiMessage;
+  if (typeof parsed === "string") {
+    return parsed.slice(0, 160);
+  }
+  return fallbackError?.message || "Bilinmeyen hata";
+}
+
 async function transcribeVoiceMessage(message, targetMessage) {
   let processingMsg;
   try {
@@ -128,15 +153,17 @@ async function transcribeVoiceMessage(message, targetMessage) {
           console.log("✅ OpenAI API başarılı!");
         } catch (openaiError) {
           console.error("❌ Her iki API de başarısız:", openaiError);
+          const errorText = resolveApiErrorMessage(openaiError.data, openaiError.error);
           return await message.edit(
-            `⚠️ _API hatası: ${openaiError.statusCode || 'Bağlantı hatası'}_\n_${openaiError.data ? JSON.parse(openaiError.data).error?.message : openaiError.error?.message || 'Bilinmeyen hata'}_`,
+            `⚠️ _API hatası: ${openaiError.statusCode || 'Bağlantı hatası'}_\n_${errorText}_`,
             message.jid, processingMsg.key
           );
         }
       } else {
         console.error("❌ Groq API hatası ve OpenAI anahtarı yok:", groqError);
+        const errorText = resolveApiErrorMessage(groqError.data, groqError.error);
         return await message.edit(
-          `⚠️ _API hatası: ${groqError.statusCode || 'Bağlantı hatası'}_\n_${groqError.data ? JSON.parse(groqError.data).error?.message : groqError.error?.message || 'Bilinmeyen hata'}_`,
+          `⚠️ _API hatası: ${groqError.statusCode || 'Bağlantı hatası'}_\n_${errorText}_`,
           message.jid, processingMsg.key
         );
       }
