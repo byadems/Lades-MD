@@ -1,6 +1,5 @@
 const {
   isAdmin,
-  isFake,
   antifake,
   pdm,
 
@@ -406,8 +405,12 @@ Module(
       );
     }
     if (message.action === "add" && jids.includes(message.jid)) {
-      var allowed = ALLOWED.split(",");
-      if (isFake(message.participant[0].id, allowed)) {
+      var allowed = ALLOWED.split(",").map((p) => p.trim()).filter(Boolean);
+      const participantNumber = message.participant[0].id.split("@")[0];
+      const isAllowedNumber = allowed.some((prefix) =>
+        participantNumber.startsWith(prefix)
+      );
+      if (!isAllowedNumber) {
         var admin = await isAdmin(message);
         if (!admin) return;
         return await message.client.groupParticipantsUpdate(
