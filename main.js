@@ -4,6 +4,71 @@ const Commands = [];
 let commandPrefix;
 let handlerPrefix;
 
+const COMMAND_MAX_CONCURRENCY = parseInt(
+  process.env.COMMAND_MAX_CONCURRENCY || "8",
+  10
+);
+const COMMAND_QUEUE_LIMIT = parseInt(
+  process.env.COMMAND_QUEUE_LIMIT || "500",
+  10
+);
+const COMMAND_TIMEOUT_MS = parseInt(
+  process.env.COMMAND_TIMEOUT_MS || "45000",
+  10
+);
+
+let commandActiveCount = 0;
+const commandQueue = [];
+
+function runCommandQueue() {
+  while (
+    commandActiveCount < COMMAND_MAX_CONCURRENCY &&
+    commandQueue.length > 0
+  ) {
+    const queued = commandQueue.shift();
+    commandActiveCount++;
+
+    Promise.resolve()
+      .then(() => queued.task())
+      .catch((e) => {
+        console.error("Komut hatası:", e?.message || e);
+      })
+      .finally(() => {
+        commandActiveCount = Math.max(0, commandActiveCount - 1);
+        setImmediate(runCommandQueue);
+      });
+  }
+}
+
+function enqueueCommand(task) {
+  if (commandQueue.length >= COMMAND_QUEUE_LIMIT) {
+    // Kuyruk dolarsa en eskiyi atarak anlık mesajlara öncelik ver.
+    commandQueue.shift();
+    console.warn(
+      `[Queue] Komut kuyruğu doldu (${COMMAND_QUEUE_LIMIT}), en eski görev düşürüldü.`
+    );
+  }
+  commandQueue.push({ task });
+  setImmediate(runCommandQueue);
+}
+
+async function runWithTimeout(func, args) {
+  let timeoutId;
+  try {
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error(`Komut zaman aşımı (${COMMAND_TIMEOUT_MS}ms)`)),
+        COMMAND_TIMEOUT_MS
+      );
+      if (timeoutId.unref) timeoutId.unref();
+    });
+
+    await Promise.race([Promise.resolve(func(...args)), timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
 function escapeRegex(str) {
   return String(str).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }
@@ -53,9 +118,7 @@ function Module(info, func) {
 
   const wrappedFunc = config.PARALLEL_COMMANDS
     ? async (...args) => {
-        Promise.resolve(func(...args)).catch((e) =>
-          console.error("Komut hatası:", e?.message || e)
-        );
+        enqueueCommand(() => runWithTimeout(func, args));
       }
     : func;
 

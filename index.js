@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const { monitorEventLoopDelay } = require("perf_hooks");
 if (fs.existsSync("./config.env")) {
   require("dotenv").config({ path: "./config.env" });
 }
@@ -45,6 +46,67 @@ const MAX_MESSAGES_PER_JID = 30;
 const MAX_STORE_JIDS = 200;
 
 let _memoryMonitorTimer = null;
+let _runtimeWatchdogTimer = null;
+
+const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || "700", 10);
+const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || "2500", 10);
+const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "60000", 10);
+const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(8 * 60 * 1000), 10);
+
+let _allBotsDownSince = null;
+
+function getBotSocketState(bot) {
+  const wsReadyState = bot?.sock?.ws?.readyState;
+  // ws.readyState: 1 => OPEN
+  if (wsReadyState === 1) return "open";
+  if (wsReadyState === 0) return "connecting";
+  if (wsReadyState === 2) return "closing";
+  if (wsReadyState === 3) return "closed";
+  return "unknown";
+}
+
+function startRuntimeWatchdog(botManager) {
+  const histogram = monitorEventLoopDelay({ resolution: 20 });
+  histogram.enable();
+
+  _runtimeWatchdogTimer = setInterval(() => {
+    const p99LagMs = Math.round(histogram.percentile(99) / 1e6);
+    histogram.reset();
+
+    if (p99LagMs > EVENT_LOOP_WARN_MS) {
+      logger.warn({ p99LagMs, threshold: EVENT_LOOP_WARN_MS }, "Event loop gecikmesi yüksek");
+    }
+
+    if (p99LagMs > EVENT_LOOP_RESTART_MS) {
+      logger.fatal({ p99LagMs, threshold: EVENT_LOOP_RESTART_MS }, "Event loop kilitlenmesi tespit edildi, process yeniden başlatılıyor");
+      process.exit(1);
+    }
+
+    const states = [];
+    let openCount = 0;
+    for (const [sessionId, bot] of botManager.bots.entries()) {
+      const state = getBotSocketState(bot);
+      if (state === "open") openCount += 1;
+      states.push({ session: sessionId, state });
+    }
+
+    if (states.length > 0 && openCount === 0) {
+      if (!_allBotsDownSince) {
+        _allBotsDownSince = Date.now();
+      }
+      const downForMs = Date.now() - _allBotsDownSince;
+      logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları bağlı değil");
+      if (downForMs > ALL_BOTS_DOWN_RESTART_MS) {
+        logger.fatal({ downForMs, sessions: states }, "Oturumlar uzun süredir kapalı, process yeniden başlatılıyor");
+        process.exit(1);
+      }
+    } else {
+      _allBotsDownSince = null;
+    }
+  }, WATCHDOG_INTERVAL_MS);
+
+  if (_runtimeWatchdogTimer.unref) _runtimeWatchdogTimer.unref();
+}
 
 function trimBaileysStore(botManager) {
   if (!botManager || !botManager.bots) return 0;
@@ -172,6 +234,7 @@ async function main() {
     if (forceExit.unref) forceExit.unref();
 
     if (_memoryMonitorTimer) clearInterval(_memoryMonitorTimer);
+    if (_runtimeWatchdogTimer) clearInterval(_runtimeWatchdogTimer);
     stopTempCleanup();
     cleanupKickBot();
     try {
@@ -236,6 +299,7 @@ async function main() {
   if (process.env.USE_SERVER !== "false") startServer();
 
   startMemoryMonitor(botManager);
+  startRuntimeWatchdog(botManager);
   startTempCleanup();
 }
 
