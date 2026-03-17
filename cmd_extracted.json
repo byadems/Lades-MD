@@ -1,0 +1,1752 @@
+[
+  {
+    "pattern": "uzakta",
+    "desc": "Kendinizi AFK (Klavyeden Uzakta) olarak ayarlayın",
+    "file": "afk.js"
+  },
+  {
+    "pattern": "otodl",
+    "desc": "URL izleyici otomatik indirme - sohbetlerde veya küresel olarak etkinleştirin",
+    "file": "autodl.js"
+  },
+  {
+    "pattern": "bağla",
+    "desc": "WhatsApp Web bağlantısı",
+    "file": "bagla.js"
+  },
+  {
+    "pattern": "yzayar",
+    "desc": "Gemini API ile yapay zeka destekli sohbet botu yapılandırması - metin ve görüntü analizini destekler.",
+    "file": "chatbot.js"
+  },
+  {
+    "pattern": "yz",
+    "desc": "Yapay zekaya sadece metin sorusu sorar. Görsele yanıtlanırsa görseli analiz eder.",
+    "file": "chatbot.js"
+  },
+  {
+    "pattern": "yzgörsel",
+    "desc": "Metinden görsel üretir.",
+    "file": "chatbot.js"
+  },
+  {
+    "pattern": "yzdüzenle",
+    "desc": "Yanıtlanan görseli talimata göre GPT ile düzenler.",
+    "file": "chatbot.js"
+  },
+  {
+    "pattern": "soruçöz",
+    "desc": "Sınav sorularını YZ yardımıyla çözer",
+    "file": "chatbot.js"
+  },
+  {
+    "pattern": "yzanime",
+    "desc": "Fotoğrafı Yapay Zeka ile anime stiline dönüştürür.",
+    "file": "chatbot.js"
+  },
+  {
+    "pattern": "komut",
+    "desc": "Komut bilgisini verir",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "liste",
+    "desc": "NO DESC",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "kontrol",
+    "desc": "Botun çevrimiçi olup olmadığını kontrol eder.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "setalive",
+    "desc": "Bot için çevrimiçi (alive) mesajı ayarlar.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "menü",
+    "desc": "Bot komut menüsünü gösterir.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "oyunlar",
+    "desc": "Mevcut tüm oyunları listeler",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "setinfo",
+    "desc": "Bot yapılandırma komutları hakkında bilgi gösterir.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "setname",
+    "desc": "Bot adını ayarlar",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "setowner",
+    "desc": "Bot sahibini ayarlar",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "setimage",
+    "desc": "Bot resmini ayarlar (bir resme yanıt verin)",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "testalive",
+    "desc": "Mevcut çevrimiçi (alive) mesajını biçimlendirmesiyle test eder.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "bildir",
+    "desc": "Bot hakkında istek",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "hava",
+    "desc": "Hava durumu bilgisi gönderir.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "kur",
+    "desc": "Belirli bir miktarın iki para birimi arasındaki döviz kuru dönüşümünü hesaplar.",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "resim",
+    "desc": "Google",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "(?:reçete|recete)",
+    "desc": "Yemek tarifi arar",
+    "file": "commands.js"
+  },
+  {
+    "pattern": "görsel",
+    "desc": "Google Görseller",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "çıkartma",
+    "desc": "STICKER_DESC",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "mp3",
+    "desc": "MP3_DESC",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "slow",
+    "desc": "Müziği yavaşlatır ve ses tonunu düşürür. Slowed+reverb sesleri yapmak için",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "sped",
+    "desc": "Müziği hızlandırır ve ses tonunu yükseltir. Sped-up+reverb sesleri yapmak için",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "basartır",
+    "desc": "BASS_DESC",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "foto",
+    "desc": "PHOTO_DESC",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "yazıçıkartma",
+    "desc": "Metinden hareketli çıkartmaya",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "tts",
+    "desc": "TTS_DESC",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "ses",
+    "desc": "TTS_DESC",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "belge",
+    "desc": "Yanıtlanan medyayı belge (document) formatına dönüştürür",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "upload",
+    "desc": "URL",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "square",
+    "desc": "Video/resmi 1:1 oranında (kare formatında) kırpar",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "resize",
+    "desc": "Video/resim en-boy oranını değiştirin. Kullanım: .resize 16:9",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "sıkıştır",
+    "desc": "Video/resmi yüzdeyle sıkıştırın. Kullanım: .compress 50 (%50 sıkıştırma)",
+    "file": "converters.js"
+  },
+  {
+    "pattern": "dc",
+    "desc": "Doğruluk mu Cesaret mi oyununu oynatır.",
+    "file": "dc.js"
+  },
+  {
+    "pattern": "sondepremler",
+    "desc": "Türkiye genelinde gerçekleşen son depremleri listeler.",
+    "file": "earthquake.js"
+  },
+  {
+    "pattern": "sondeprem",
+    "desc": "Son deprem kaydını gösterir.",
+    "file": "earthquake.js"
+  },
+  {
+    "pattern": "editör",
+    "desc": "Fotoğraf düzenleme araçlarını getirir.",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "${command}",
+    "desc": "NO DESC",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "wasted",
+    "desc": "GTA tarzı",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "wanted",
+    "desc": "Aranıyor posteri oluşturur",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "anime",
+    "desc": "Fotoğrafı anime stiline dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "ghiblistil",
+    "desc": "Fotoğrafı Studio Ghibli stiline dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "chibi",
+    "desc": "Fotoğrafı chibi stiline dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "efektsinema",
+    "desc": "Fotoğrafa sinematik film efekti uygular",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "grafitisokak",
+    "desc": "Fotoğrafı sokak grafiti sanatına dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "pikselart",
+    "desc": "Fotoğrafı piksel NFT sanatına dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "komik",
+    "desc": "Fotoğrafı çizgi roman stiline dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "mafia",
+    "desc": "Fotoğrafı mafia stiline dönüştürür",
+    "file": "editor.js"
+  },
+  {
+    "pattern": "modülyükle",
+    "desc": "INSTALL_DESC",
+    "file": "external-plugin.js"
+  },
+  {
+    "pattern": "modül",
+    "desc": "PLUGIN_DESC",
+    "file": "external-plugin.js"
+  },
+  {
+    "pattern": "modülsil",
+    "desc": "REMOVE_DESC",
+    "file": "external-plugin.js"
+  },
+  {
+    "pattern": "mgüncelle",
+    "desc": "Bir eklentiyi (plugin) günceller",
+    "file": "external-plugin.js"
+  },
+  {
+    "pattern": "ezan",
+    "desc": "Belirtilen şehrin günlük ezan vakitlerini ve ezana ne kadar süre kaldığını gösterir.",
+    "file": "ezan.js"
+  },
+  {
+    "pattern": "sahur",
+    "desc": "Belirtilen şehrin sahur vaktine ne kadar süre kaldığını hesaplar.",
+    "file": "ezan.js"
+  },
+  {
+    "pattern": "iftar",
+    "desc": "Belirtilen şehrin iftar vaktine ne kadar süre kaldığını hesaplar.",
+    "file": "ezan.js"
+  },
+  {
+    "pattern": "fancy",
+    "desc": "Süslü metin yazı tipleri oluşturur",
+    "file": "fancy.js"
+  },
+  {
+    "pattern": "filtre",
+    "desc": "Otomatik yanıt filtreleri oluşturur. Kullanım: .filtre tetikleyici | yanıt",
+    "file": "filter.js"
+  },
+  {
+    "pattern": "filtreler",
+    "desc": "Tüm filtreleri listele",
+    "file": "filter.js"
+  },
+  {
+    "pattern": "filtresil",
+    "desc": "Bir filtreyi sil",
+    "file": "filter.js"
+  },
+  {
+    "pattern": "togglefilter",
+    "desc": "Bir filtreyi aç/kapat",
+    "file": "filter.js"
+  },
+  {
+    "pattern": "filtretest",
+    "desc": "Bir mesajın filtreleri tetikleyip tetiklemeyeceğini test edin",
+    "file": "filter.js"
+  },
+  {
+    "pattern": "filtreyardım",
+    "desc": "Filtre sistemi için ayrıntılı yardım",
+    "file": "filter.js"
+  },
+  {
+    "pattern": "testgay",
+    "desc": "Etiketlediğiniz üyenin gaylik yüzdesini ölçer.",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "testlez",
+    "desc": "Etiketlediğiniz üyenin lezlik yüzdesini ölçer.",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "testprenses",
+    "desc": "Etiketlediğiniz üyenin prenseslik seviyesini ölçer.",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "testregl",
+    "desc": "Etiketlediğiniz üyenin Regl olma ihtimalini ölçer.",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "testinanç",
+    "desc": "Etiketlediğiniz üyenin inanç seviyesini ölçer.",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "aşkölç",
+    "desc": "İki kişi arasındaki aşk yüzdesini ölçer.",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "beyin",
+    "desc": "Rastgele beyin jimnastiği sorusu gönderir",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "bilmece",
+    "desc": "Rastgele bilmece sorusu gönderir",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "kimyasoru",
+    "desc": "Rastgele kimya sorusu gönderir",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "alay",
+    "desc": "Metni alay/slang formatına dönüştürür",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "(?:dragonyazı|dragonyazi)",
+    "desc": "Dragon Ball stili metin logosu oluşturur",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "(?:neonyazı|neonyazi)",
+    "desc": "Neon ışıklı metin logosu oluşturur",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "(?:grafitiyazı|grafitiyazi)",
+    "desc": "Grafiti stili metin logosu oluşturur",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "(?:devilyazı|devilyazi)",
+    "desc": "Şeytan kanadı stili metin logosu oluşturur",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "(?:müzikkartı|muzikkarti)",
+    "desc": "Müzik kartı görseli oluşturur",
+    "file": "fun-tests.js"
+  },
+  {
+    "pattern": "stickcmd",
+    "desc": "Komutları çıkartmalara yapıştırır. Çıkartma gönderilirse komut gibi çalışır!",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "çıkartmasil",
+    "desc": "Çıkartmalardaki komutları siler",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "otoçıkartmalar",
+    "desc": "Çıkartmalardaki komutları gösterir",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "otosohbetkapat",
+    "desc": "NO DESC",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "otosohbetaç",
+    "desc": "NO DESC",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "getmute",
+    "desc": "NO DESC",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "antinumara",
+    "desc": "NO DESC",
+    "file": "group-updates.js"
+  },
+  {
+    "pattern": "sohbetsil",
+    "desc": "Sohbeti temizle",
+    "file": "group.js"
+  },
+  {
+    "pattern": "çıkar",
+    "desc": "KICK_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "at",
+    "desc": "KICK_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "ekle",
+    "desc": "ADD_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "yetkiver",
+    "desc": "PROMOTE_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "istekler",
+    "desc": "Bekleyen katılma isteklerinin listesini al",
+    "file": "group.js"
+  },
+  {
+    "pattern": "ayrıl",
+    "desc": "LEAVE_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "quoted",
+    "desc": "Yanıtlanan mesajın alıntıladığı mesajı gönderir. Silinen mesajları kurtarmak için kullanışlıdır.",
+    "file": "group.js"
+  },
+  {
+    "pattern": "yetkial",
+    "desc": "DEMOTE_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "sohbetkapat",
+    "desc": "MUTE_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "sohbetaç",
+    "desc": "UNMUTE_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "jid",
+    "desc": "JID_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "davet",
+    "desc": "INVITE_DESC}",
+    "file": "group.js"
+  },
+  {
+    "pattern": "davetyenile",
+    "desc": "REVOKE_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "gayaryt",
+    "desc": "Grup ayarlarını sadece yöneticilerin düzenleyebileceği şekilde değiştirir!",
+    "file": "group.js"
+  },
+  {
+    "pattern": "gayarherkes",
+    "desc": "Grup ayarlarını herkesin düzenleyebileceği şekilde değiştirir!",
+    "file": "group.js"
+  },
+  {
+    "pattern": "grupadı",
+    "desc": "Grup adını (başlığını) değiştir",
+    "file": "group.js"
+  },
+  {
+    "pattern": "grupaçıklama",
+    "desc": "Grup açıklamasını değiştir",
+    "file": "group.js"
+  },
+  {
+    "pattern": "common",
+    "desc": "İki gruptaki ortak katılımcıları bulur",
+    "file": "group.js"
+  },
+  {
+    "pattern": "diff",
+    "desc": "İki gruptaki farklı katılımcıları bulur",
+    "file": "group.js"
+  },
+  {
+    "pattern": "tag(all|yt)?",
+    "desc": "TAGALL_DESC",
+    "file": "group.js"
+  },
+  {
+    "pattern": "engelle",
+    "desc": "Kullanıcıyı engelle",
+    "file": "group.js"
+  },
+  {
+    "pattern": "katıl",
+    "desc": "Davet bağlantısını kullanarak bir WhatsApp grubuna katılın",
+    "file": "group.js"
+  },
+  {
+    "pattern": "engelkaldır",
+    "desc": "Kullanıcının engelini kaldır",
+    "file": "group.js"
+  },
+  {
+    "pattern": "toplukatıl",
+    "desc": "Davet bağlantılarını kullanarak birden fazla WhatsApp grubuna katılmayı sağlar",
+    "file": "group.js"
+  },
+  {
+    "pattern": "tümjid",
+    "desc": "Grup JID",
+    "file": "group.js"
+  },
+  {
+    "pattern": "duyuru",
+    "desc": "Bot",
+    "file": "group.js"
+  },
+  {
+    "pattern": "sabitle",
+    "desc": "Yanıtlanan mesajı belirli bir süre için sabitler",
+    "file": "group.js"
+  },
+  {
+    "pattern": "pp",
+    "desc": "Profil resmini değiştir/al (tam ekran destekli)",
+    "file": "group.js"
+  },
+  {
+    "pattern": "grupfoto",
+    "desc": "Grup simgesini değiştir/al (tam ekran destekli)",
+    "file": "group.js"
+  },
+  {
+    "pattern": "altın",
+    "desc": "Güncel altın fiyatlarını gösterir",
+    "file": "group.js"
+  },
+  {
+    "pattern": "etiket",
+    "desc": "Tüm üyeleri etiketler.",
+    "file": "group.js"
+  },
+  {
+    "pattern": "ytetiket",
+    "desc": "Tüm yöneticileri etiketler.",
+    "file": "group.js"
+  },
+  {
+    "pattern": "setvar",
+    "desc": "Bot değişkenlerini (variables) uzaktan ayarla",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "değişkengetir",
+    "desc": "Bot değişkeninin değerini getir",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "değişkensil",
+    "desc": "Bot değişkenini sil",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "setenv",
+    "desc": "config.env",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "değişkenler",
+    "desc": "Tüm bot değişkenlerini getir",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "platform",
+    "desc": "NO DESC",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "dil",
+    "desc": "Bot dilini bazı komutlar için değiştir",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "ayarlar",
+    "desc": "Ek WhatsApp bot seçeneklerini aktifleştirmek için ayarlar.",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "mod",
+    "desc": "Bot modunu genel (public) ve özel (private) olarak değiştirin",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antisilme",
+    "desc": "Mesaj silme engelini aktifleştirir",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "setsudo",
+    "desc": "NO DESC",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "sudolar",
+    "desc": "NO DESC",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "sudosil",
+    "desc": "Yöneticiyi (sudo) siler",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "toggle",
+    "desc": "Komutları açıp kapatmak için",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antibot",
+    "desc": "Diğer botların mesajlarını tespit eder ve atar.",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antispam",
+    "desc": "Spam mesajları tespit eder ve kullanıcıyı atar.",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "pdm",
+    "desc": "Terfi/yetki alımlarını tespit eder ve uyarı gönderir.",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antiyetkidüşürme",
+    "desc": "Yetki alınmasını tespit eder ve yapanın yetkisini alıp",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antiyetkiverme",
+    "desc": "Yetki verilmesini tespit eder ve yapanın ile yeni yetkilinin yetkilerini alır.",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antibağlantı",
+    "desc": "Gelişmiş antilink (link engelleme) sistemi (uyarı/at/sil modlu)",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "antikelime",
+    "desc": "Yasaklı kelime (antiword) engelini aktifleştirir",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "aramaengel",
+    "desc": "Kapsamlı arama reddetme yönetim sistemi",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "uptime",
+    "desc": "Sistem (OS) / işlem çalışma süresini gösterir (uptime)",
+    "file": "manage.js"
+  },
+  {
+    "pattern": "dinle",
+    "desc": "Sesli mesajı metne dönüştürür. (Tek seferlik sesler de dahil)",
+    "file": "media.js"
+  },
+  {
+    "pattern": "trim",
+    "desc": "TRIM_DESC",
+    "file": "media.js"
+  },
+  {
+    "pattern": "renklendir",
+    "desc": "Siyah-beyaz fotoğrafı renklendirir (yanıtlanan görsel)",
+    "file": "media.js"
+  },
+  {
+    "pattern": "siyahvideo",
+    "desc": "Sesi siyah videoya dönüştürür",
+    "file": "media.js"
+  },
+  {
+    "pattern": "birleştir",
+    "desc": "AVMIX_DESC",
+    "file": "media.js"
+  },
+  {
+    "pattern": "vmix",
+    "desc": "İki videoyu birleştirir",
+    "file": "media.js"
+  },
+  {
+    "pattern": "ağırçekim",
+    "desc": "Videoyu pürüzsüz ağır çekime dönüştürür",
+    "file": "media.js"
+  },
+  {
+    "pattern": "oval",
+    "desc": "Çıkartma/fotoğrafı yuvarlak olarak kırpar",
+    "file": "media.js"
+  },
+  {
+    "pattern": "gif",
+    "desc": "Sesli olarak videoyu gif",
+    "file": "media.js"
+  },
+  {
+    "pattern": "interp",
+    "desc": "Videonun kare hızını (FPS) artırır",
+    "file": "media.js"
+  },
+  {
+    "pattern": "bul",
+    "desc": "Yapay zeka aracılığıyla çalan şarkının adını bulur.",
+    "file": "media.js"
+  },
+  {
+    "pattern": "döndür",
+    "desc": "Videoyu döndürür (sol/sağ)",
+    "file": "media.js"
+  },
+  {
+    "pattern": "flip",
+    "desc": "Videoyu ters çevirir (flip)",
+    "file": "media.js"
+  },
+  {
+    "pattern": "ss",
+    "desc": "Web sitesinin ekran görüntüsünü alır",
+    "file": "media.js"
+  },
+  {
+    "pattern": "metin",
+    "desc": "Görseldeki metni okur (OCR)",
+    "file": "media.js"
+  },
+  {
+    "pattern": "hd",
+    "desc": "Görseli HD kaliteye yükseltir",
+    "file": "media.js"
+  },
+  {
+    "pattern": "meme",
+    "desc": "Meme görseli oluşturur (üst ve alt metin)",
+    "file": "media.js"
+  },
+  {
+    "pattern": "kodgörsel",
+    "desc": "Kodu güzel bir görsel olarak oluşturur",
+    "file": "media.js"
+  },
+  {
+    "pattern": "bahsetme",
+    "desc": "Otomatik etiket (mention) yanıt yönetimi",
+    "file": "mention.js"
+  },
+  {
+    "pattern": "mesajlar",
+    "desc": "En az bir mesajı olan üyelerin gönderdiği mesaj sayılarını gösterir. (sayıya göre sıralanmış şekilde)",
+    "file": "message-stats.js"
+  },
+  {
+    "pattern": "inactive",
+    "desc": "Son mesaj zamanına göre pasif üyeleri gösterir. İstenirse atabilir.",
+    "file": "message-stats.js"
+  },
+  {
+    "pattern": "üyetemizle",
+    "desc": "Belirtilen süre boyunca mesaj atmayan üyeleri listeler veya çıkarır.",
+    "file": "message-stats.js"
+  },
+  {
+    "pattern": "users",
+    "desc": "Mesaj sayısına göre en iyi kullanıcıları gösterir.",
+    "file": "message-stats.js"
+  },
+  {
+    "pattern": "bilgikaçnet",
+    "desc": "Üniversite bölümleri için kaç net yapmak gerektiğini",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "adaletkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "adlibilimlerkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ağızvedişsağlığıkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ameliyathanehzkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "anestezikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "antrenörlükeğtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "arkeolojikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "astronomiuzaybilimlerikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "aşçılıkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "bankacılıkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "besyokaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "beslenmediyetetikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "bilgisayarmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "bilişimsistemlerimhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "biyolojikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "biyomedikalmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "biyomühendislikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "çizgifilmanimasyonkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "çocukgelişimikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "denizulaştırmaişletmekaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "dışticaretkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "dilvekonuşmatrpkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "dişhekimliğikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "dişprotezkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "diyalizkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ebelikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "eczacılıkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ekonometrikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ekonomikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "elektrikelektronikmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "endüstrimhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "enerjisistemlerimhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "fenbilgisiöğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "fiziktedavirehakaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "fizyoterapikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "gastronomikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "gazetecilikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "gemimhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "grafiktasarımkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "halklailişkilerkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "haritamhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "hemşirelikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "hukukbüroyönetimiskkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "hukukkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "içmimarlıkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "iktisatkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ilahiyatkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ilkacilyardımkaçnet|paramedikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ilkmatöğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "inşaatmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "işletmekaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "kimyamhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "kimyakaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "kontrolotomasyonmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "laborantveterinerskkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "lojistikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "makinemhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "maliyekaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "matematikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "mekatronikmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "meteorolojimhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "mimarlıkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "mobilyadekorasyonkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "odyolojikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "odyometrikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "okulöncesiöğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "otopsiyrdkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "özeleğitimöğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "patolojilabotekkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "pdrkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "pilotajkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "polislikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "psikolojikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "radyotvsinemakaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "radyolojikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "radyoterapikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "reklamcılıkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "saçbakımıgüzellikhzkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sağlıkyönetimikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sanattarihikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sınıföğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sinematvkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sivilhavacılıkkabinhzkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sivilsavunmaitfaiyecilikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "siyasetbilimikamuyönetimkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sosyalbilgileröğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sosyolojikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "sporyöneticiliğikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tarihöğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tarihkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tekstilmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tıbbidökümantasyonskkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tıbbigörüntülemetkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tıbbilaboratuvartkkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tıbbisekreterlikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "tıpkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "turizmrehberliğikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "türkdiliedebiyatıkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "türkçeöğrtkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "uçakgövdemotorbakımıkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "uçakmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "uçakteknolojisikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "uluslararasıilişkilerkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "uluslararasıtcljkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "veterinerlikkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "yapayzekamhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "yazılımmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "ziraatmhkaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "zooteknikaçnet",
+    "desc": "NO DESC",
+    "file": "netler.js"
+  },
+  {
+    "pattern": "emojimix",
+    "desc": "İki emojiyi birleştirip yeni emoji oluşturur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "yazı",
+    "desc": "Glitch efektli metin görseli oluşturur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "naruto",
+    "desc": "Naruto stili metin logosu oluşturur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "marvel",
+    "desc": "Marvel stili logo oluşturur (2 kelime)",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "blackpink",
+    "desc": "Blackpink stili metin görseli oluşturur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "brat",
+    "desc": "Brat (Charli XCX) stili yeşil metin görseli",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "söz",
+    "desc": "Şarkı sözlerini bulur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "duvar",
+    "desc": "HD duvar kağıdı arar ve gönderir",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "çıkartmabul",
+    "desc": "WhatsApp çıkartma paketi arar",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "vikipedi",
+    "desc": "Wikipedia",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "alıntı",
+    "desc": "WhatsApp tarzı alıntı görseli oluşturur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "rüya",
+    "desc": "Rüyanızı yapay zeka ile yorumlar",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "görsel",
+    "desc": "Yapay zeka ile açıklamadan görsel oluşturur",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "threads",
+    "desc": "Threads video/görsel indirir",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "soundcloud",
+    "desc": "SoundCloud",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "çevir",
+    "desc": "Metni iki dil arasında çevirir. Örnek: .çevir en tr",
+    "file": "nexray-komutlar.js"
+  },
+  {
+    "pattern": "pdf",
+    "desc": "Resimlerden PDF",
+    "file": "pdf.js"
+  },
+  {
+    "pattern": "apsil",
+    "desc": "NO DESC",
+    "file": "removebg.js"
+  },
+  {
+    "pattern": "reload",
+    "desc": "NO DESC",
+    "file": "restart.js"
+  },
+  {
+    "pattern": "reboot",
+    "desc": "Botu yeniden başlatır",
+    "file": "restart.js"
+  },
+  {
+    "pattern": "ybaşlat",
+    "desc": "Botu yeniden başlatır",
+    "file": "restart.js"
+  },
+  {
+    "pattern": "ykssayaç",
+    "desc": "NO DESC",
+    "file": "sayac.js"
+  },
+  {
+    "pattern": "kpsssayaç",
+    "desc": "NO DESC",
+    "file": "sayac.js"
+  },
+  {
+    "pattern": "msüsayaç",
+    "desc": "NO DESC",
+    "file": "sayac.js"
+  },
+  {
+    "pattern": "okulsayaç",
+    "desc": "NO DESC",
+    "file": "sayac.js"
+  },
+  {
+    "pattern": "ramazansayaç",
+    "desc": "NO DESC",
+    "file": "sayac.js"
+  },
+  {
+    "pattern": "planla",
+    "desc": "⏰ Mesaj planla - Gruba veya özele zamanlanmış mesaj gönder",
+    "file": "schedule.js"
+  },
+  {
+    "pattern": "plandurum",
+    "desc": "📋 Planlanan tüm mesajları listeler",
+    "file": "schedule.js"
+  },
+  {
+    "pattern": "plansil",
+    "desc": "🗑️ Planlanan mesajı ID ile iptal eder",
+    "file": "schedule.js"
+  },
+  {
+    "pattern": "insta",
+    "desc": "Instagram gönderi/Reels/TV indirici - çoklu bağlantı destekler",
+    "file": "social.js"
+  },
+  {
+    "pattern": "fb",
+    "desc": "Facebook video indirici",
+    "file": "social.js"
+  },
+  {
+    "pattern": "igbio",
+    "desc": "Instagram kullanıcı profili bilgilerini gösterir",
+    "file": "social.js"
+  },
+  {
+    "pattern": "twara",
+    "desc": "Twitter/X kullanıcı profili bilgilerini gösterir",
+    "file": "social.js"
+  },
+  {
+    "pattern": "hikaye",
+    "desc": "Instagram hikaye (story) indirici",
+    "file": "social.js"
+  },
+  {
+    "pattern": "pinterest",
+    "desc": "Pinterest indirici",
+    "file": "social.js"
+  },
+  {
+    "pattern": "twitter",
+    "desc": "Twitter/X video indirici",
+    "file": "social.js"
+  },
+  {
+    "pattern": "tiktok",
+    "desc": "TikTok video indirici",
+    "file": "social.js"
+  },
+  {
+    "pattern": "capcut",
+    "desc": "CapCut şablon/video indirici",
+    "file": "social.js"
+  },
+  {
+    "pattern": "ttara",
+    "desc": "TikTok kullanıcı bilgilerini getirir. (Gizli hesaplar hariç)",
+    "file": "social.js"
+  },
+  {
+    "pattern": "take",
+    "desc": "Çıkartma/ses paketi ve yazar adını değiştirir.",
+    "file": "take.js"
+  },
+  {
+    "pattern": "mp4",
+    "desc": "Hareketli çıkartmayı videoya dönüştürür",
+    "file": "take.js"
+  },
+  {
+    "pattern": "url",
+    "desc": "Resmi imgbb",
+    "file": "take.js"
+  },
+  {
+    "pattern": "yaşhesap",
+    "desc": "Yaş hesaplayıcı",
+    "file": "test.js"
+  },
+  {
+    "pattern": "gerisayım",
+    "desc": "Tarihe geri sayım yapar",
+    "file": "test.js"
+  },
+  {
+    "pattern": "ping",
+    "desc": "Ağ gecikmesini (ping) ölçer",
+    "file": "test.js"
+  },
+  {
+    "pattern": "hıztesti",
+    "desc": "Ookla Speedtest ile gerçek hız testi",
+    "file": "test.js"
+  },
+  {
+    "pattern": "güncelle",
+    "desc": "Bot güncellemelerini kontrol eder ve uygular.",
+    "file": "updater.js"
+  },
+  {
+    "pattern": "react",
+    "desc": "NO DESC",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "düzenle",
+    "desc": "NO DESC",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "msjat",
+    "desc": "Yanıtlanan mesajı belirtilen jid",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "msjyönlendir",
+    "desc": "Yanıtlanan mesajı belirtilen jid",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "tekrar",
+    "desc": "Yanıtlanan komutu tekrar çalıştırmayı dener",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "vv",
+    "desc": "Tek görünürlü (view once) mesajları yakalar",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "msjsil",
+    "desc": "Mesajı herkesten siler. Yönetici silmesini destekler",
+    "file": "wamsg.js"
+  },
+  {
+    "pattern": "uyar",
+    "desc": "Grup üyelerini uyarmaya yarar. Limit aşıldığında üye gruptan atılır.",
+    "file": "warn.js"
+  },
+  {
+    "pattern": "kaçuyarı",
+    "desc": "Bir üyenin uyarılarını kontrol etmeyi sağlar.",
+    "file": "warn.js"
+  },
+  {
+    "pattern": "uyarısil",
+    "desc": "Bir kullanıcının bir uyarısını kaldır",
+    "file": "warn.js"
+  },
+  {
+    "pattern": "uyarısıfırla",
+    "desc": "Bir üyenin tüm uyarılarını sıfırlar.",
+    "file": "warn.js"
+  },
+  {
+    "pattern": "uyarıliste",
+    "desc": "Grupta uyarı alan tüm üyeleri listeler",
+    "file": "warn.js"
+  },
+  {
+    "pattern": "uyarılimit",
+    "desc": "Grup için uyarı limitini ayarlar",
+    "file": "warn.js"
+  },
+  {
+    "pattern": "welcome",
+    "desc": "Grup karşılama mesajını ayarlar. $user",
+    "file": "welcome.js"
+  },
+  {
+    "pattern": "goodbye",
+    "desc": "Grup çıkış mesajını ayarlar. $user",
+    "file": "welcome.js"
+  },
+  {
+    "pattern": "testwelcome",
+    "desc": "Geçerli grup için karşılama mesajını test eder",
+    "file": "welcome.js"
+  },
+  {
+    "pattern": "testgoodbye",
+    "desc": "Geçerli grup için veda mesajını test eder",
+    "file": "welcome.js"
+  },
+  {
+    "pattern": "spotify",
+    "desc": "Spotify şarkısı indir",
+    "file": "youtube.js"
+  },
+  {
+    "pattern": "ytara",
+    "desc": "YouTube araması (detaylı bilgi ile)",
+    "file": "youtube.js"
+  },
+  {
+    "pattern": "ytvideo",
+    "desc": "Video arayarak veya bağlantıdan doğrudan en yüksek kaliteyi indirir",
+    "file": "youtube.js"
+  },
+  {
+    "pattern": "video",
+    "desc": "YouTube",
+    "file": "youtube.js"
+  },
+  {
+    "pattern": "ytses",
+    "desc": "YouTube sesini belge olarak indir",
+    "file": "youtube.js"
+  },
+  {
+    "pattern": "şarkı",
+    "desc": "YouTube",
+    "file": "youtube.js"
+  }
+]
