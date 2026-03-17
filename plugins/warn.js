@@ -8,6 +8,7 @@ const {
   decrementWarn,
   getWarnCount,
   getAllWarns,
+  censorBadWords,
 } = require("./utils");
 
 const handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
@@ -68,7 +69,7 @@ Module(
     let rawReason = match[1] || "Sebep belirtilmedi";
     const mentionRegex = new RegExp(`@${targetNumericId}\\s*`, "g");
     const reason =
-      rawReason.replace(mentionRegex, "").trim() || "Sebep belirtilmedi";
+      censorBadWords(rawReason.replace(mentionRegex, "").trim() || "Sebep belirtilmedi");
 
     try {
       await setWarn(message.jid, targetUser, reason, message.sender);

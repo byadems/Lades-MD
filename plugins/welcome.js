@@ -1,6 +1,6 @@
 const { Module } = require("../main");
 const { ADMIN_ACCESS, HANDLERS } = require("../config");
-const { isAdmin, welcome, goodbye } = require("./utils");
+const { isAdmin, welcome, goodbye, censorBadWords } = require("./utils");
 const {
   parseWelcomeMessage,
   sendWelcomeMessage,
@@ -23,7 +23,11 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const input = match[1]?.toLowerCase();
     if (!input) {
+      const current = await welcome.get(message.jid);
+      const status = current?.enabled ? "Açık ✅" : "Kapalı ❌";
       return await message.sendReply(`*Karşılama Mesajı Ayarları*
+
+*Mevcut Durum:* ${status}
 
 *Kullanım:*
 • \`.welcome <mesaj>\` - Karşılama mesajını ayarla
@@ -211,7 +215,7 @@ Artık $count üyeyiz.\`
 
       return await message.sendReply(helpText);
     }
-    const welcomeMessage = match[1];
+    const welcomeMessage = censorBadWords(match[1]);
     if (welcomeMessage.length > 2000) {
       return await message.sendReply("_⚠️ Karşılama mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );
@@ -238,12 +242,18 @@ Module(
     if (!message.fromOwner && !adminAccess) return;
     const input = match[1]?.toLowerCase();
     if (!input) {
+      const current = await goodbye.get(message.jid);
+      const status = current?.enabled ? "Açık ✅" : "Kapalı ❌";
       return await message.sendReply(`*Veda Mesajı Ayarları*
+
+*Mevcut Durum:* ${status}
+
 *Kullanım:*
 • \`.goodbye <mesaj>\` - Veda mesajını ayarla
 • \`.goodbye aç/kapat\` - Vedayı aç/kapat
 • \`.goodbye getir\` - Mevcut mesajı görüntüle
 • \`.goodbye sil\` - Veda mesajını sil
+
 *Yer Tutucular:*
 • \`$mention\` - Kullanıcıyı etiketle
 • \`$user\` - Kullanıcı adı  
@@ -254,6 +264,7 @@ Module(
 • \`$gpp\` - Grup profil resmi
 • \`$date\` - Bugünün tarihi
 • \`$time\` - Şu anki saat
+
 *Örnek:*
 \`.goodbye Hoşça kal $mention! $group grubunun parçası olduğun için teşekkürler 👋 $pp\`
 \`.goodbye $user gruptan ayrıldı. Artık $count üyeyiz. $gpp\``);
@@ -291,7 +302,7 @@ Module(
       }
       return await message.sendReply("_❌ Silinecek veda mesajı bulunamadı!_");
     }
-    const goodbyeMessage = match[1];
+    const goodbyeMessage = censorBadWords(match[1]);
     if (goodbyeMessage.length > 2000) {
       return await message.sendReply("_⚠️ Veda mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );

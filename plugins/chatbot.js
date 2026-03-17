@@ -288,7 +288,7 @@ async function getAIResponse(message, chatJid, imageBuffer = null, retryCount = 
         chatContexts.set(chatJid, []);
       }
       const contextArray = chatContexts.get(chatJid);
-      const contextMessage = imageBuffer ? `${message} [Image included]` : message;
+      const contextMessage = imageBuffer ? `${message} [Görsel dahil edildi]` : message;
       contextArray.push({ role: "user", text: contextMessage });
       contextArray.push({ role: "model", text: aiResponse });
 

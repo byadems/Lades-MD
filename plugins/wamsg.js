@@ -1,5 +1,5 @@
 const { Module } = require("../main");
-const { isAdmin } = require("./utils");
+const { isAdmin, censorBadWords } = require("./utils");
 const { ADMIN_ACCESS, MODE } = require("../config");
 const isPrivateMode = MODE !== "public";
 Module(
@@ -35,7 +35,8 @@ Module(
     if (!t[1]) return await m.sendReply("_💬 Yeni metni girin!_");
     
     if (m.quoted.key.fromMe) {
-      await m.edit(t[1], m.jid, m.quoted.key);
+      const safeText = censorBadWords(t[1]);
+      await m.edit(safeText, m.jid, m.quoted.key);
       await m.sendReply("_✅ Mesaj düzenlendi!_");
     } else {
       await m.sendReply("_❌ Sadece kendi mesajlarınızı düzenleyebilirsiniz!_");

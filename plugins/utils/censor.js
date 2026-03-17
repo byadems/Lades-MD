@@ -4,12 +4,12 @@
  */
 
 const badWords = [
-  "amk", "amq", "aq", "orospu", "orospu cocugu", "orospuçocuğu",
-  "göt", "got", "sik", "sikeyim", "siktir", "sikerim", "amına", "amina",
-  "piç", "pic", "pezevenk", "kahpe", "döl", "dol", "yarrak", "yarak",
-  "bok", "boktan", "bok gibi", "mal", "salak", "aptal", "gerizekalı",
-  "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "whore",
-  "nigger", "nigga", "faggot", "retard", "fucking", "bullshit",
+  "amk","aq","mk","orospu","orospu çocuğu","orospu cocugu","oç","o.ç","amcık","amına","amını","amina", 
+"sik","sikerim","siktir","sikim","sikeyim","sikiyim","sikti","sikik","yarrak","yarak","yarram","yarrağım",
+"piç","pezevenk","kahpe","kaltak","kaşar","puşt","ibne","ibine","ibneyim","şerefsiz","serefsiz",
+"mal","salak","aptal","gerizekalı","dalyarak","dingil","yavşak","yavsak","göt","götveren","gavat",
+  "döl","bok","bok gibi","amına koyayım","amına koyim","amına kodum","siktir git",
+"fuck","fucking","pussy","bitch","asshole","bastard"
 ];
 
 /**

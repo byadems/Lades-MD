@@ -1,5 +1,5 @@
 const { Module } = require("../main");
-const { isAdmin } = require("./utils");
+const { isAdmin, censorBadWords } = require("./utils");
 const { ADMIN_ACCESS } = require("../config");
 const config = require("../config");
 const { setVar, getVar, delVar } = require("./manage");
@@ -183,14 +183,15 @@ Module(
             `_Çevrimiçi olmak için herhangi bir mesaj yazın._`
         );
       } else {
-        await setAFK(userJid, input);
+        const censoredInput = censorBadWords(input);
+        await setAFK(userJid, censoredInput);
         return await message.sendReply(`*_🌙 AFK nedeni güncellendi_*\n\n` +
-            `📝 _Yeni sebep:_ \`${input}\`\n\n` +
+            `📝 _Yeni sebep:_ \`${censoredInput}\`\n\n` +
             `_Biri size mesaj attığında veya sizi etiketlediğinde otomatik yanıt vereceğim._`
         );
       }
     } else {
-      const reason = input || "Şu anda klavyeden uzaktayım";
+      const reason = censorBadWords(input || "Şu anda klavyeden uzaktayım");
       await setAFK(userJid, reason);
 
       return await message.sendReply(`*_🌙 Artık AFK modundasınız_*\n\n` +

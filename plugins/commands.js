@@ -134,8 +134,8 @@ Module(
 );
 
 function bytesToSize(bytes) {
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Byte";
+  const sizes = ["Bayt", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Bayt";
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
   return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
 }
@@ -293,7 +293,7 @@ _Merhaba $user!_
       );
     }
 
-    const aliveMessage = match[1];
+    const aliveMessage = censorBadWords(match[1]);
     if (aliveMessage.length > 2000) {
       return await message.sendReply("_⚠️ Çevrimiçi mesajı çok uzun! Lütfen 2000 karakterin altında tutun._"
       );
@@ -388,7 +388,7 @@ Module(
 ┃${star}│
 ┃${star}│ _*\`Geliştiricim\`*_ : ${botOwner}
 ┃${star}│ _*\`Üye\`*_ : ${message.senderName.replace(/[\r\n]+/gm, "")}
-┃${star}│ _*\`Mod\`*_ : ${MODE}
+┃${star}│ _*\`Mod\`*_ : ${MODE === "private" ? "Özel" : "Genel"}
 ┃${star}│ _*\`Sunucu\`*_ : ${os.platform() === "linux" ? "Linux" : "Bilinmeyen İşletim Sistemi"}
 ┃${star}│ _*\`Kullanılabilir RAM\`*_ : ${used} / ${total}
 ┃${star}│ _*\`Toplam Kullanıcı\`*_ : ${totalUsers}

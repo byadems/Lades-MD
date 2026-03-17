@@ -156,7 +156,7 @@ Module(
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
-        return await message.sendReply("*_⚠️ Yanlış format!_\n_.automute 22 00 (Saat 22:00 için)_\n_.automute 06 00 (Saat 06:00 için)_*"
+        return await message.sendReply("*_⚠️ Yanlış format!_\n_.otosohbetkapat 22 00 (Saat 22:00 için)_\n_.otosohbetkapat 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
       if (!admin) return await message.sendReply("_❌ Ben yönetici değilim_");
@@ -197,7 +197,7 @@ Module(
       }
       var mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
-        return await message.sendReply("*_⚠️ Yanlış format!_\n_.autounmute 22 00 (Saat 22:00 için)_\n_.autounmute 06 00 (Saat 06:00 için)_*"
+        return await message.sendReply("*_⚠️ Yanlış format!_\n_.otosohbetaç 22 00 (Saat 22:00 için)_\n_.otosohbetaç 06 00 (Saat 06:00 için)_*"
         );
       var admin = await isAdmin(message);
       if (!admin) return await message.sendReply("*❌ Yönetici değilim*");
@@ -268,6 +268,13 @@ Module(
         await antifake.delete(message.jid);
         return await message.sendReply("_❌ Antinumara kapatıldı!_");
       }
+      var db = await antifake.get();
+      const jids = [];
+      db.map((data) => {
+        jids.push(data.jid);
+      });
+      const status = jids.includes(message.jid) ? "Açık ✅" : "Kapalı ❌";
+
       const buttons = [
         {
           buttonId: handler + "antinumara aç",
@@ -293,7 +300,7 @@ Module(
       ];
 
       const buttonMessage = {
-        text: "✨ Antinumara kontrol menüsü",
+        text: `✨ *Antinumara Kontrol Menüsü*\n\n_Bu gruptaki durum: *${status}*_\n_Kullanım: .antinumara aç/kapat_`,
         footer: "",
         buttons: buttons,
         headerType: 1,
