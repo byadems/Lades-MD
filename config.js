@@ -103,10 +103,13 @@ function applyPostgresResilience(sequelizeInstance) {
       // Yield to the event loop every DB_BATCH_SIZE items to prevent starvation
       const batch = writeQueue.splice(0, DB_BATCH_SIZE);
       for (const { task, resolve, reject, isBuffered } of batch) {
+        let timeout;
         try {
           const result = await Promise.race([
             task(),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS))
+            new Promise((_, rej) => {
+              timeout = setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS);
+            })
           ]);
           if (resolve) resolve(result);
         } catch (error) {
@@ -115,6 +118,8 @@ function applyPostgresResilience(sequelizeInstance) {
           } else {
             logger.warn({ err: error.message }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
           }
+        } finally {
+          clearTimeout(timeout);
         }
       }
 
@@ -305,10 +310,13 @@ function applySQLiteResilience(sequelizeInstance) {
     while (writeQueue.length > 0) {
       const batch = writeQueue.splice(0, DB_BATCH_SIZE);
       for (const { task, resolve, reject, isBuffered } of batch) {
+        let timeout;
         try {
           const result = await Promise.race([
             task(),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS))
+            new Promise((_, rej) => {
+              timeout = setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS);
+            })
           ]);
           if (resolve) resolve(result);
         } catch (error) {
@@ -317,6 +325,8 @@ function applySQLiteResilience(sequelizeInstance) {
           } else {
             logger.warn({ err: error.message }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
           }
+        } finally {
+          clearTimeout(timeout);
         }
       }
 
