@@ -15,14 +15,15 @@ const {
 } = require("./utils/welcome-parser");
 
 async function isSuperAdmin(message, user = message.client.user.id) {
-  var metadata = await message.client.groupMetadata(message.jid);
+  const metadata = await message.client.groupMetadata(message.jid);
   let superadmin = metadata.participants.filter((v) => v.admin == "superadmin");
   superadmin = superadmin.length ? superadmin[0].id == user : false;
   return superadmin;
 }
 const { Module } = require("../main");
-const { ALLOWED, HANDLERS, ADMIN_ACCESS, SUDO } = require("../config");
-var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+const config = require("../config");
+const { ALLOWED, ADMIN_ACCESS, SUDO } = config;
+const handler = config.HANDLER_PREFIX;
 
 function tConvert(time) {
   time = time.toString().match(/^([01]\d|2[0-3])( )([0-5]\d)(:[0-5]\d)?$/) || [
@@ -91,7 +92,7 @@ Module(
           }
         );
       if (!deleted && match[1]) {
-        var delete_again = await stickcmd.delete(match[1], "command");
+        const delete_again = await stickcmd.delete(match[1], "command");
         if (delete_again)
           return await message.sendReply(
             `_🗑️ ${match[1]} sabit komutlardan kaldırıldı!_`
@@ -123,9 +124,9 @@ Module(
     use: "utility",
   },
   async (message, match) => {
-    var all = await stickcmd.get();
-    var commands = all.map((element) => element.dataValues.command);
-    var msg = commands.join("_\n_");
+    const all = await stickcmd.get();
+    const commands = all.map((element) => element.dataValues.command);
+    const msg = commands.join("_\n_");
     message.sendReply("_*✨ Çıkartma yapılmış komutlar:*_\n\n_" + msg + "_");
   }
 );
@@ -154,11 +155,11 @@ Module(
         return await message.sendReply("*✨ Bu grupta otomatik susturma devre dışı bırakıldı ❗*"
         );
       }
-      var mregex = /[0-2][0-9] [0-5][0-9]/;
+      const mregex = /[0-2][0-9] [0-5][0-9]/;
       if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
         return await message.sendReply("*_⚠️ Yanlış format!_\n_.otosohbetkapat 22 00 (Saat 22:00 için)_\n_.otosohbetkapat 06 00 (Saat 06:00 için)_*"
         );
-      var admin = await isAdmin(message);
+      const admin = await isAdmin(message);
       if (!admin) return await message.sendReply("_❌ Ben yönetici değilim_");
       await automute.set(message.jid, match.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
@@ -195,12 +196,12 @@ Module(
         return await message.sendReply("*_🎵 Bu grupta otomatik sesi açma devre dışı bırakıldı ❗_*"
         );
       }
-      var mregex = /[0-2][0-9] [0-5][0-9]/;
-      if (mregex.test(match?.match(/(\d+)/g)?.join(" ")) === false)
+      const mregex2 = /[0-2][0-9] [0-5][0-9]/;
+      if (mregex2.test(match?.match(/(\d+)/g)?.join(" ")) === false)
         return await message.sendReply("*_⚠️ Yanlış format!_\n_.otosohbetaç 22 00 (Saat 22:00 için)_\n_.otosohbetaç 06 00 (Saat 06:00 için)_*"
         );
-      var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("*❌ Yönetici değilim*");
+      const admin2 = await isAdmin(message);
+      if (!admin2) return await message.sendReply("*❌ Yönetici değilim*");
       await autounmute.set(message.jid, match?.match(/(\d+)/g)?.join(" "));
       await message.sendReply(
         `*_⏰ Grup ${tConvert(match)} saatinde otomatik açılacak, yeniden başlatılıyor.._*`
@@ -221,9 +222,9 @@ Module(
       ? await isAdmin(message, message.sender)
       : false;
     if (message.fromOwner || adminAccesValidated) {
-      var mute = await automute.get();
-      var unmute = await autounmute.get();
-      var msg = "";
+      const mute = await automute.get();
+      const unmute = await autounmute.get();
+      let msg = "";
       for (e in mute) {
         let temp = unmute.find((element) => element.chat === mute[e].chat);
         if (temp && temp.time) {
@@ -252,8 +253,8 @@ Module(
       ? await isAdmin(message, message.sender)
       : false;
     if (message.fromOwner || adminAccesValidated) {
-      var admin = await isAdmin(message);
-      if (!admin) return await message.sendReply("_❌ Ben yönetici değilim!_");
+      const adminCheck = await isAdmin(message);
+      if (!adminCheck) return await message.sendReply("_❌ Ben yönetici değilim!_");
       if (match[1] === "aç" || match[1] === "on") {
         await antifake.set(message.jid);
         return await message.sendReply("_✅ Anti-Numara açıldı!_");
@@ -267,7 +268,7 @@ Module(
         await antifake.delete(message.jid);
         return await message.sendReply("_❌ Anti-Numara kapatıldı!_");
       }
-      var db = await antifake.get();
+      const db = await antifake.get();
       const jids = [];
       db.map((data) => {
         jids.push(data.jid);
@@ -318,29 +319,29 @@ Module(
   },
   async (message, match) => {
     message.myjid = message.client.user.lid.split(":")[0];
-    var db = await antifake.get();
+    const db = await antifake.get();
     let sudos = SUDO.split(",");
     const jids = [];
     db.map((data) => {
       jids.push(data.jid);
     });
-    var pdmdb = await pdm.get();
+    const pdmdb = await pdm.get();
     const pdmjids = [];
     pdmdb.map((data) => {
       pdmjids.push(data.jid);
     });
-    var apdb = await antipromote.get();
+    const apdb = await antipromote.get();
     const apjids = [];
     apdb.map((data) => {
       apjids.push(data.jid);
     });
-    var addb = await antidemote.get();
+    const addb = await antidemote.get();
     const adjids = [];
     addb.map((data) => {
       adjids.push(data.jid);
     });
-    var admin_jids = [];
-    var admins = (await message.client.groupMetadata(message.jid)).participants
+    const admin_jids = [];
+    const admins = (await message.client.groupMetadata(message.jid)).participants
       .filter((v) => v.admin !== null)
       .map((x) => x.id);
     admins.map(async (user) => {
@@ -367,8 +368,8 @@ Module(
         (await isSuperAdmin(message, message.from))
       )
         return;
-      var admin = await isAdmin(message);
-      if (!admin) return;
+      const isAdminPromote = await isAdmin(message);
+      if (!isAdminPromote) return;
       await message.client.groupParticipantsUpdate(
         message.jid,
         [message.from],
@@ -394,8 +395,8 @@ Module(
           mentions: admin_jids,
         });
       }
-      var admin = await isAdmin(message);
-      if (!admin) return;
+      const isAdminDemote = await isAdmin(message);
+      if (!isAdminDemote) return;
       await message.client.groupParticipantsUpdate(
         message.jid,
         [message.from],
@@ -408,14 +409,14 @@ Module(
       );
     }
     if (message.action === "add" && jids.includes(message.jid)) {
-      var allowed = ALLOWED.split(",").map((p) => p.trim()).filter(Boolean);
+      const allowed = ALLOWED.split(",").map((p) => p.trim()).filter(Boolean);
       const participantNumber = message.participant[0].id.split("@")[0];
       const isAllowedNumber = allowed.some((prefix) =>
         participantNumber.startsWith(prefix)
       );
       if (!isAllowedNumber) {
-        var admin = await isAdmin(message);
-        if (!admin) return;
+        const isAdminAdd = await isAdmin(message);
+        if (!isAdminAdd) return;
         return await message.client.groupParticipantsUpdate(
           message.jid,
           [message.participant[0].id],

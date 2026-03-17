@@ -12,7 +12,7 @@ const {
 const nexray = require("./utils/nexray");
 const botConfig = require("../config");
 const axios = require("axios");
-const isFromMe = botConfig.MODE === "public" ? false : true;
+const isFromMe = botConfig.isPrivate;
 
 async function checkRedirect(url) {
   try {

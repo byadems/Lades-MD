@@ -49,7 +49,7 @@ const { settingsMenu, ADMIN_ACCESS } = config;
 const fs = require("fs");
 const { BotVariable } = require("../core/database");
 
-var handler = config.HANDLERS !== "false" ? config.HANDLERS.split("")[0] : "";
+const handler = config.HANDLER_PREFIX;
 
 let _antiwordJidsCache = null;
 let _antiwordCacheTime = 0;
@@ -1466,7 +1466,7 @@ Module(
           await message.send("🚨 *Hey! Grup reklamı yapmamalısın.* 🤐");
           try {
             await message.client.sendMessage(message.jid, { delete: message.data.key });
-          } catch { }
+          } catch { /* mesaj silme başarısız, devam et */ }
           await message.client.groupParticipantsUpdate(
             message.jid,
             [message.sender],

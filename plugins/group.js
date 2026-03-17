@@ -12,8 +12,8 @@ const baileysPromise = loadBaileys()
     process.exit(1);
   });
 const { isAdmin, isNumeric, mentionjid } = require("./utils");
-const { ADMIN_ACCESS, HANDLERS, MODE } = require("../config");
 const config = require("../config");
+const { ADMIN_ACCESS, MODE } = config;
 const { Module } = require("../main");
 const fs = require("fs");
 const path = require("path");
@@ -24,7 +24,7 @@ const {
   fetchRecentChats,
 } = require("../core/store");
 const { setVar } = require("./manage");
-var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+const handler = config.HANDLER_PREFIX;
 
 
 async function sendBanAudio(message) {

@@ -8,3 +8,9 @@ output/
 #*#
 *~
 .DS_Store
+package-lock.json
+
+# Runtime-generated plugin files
+plugins/yapayzeka.js
+plugins/temel.js
+plugins/sosyal.js

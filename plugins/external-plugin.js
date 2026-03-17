@@ -5,7 +5,22 @@ const fs = require("fs");
 const { PluginDB, installPlugin } = require("./sql/plugin");
 let { getString } = require("./utils/lang");
 let Lang = getString("external_plugin");
-var handler = config.HANDLERS !== "false" ? config.HANDLERS.split("")[0] : "";
+const handler = config.HANDLER_PREFIX;
+
+const TRUSTED_HOSTS = [
+  "gist.github.com",
+  "gist.githubusercontent.com",
+  "raw.githubusercontent.com",
+];
+
+function isTrustedHost(urlStr) {
+  try {
+    const parsed = new URL(urlStr);
+    return TRUSTED_HOSTS.some((h) => parsed.host === h || parsed.host.endsWith("." + h));
+  } catch {
+    return false;
+  }
+}
 
 Module(
   {
@@ -18,12 +33,18 @@ Module(
     match = match[1] !== "" ? match[1] : message.reply_message.text;
     if (!match || !/\bhttps?:\/\/\S+/gi.test(match))
       return await message.send(Lang.NEED_URL);
-    let links = match.match(/\bhttps?:\/\/\S+/gi);
-    for (let link of links) {
+    const links = match.match(/\bhttps?:\/\/\S+/gi);
+    for (const link of links) {
+      let url;
       try {
-        var url = new URL(link);
+        url = new URL(link);
       } catch {
         return await message.send(Lang.INVALID_URL);
+      }
+      if (!isTrustedHost(url.toString())) {
+        return await message.sendReply(
+          `_⚠️ Güvenlik: Yalnızca GitHub Gist bağlantıları desteklenir._\n_İzin verilen hostlar: ${TRUSTED_HOSTS.join(", ")}_`
+        );
       }
       if (
         url.host === "gist.github.com" ||
@@ -35,13 +56,14 @@ Module(
       } else {
         url = url.toString();
       }
+      let response;
       try {
-        var response = await axios(url + "?timestamp=" + new Date());
+        response = await axios(url + "?timestamp=" + new Date());
       } catch {
         return await message.send(Lang.INVALID_URL);
       }
       let plugin_name = /pattern: ["'](.*)["'],/g.exec(response.data);
-      var plugin_name_temp = response.data.match(/pattern: ["'](.*)["'],/g)
+      let plugin_name_temp = response.data.match(/pattern: ["'](.*)["'],/g)
         ? response.data
             .match(/pattern: ["'](.*)["'],/g)
             .map((e) => e.replace("pattern", "").replace(/[^a-zA-Z]/g, ""))
@@ -75,9 +97,9 @@ Module(
     desc: Lang.PLUGIN_DESC,
   },
   async (message, match) => {
-    var plugins = await PluginDB.findAll();
+    let plugins = await PluginDB.findAll();
     if (match[1] !== "") {
-      var plugin = plugins.filter(
+      const plugin = plugins.filter(
         (_plugin) => _plugin.dataValues.name === match[1]
       );
       try {
@@ -89,8 +111,8 @@ Module(
       }
       return;
     }
-    var msg = Lang.INSTALLED_PLUGINS;
-    var plugins = await PluginDB.findAll();
+    let msg = Lang.INSTALLED_PLUGINS;
+    plugins = await PluginDB.findAll();
     if (plugins.length < 1) {
       return await message.send(Lang.NO_PLUGIN);
     } else {
@@ -118,7 +140,7 @@ Module(
   },
   async (message, match) => {
     if (match[1] === "") return await message.send(Lang.NEED_PLUGIN);
-    var plugin = await PluginDB.findAll({
+    const plugin = await PluginDB.findAll({
       where: {
         name: match[1],
       },
@@ -147,7 +169,7 @@ Module(
     const plugin = match[1];
     if (!plugin) return await m.send(Lang.NEED_PLUGIN);
     await PluginDB.sync();
-    var plugins = await PluginDB.findAll({
+    const plugins = await PluginDB.findAll({
       where: {
         name: plugin,
       },
@@ -155,9 +177,10 @@ Module(
     if (plugins.length < 1) {
       return await m.send(Lang.PLUGIN_NOT_FOUND);
     }
-    var url = plugins[0].dataValues.url;
+    const url = plugins[0].dataValues.url;
+    let response;
     try {
-      var response = await axios(url + "?timestamp=" + new Date());
+      response = await axios(url + "?timestamp=" + new Date());
     } catch {
       return await m.send(Lang.INVALID_URL);
     }

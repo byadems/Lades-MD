@@ -1,5 +1,5 @@
 const { Module } = require('../main');
-const isPrivateMode = require('../config').MODE !== 'public';
+const isPrivateMode = require('../config').isPrivate;
 const { fancy } = require('./utils');
 Module({
      pattern: 'fancy ?(.*)',

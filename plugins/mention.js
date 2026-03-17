@@ -1,12 +1,12 @@
 const { Module } = require("../main");
-const { SUDO, HANDLERS } = require("../config");
 const config = require("../config");
+const { SUDO } = config;
 const { uploadToCatbox } = require("./utils/upload");
 
 const fs = require("fs");
 const path = require("path");
 
-var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+const handler = config.HANDLER_PREFIX;
 
 const { setVar, delVar } = require("./manage");
 

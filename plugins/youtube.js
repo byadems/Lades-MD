@@ -12,18 +12,10 @@ const { censorBadWords } = require("./utils");
 const nexray = require("./utils/nexray");
 
 const config = require("../config");
-const MODE = config.MODE;
-const fromMe = MODE === "public" ? false : true;
+const fromMe = config.isPrivate;
+const { bytesToSize: formatBytes } = require("./utils");
 
 const VIDEO_SIZE_LIMIT = 150 * 1024 * 1024;
-
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-}
 
 function formatViews(views) {
   if (views >= 1000000) {

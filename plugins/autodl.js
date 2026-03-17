@@ -5,10 +5,9 @@ const { downloadGram, pinterestDl, tiktok, fb, spotifyTrack } = require("./utils
 const { getVideoInfo, downloadAudio, convertM4aToMp3, searchYoutube } = require("./utils/yt");
 const nexray = require("./utils/nexray");
 const fs = require("fs");
-const fromMe = config.MODE !== "public";
+const fromMe = config.isPrivate;
 
-const HANDLER_PREFIX =
-  config.HANDLERS === "false" ? "" : (config.HANDLERS || ".").charAt(0);
+const HANDLER_PREFIX = config.HANDLER_PREFIX;
 
 const URL_PATTERNS = {
   instagram:
@@ -56,13 +55,7 @@ function isAlreadyCommand(text) {
   return regex.test(text);
 }
 
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-}
+const { bytesToSize: formatBytes } = require("./utils");
 
 Module({ on: "text", fromMe }, async (message) => {
   try {

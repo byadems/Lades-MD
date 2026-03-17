@@ -1,8 +1,6 @@
 const { DataTypes } = require("sequelize");
 const config = require("../../../config");
 
-config.sequelize.sync().catch((e) => console.error("Model senkronizasyon hatası:", e?.message));
-
 const warnDB = config.sequelize.define("_warn", {
   chat: {
     type: DataTypes.STRING,
@@ -36,15 +34,7 @@ const FakeDB = config.sequelize.define("fake", {
   },
 }, { indexes: [{ fields: ['jid'] }] });
 
-// Legacy antilink table - will be removed
-const antilinkDB = config.sequelize.define("antilink", {
-  jid: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-}, { indexes: [{ fields: ['jid'] }] });
-
-// New advanced antilink system
+// Advanced antilink system
 const AntilinkConfigDB = config.sequelize.define("antilink_config", {
   jid: {
     type: DataTypes.STRING,
@@ -200,7 +190,6 @@ const FilterDB = config.sequelize.define("filter", {
 module.exports = {
   warnDB,
   FakeDB,
-  antilinkDB, // Legacy - will be removed
   AntilinkConfigDB,
   antiSpamDB,
   PDMDB,

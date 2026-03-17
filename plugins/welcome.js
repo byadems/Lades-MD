@@ -1,11 +1,12 @@
 const { Module } = require("../main");
-const { ADMIN_ACCESS, HANDLERS } = require("../config");
+const config = require("../config");
+const { ADMIN_ACCESS } = config;
 const { isAdmin, welcome, goodbye, censorBadWords } = require("./utils");
 const {
   parseWelcomeMessage,
   sendWelcomeMessage,
 } = require("./utils/welcome-parser");
-var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+const handler = config.HANDLER_PREFIX;
 
 Module(
   {

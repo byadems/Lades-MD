@@ -177,7 +177,7 @@ Module(
           const base = Path.parse(docName).name;
           originalFileName = `${base}.${extension}`;
         }
-      } catch {}
+      } catch (e) { /* dosya adı çıkarma hatası, varsayılan kullanılacak */ }
 
       if (!originalFileName && bgImageUrl) {
         originalFileName = getFileNameFromUrl(bgImageUrl, "arkaplan");

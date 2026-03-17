@@ -49,26 +49,19 @@ async function loadBaileys() {
 }
 
 function suppressLibsignalLogs() {
-  try {
-    ["session_record.js", "session_builder.js", "session_cipher.js"].forEach(
-      (file) => {
-        const filePath = path.join(
-          __dirname,
-          "..",
-          "node_modules",
-          "libsignal",
-          "src",
-          file
-        );
-        if (fs.existsSync(filePath)) {
-          let content = fs.readFileSync(filePath, "utf8");
-          const modified = content.replace(/^(\s*console\..+;)$/gm, "// $1");
-          if (content !== modified)
-            fs.writeFileSync(filePath, modified, "utf8");
-        }
-      }
-    );
-  } catch {}
+  const LIBSIGNAL_NOISE = [
+    "No session found",
+    "No matching sessions",
+    "session not found",
+    "Bad Mac",
+    "MessageCounterError",
+  ];
+  const _origLog = console.log.bind(console);
+  console.log = (...args) => {
+    const msg = typeof args[0] === "string" ? args[0] : "";
+    if (LIBSIGNAL_NOISE.some((p) => msg.includes(p))) return;
+    _origLog(...args);
+  };
 }
 
 const jimp = require("jimp");
