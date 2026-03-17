@@ -25,11 +25,10 @@ Module(
     if (!input) {
       const current = await welcome.get(message.jid);
       const status = current?.enabled ? "Açık ✅" : "Kapalı ❌";
-      return await message.sendReply(`*Karşılama Mesajı Ayarları*
+      return await message.sendReply(`👋🏻 *Karşılama Mesajı Ayarları*
+ℹ️ *Mevcut Durum:* ${status}
 
-*Mevcut Durum:* ${status}
-
-*Kullanım:*
+💬 *Kullanım:*
 • \`.welcome <mesaj>\` - Karşılama mesajını ayarla
 • \`.welcome aç/kapat\` - Karşılamayı aç/kapat
 • \`.welcome getir\` - Mevcut mesajı görüntüle
@@ -72,8 +71,7 @@ Module(
         );
       }
       return await message.sendReply(
-        `*Mevcut Karşılama Mesajı:*\n\n${current.message}\n\n*Durum:* ${
-          current.enabled ? "Açık ✅" : "Kapalı ❌"
+        `*Mevcut Karşılama Mesajı:*\n\n${current.message}\n\n*Durum:* ${current.enabled ? "Açık ✅" : "Kapalı ❌"
         }`
       );
     }
@@ -108,16 +106,14 @@ Module(
               const groupMeta = await message.client.groupMetadata(data.jid);
               const groupName = groupMeta.subject || "Bilinmeyen Grup";
               const status = data.enabled ? "✅ Açık" : "❌ Kapalı";
-              statusText += `${
-                i + 1
-              }. *${groupName}*\n   Durum: ${status}\n   Önizleme: ${data.message.substring(
-                0,
-                50
-              )}${data.message.length > 50 ? "..." : ""}\n\n`;
+              statusText += `${i + 1
+                }. *${groupName}*\n   Durum: ${status}\n   Önizleme: ${data.message.substring(
+                  0,
+                  50
+                )}${data.message.length > 50 ? "..." : ""}\n\n`;
             } catch {
-              statusText += `${i + 1}. *Bilinmeyen Grup*\n   Durum: ${
-                data.enabled ? "✅ Açık" : "❌ Kapalı"
-              }\n\n`;
+              statusText += `${i + 1}. *Bilinmeyen Grup*\n   Durum: ${data.enabled ? "✅ Açık" : "❌ Kapalı"
+                }\n\n`;
             }
           }
         }
@@ -130,16 +126,14 @@ Module(
               const groupMeta = await message.client.groupMetadata(data.jid);
               const groupName = groupMeta.subject || "Bilinmeyen Grup";
               const status = data.enabled ? "✅ Açık" : "❌ Kapalı";
-              statusText += `${
-                i + 1
-              }. *${groupName}*\n   Durum: ${status}\n   Önizleme: ${data.message.substring(
-                0,
-                50
-              )}${data.message.length > 50 ? "..." : ""}\n\n`;
+              statusText += `${i + 1
+                }. *${groupName}*\n   Durum: ${status}\n   Önizleme: ${data.message.substring(
+                  0,
+                  50
+                )}${data.message.length > 50 ? "..." : ""}\n\n`;
             } catch {
-              statusText += `${i + 1}. *Bilinmeyen Grup*\n   Durum: ${
-                data.enabled ? "✅ Açık" : "❌ Kapalı"
-              }\n\n`;
+              statusText += `${i + 1}. *Bilinmeyen Grup*\n   Durum: ${data.enabled ? "✅ Açık" : "❌ Kapalı"
+                }\n\n`;
             }
           }
         }
@@ -244,16 +238,15 @@ Module(
     if (!input) {
       const current = await goodbye.get(message.jid);
       const status = current?.enabled ? "Açık ✅" : "Kapalı ❌";
-      return await message.sendReply(`*Veda Mesajı Ayarları*
+      return await message.sendReply(`🥺 *Veda Mesajı Ayarları*
 
-*Mevcut Durum:* ${status}
+ℹ️ *Mevcut Durum:* ${status}
 
-*Kullanım:*
+💬 *Kullanım:*
 • \`.goodbye <mesaj>\` - Veda mesajını ayarla
 • \`.goodbye aç/kapat\` - Vedayı aç/kapat
 • \`.goodbye getir\` - Mevcut mesajı görüntüle
 • \`.goodbye sil\` - Veda mesajını sil
-
 *Yer Tutucular:*
 • \`$mention\` - Kullanıcıyı etiketle
 • \`$user\` - Kullanıcı adı  
@@ -289,8 +282,7 @@ Module(
         );
       }
       return await message.sendReply(
-        `*Mevcut Veda Mesajı:*\n\n${current.message}\n\n*Durum:* ${
-          current.enabled ? "Açık ✅" : "Kapalı ❌"
+        `*Mevcut Veda Mesajı:*\n\n${current.message}\n\n*Durum:* ${current.enabled ? "Açık ✅" : "Kapalı ❌"
         }`
       );
     }

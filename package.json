@@ -13,7 +13,7 @@
     "baileys",
     "lades"
   ],
-  "author": "Sourav K",
+  "author": "Lades",
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@vitalets/google-translate-api": "^9.2.1",

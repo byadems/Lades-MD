@@ -230,8 +230,7 @@ Module(
           mute[e].unmute = temp.time;
         }
         msg +=
-          `*${Math.floor(parseInt(e) + 1)}. Group:* ${
-            (await message.client.groupMetadata(mute[e].chat)).subject
+          `*${Math.floor(parseInt(e) + 1)}. Group:* ${(await message.client.groupMetadata(mute[e].chat)).subject
           }
 *➥ Mute:* ${tConvert(mute[e].time)}
 *➥ Sessizlik Açılış:* ${tConvert(mute[e].unmute || "Ayarlanmadı")}` + "\n\n";
@@ -257,7 +256,7 @@ Module(
       if (!admin) return await message.sendReply("_❌ Ben yönetici değilim!_");
       if (match[1] === "aç" || match[1] === "on") {
         await antifake.set(message.jid);
-        return await message.sendReply("_✅ Antinumara açıldı!_");
+        return await message.sendReply("_✅ Anti-Numara açıldı!_");
       }
       if (match[1] === "izinli" || match[1] === "allow") {
         return await message.sendReply(
@@ -266,7 +265,7 @@ Module(
       }
       if (match[1] === "kapat" || match[1] === "off") {
         await antifake.delete(message.jid);
-        return await message.sendReply("_❌ Antinumara kapatıldı!_");
+        return await message.sendReply("_❌ Anti-Numara kapatıldı!_");
       }
       var db = await antifake.get();
       const jids = [];
@@ -300,8 +299,8 @@ Module(
       ];
 
       const buttonMessage = {
-        text: `✨ *Antinumara Kontrol Menüsü*\n\n_Bu gruptaki durum: *${status}*_\n_Kullanım: .antinumara aç/kapat_`,
-        footer: "",
+        text: `🚨 *Anti-Numara Kontrol Menüsü*\n\nℹ️ *Mevcut Durum:* ${status}\n\n💬 *Kullanım:* \`.antinumara aç/kapat\``,
+        footer: config.BOT_NAME || "",
         buttons: buttons,
         headerType: 1,
       };
@@ -354,11 +353,9 @@ Module(
       if (message.from.split("@")[0] == message.myjid) return;
       if (message.action == "demote") admin_jids.push(message.participant[0].id);
       await message.client.sendMessage(message.jid, {
-        text: `_*[${
-          message.action == "promote" ? "🔔 Yükseltme algılandı" : "🔔 Düşürme algılandı"
-        }]*_\n\n@${message.from.split("@")[0]} @${
-          message.participant[0].id.split("@")[0]
-        } kişisini ${message.action == "promote" ? "yükseltti" : "düşürdü"}`,
+        text: `_*[${message.action == "promote" ? "🔔 Yükseltme algılandı" : "🔔 Düşürme algılandı"
+          }]*_\n\n@${message.from.split("@")[0]} @${message.participant[0].id.split("@")[0]
+          } kişisini ${message.action == "promote" ? "yükseltti" : "düşürdü"}`,
         mentions: admin_jids,
       });
     }
@@ -392,9 +389,8 @@ Module(
         return;
       if (message.participant[0].id.split("@")[0] == message.myjid) {
         return await message.client.sendMessage(message.jid, {
-          text: `_*❌ Bot yetkisi düşürüldü, geri yükleme yapılamıyor* [Yetki düşüren: @${
-            message.from.split("@")[0]
-          }]_`,
+          text: `_*❌ Bot yetkisi düşürüldü, geri yükleme yapılamıyor* [Yetki düşüren: @${message.from.split("@")[0]
+            }]_`,
           mentions: admin_jids,
         });
       }

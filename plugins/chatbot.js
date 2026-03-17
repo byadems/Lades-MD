@@ -453,8 +453,8 @@ Module(
       const hasApiKey = !!config.GEMINI_API_KEY;
 
       const helpText =
-        `*_🤖 Yapay Zeka Botu Yapılandırması_*\n\n` +
-        `📊 _Mevcut Durum:_ \`${isEnabled ? "Aktif" : "Devre Dışı"}\`\n` +
+        `*_🚨 Yapay Zeka Botu Yapılandırması_*\n\n` +
+        `ℹ️ _Mevcut Durum:_ \`${isEnabled ? "Aktif" : "Devre Dışı"}\`\n` +
         `🔑 _API Anahtarı:_ \`${hasApiKey ? "Ekli ✅" : "Eksik ❌"}\`\n` +
         `🌐 _Gruplarda:_ \`${globalGroups ? "Aktif ✅" : "Devre Dışı ❌"
         }\`\n` +

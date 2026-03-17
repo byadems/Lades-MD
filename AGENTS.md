@@ -15,7 +15,7 @@ Lades-MD is a WhatsApp bot built on Node.js (CommonJS) using the Baileys library
 
 ### Required environment variables
 
-- `SESSION` — WhatsApp session string (e.g. `RGNK~abc123`). Generate at lades.site
+- `SESSION` — WhatsApp session string (e.g. `LDS~abc123`). Generate at lades.site
 - `DATABASE_URL` — PostgreSQL connection URL (if unset, defaults to local SQLite `./bot.db`)
 - `SUDO` — Admin phone number(s)
 - `GEMINI_API_KEY` — Required for chatbot/ai/yz commands (get from aistudio.google.com)
