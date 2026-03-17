@@ -91,6 +91,9 @@ function applyPostgresResilience(sequelizeInstance) {
 
   const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "20000", 10); // 20s — env ile ayarlanabilir
   const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "5", 10); // event-loop tıkanmasını önlemek için flush chunk boyutu
+  const DISABLE_SESSION_DB_WRITES = process.env.DISABLE_SESSION_DB_WRITES === "true";
+  const SESSION_WRITE_COALESCE_MS = parseInt(process.env.SESSION_WRITE_COALESCE_MS || "2000", 10);
+  let _lastSessionWriteQueuedAt = 0;
 
 
   const flushQueue = async () => {
@@ -197,6 +200,16 @@ function applyPostgresResilience(sequelizeInstance) {
     return sql.toLowerCase().includes("antideletecache");
   };
 
+  const isSessionWriteQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    const lower = sql.toLowerCase();
+    return (
+      lower.includes('into "sessions"') || lower.includes("into `sessions`") || lower.includes("into sessions ") ||
+      lower.includes('update "sessions"') || lower.includes("update `sessions`") || lower.includes("update sessions ") ||
+      lower.includes('delete from "sessions"') || lower.includes("delete from `sessions`") || lower.includes("delete from sessions ")
+    );
+  };
+
   const isPriorityQuery = (sql) => {
     if (!sql || typeof sql !== "string") return false;
     const lower = sql.toLowerCase();
@@ -213,6 +226,19 @@ function applyPostgresResilience(sequelizeInstance) {
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
     if (isAntiDeleteQuery(sql)) {
       return Promise.resolve([[], 0]);
+    }
+
+    if (DISABLE_SESSION_DB_WRITES && isSessionWriteQuery(sql)) {
+      logger.warn("DISABLE_SESSION_DB_WRITES aktif: sessions tablosuna yazma atlandı");
+      return Promise.resolve([[], 0]);
+    }
+
+    if (isSessionWriteQuery(sql)) {
+      const now = Date.now();
+      if (now - _lastSessionWriteQueuedAt < SESSION_WRITE_COALESCE_MS) {
+        return Promise.resolve([[], 0]);
+      }
+      _lastSessionWriteQueuedAt = now;
     }
 
     if (!isWriteQuery(sql)) {
@@ -251,6 +277,19 @@ function applyPostgresResilience(sequelizeInstance) {
     sequelizeInstance.queryRaw = function serializedQueryRaw(sql, ...rest) {
       if (isAntiDeleteQuery(sql)) {
         return Promise.resolve([[], 0]);
+      }
+
+      if (DISABLE_SESSION_DB_WRITES && isSessionWriteQuery(sql)) {
+        logger.warn("DISABLE_SESSION_DB_WRITES aktif: sessions tablosuna yazma atlandı");
+        return Promise.resolve([[], 0]);
+      }
+
+      if (isSessionWriteQuery(sql)) {
+        const now = Date.now();
+        if (now - _lastSessionWriteQueuedAt < SESSION_WRITE_COALESCE_MS) {
+          return Promise.resolve([[], 0]);
+        }
+        _lastSessionWriteQueuedAt = now;
       }
 
       if (!isWriteQuery(sql)) {
@@ -316,7 +355,8 @@ function applySQLiteResilience(sequelizeInstance) {
   });
 
   const originalQuery = sequelizeInstance.query.bind(sequelizeInstance);
-  const writeQueue = [];
+  const priorityQueue = [];
+  const bulkQueue = [];
   const bufferedMessageQueries = [];
   let queueActive = false;
 
@@ -327,23 +367,37 @@ function applySQLiteResilience(sequelizeInstance) {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Periyodik: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
       const pending = bufferedMessageQueries.splice(0);
-      writeQueue.push(...pending);
+      bulkQueue.push(...pending);
       setImmediate(flushQueue);
     }
   }, SQLITE_BUFFER_FLUSH_MS);
 
   const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "20000", 10); // 20s
   const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "5", 10);
+  const DISABLE_SESSION_DB_WRITES = process.env.DISABLE_SESSION_DB_WRITES === "true";
+  const SESSION_WRITE_COALESCE_MS = parseInt(process.env.SESSION_WRITE_COALESCE_MS || "2000", 10);
+  let _lastSessionWriteQueuedAt = 0;
 
   const flushQueue = async () => {
-    if (queueActive || writeQueue.length === 0) {
+    if (queueActive || (priorityQueue.length === 0 && bulkQueue.length === 0)) {
       return;
     }
 
     queueActive = true;
 
-    while (writeQueue.length > 0) {
-      const batch = writeQueue.splice(0, DB_BATCH_SIZE);
+    while (priorityQueue.length > 0 || bulkQueue.length > 0) {
+      const batch = [];
+      if (priorityQueue.length > 0) {
+        batch.push(priorityQueue.shift());
+      }
+
+      while (batch.length < DB_BATCH_SIZE && bulkQueue.length > 0) {
+        batch.push(bulkQueue.shift());
+      }
+
+      while (batch.length < DB_BATCH_SIZE && priorityQueue.length > 0) {
+        batch.push(priorityQueue.shift());
+      }
       for (const { task, resolve, reject, isBuffered } of batch) {
         let timeout;
         try {
@@ -358,14 +412,14 @@ function applySQLiteResilience(sequelizeInstance) {
           if (!isBuffered) {
             if (reject) reject(error);
           } else {
-            logger.warn({ err: error.message }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
+            logger.warn({ err: error.message, priorityLen: priorityQueue.length, bulkLen: bulkQueue.length }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
           }
         } finally {
           clearTimeout(timeout);
         }
       }
 
-      if (writeQueue.length > 0) {
+      if (priorityQueue.length > 0 || bulkQueue.length > 0) {
         await new Promise(resolve => setImmediate(resolve));
       }
     }
@@ -377,7 +431,7 @@ function applySQLiteResilience(sequelizeInstance) {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Kapatma: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
       const pending = bufferedMessageQueries.splice(0);
-      writeQueue.push(...pending);
+      bulkQueue.push(...pending);
       await flushQueue();
     }
     clearInterval(_bufferFlushInterval);
@@ -399,7 +453,11 @@ function applySQLiteResilience(sequelizeInstance) {
   
   const SQLITE_HV_TABLES = [
     "messages", "message_stats", "chats", "users", "userstats",
-    "antideletecaches", "spamtrackers", "contacts", "group_metadata", "sessions",
+    "antideletecaches", "spamtrackers", "contacts", "group_metadata",
+  ];
+
+  const SQLITE_PRIORITY_TABLES = [
+    "sessions", "auth", "auth_state", "botvars", "bot_vars",
   ];
 
   const isHighVolumeQuery = (sql) => {
@@ -414,14 +472,50 @@ function applySQLiteResilience(sequelizeInstance) {
       return false;
   };
 
+  const isPriorityQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    const lower = sql.toLowerCase();
+    for (const t of SQLITE_PRIORITY_TABLES) {
+      if (
+        lower.includes(`into "${t}"`) || lower.includes(`into \`${t}\``) || lower.includes(`into ${t} `) ||
+        lower.includes(`update "${t}"`) || lower.includes(`update \`${t}\``) || lower.includes(`update ${t} `) ||
+        lower.includes(`from "${t}"`) || lower.includes(`from \`${t}\``) || lower.includes(`from ${t} `)
+      ) return true;
+    }
+    return false;
+  };
+
   const isAntiDeleteQuery = (sql) => {
     if (!sql || typeof sql !== "string") return false;
     return sql.toLowerCase().includes("antideletecache");
   };
 
+  const isSessionWriteQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    const lower = sql.toLowerCase();
+    return (
+      lower.includes('into "sessions"') || lower.includes("into `sessions`") || lower.includes("into sessions ") ||
+      lower.includes('update "sessions"') || lower.includes("update `sessions`") || lower.includes("update sessions ") ||
+      lower.includes('delete from "sessions"') || lower.includes("delete from `sessions`") || lower.includes("delete from sessions ")
+    );
+  };
+
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
     if (isAntiDeleteQuery(sql)) {
       return Promise.resolve([[], 0]);
+    }
+
+    if (DISABLE_SESSION_DB_WRITES && isSessionWriteQuery(sql)) {
+      logger.warn("DISABLE_SESSION_DB_WRITES aktif: sessions tablosuna yazma atlandı");
+      return Promise.resolve([[], 0]);
+    }
+
+    if (isSessionWriteQuery(sql)) {
+      const now = Date.now();
+      if (now - _lastSessionWriteQueuedAt < SESSION_WRITE_COALESCE_MS) {
+        return Promise.resolve([[], 0]);
+      }
+      _lastSessionWriteQueuedAt = now;
     }
 
     if (!isWriteQuery(sql)) {
@@ -437,7 +531,7 @@ function applySQLiteResilience(sequelizeInstance) {
         if (bufferedMessageQueries.length > SQLITE_BUFFER_MAX) {
             logger.info(`Tampon ${SQLITE_BUFFER_MAX} öğeye ulaştı, erken yazma yapılıyor...`);
             const pending = bufferedMessageQueries.splice(0);
-            writeQueue.push(...pending);
+            bulkQueue.push(...pending);
             setImmediate(flushQueue);
         }
         
@@ -445,7 +539,8 @@ function applySQLiteResilience(sequelizeInstance) {
     }
 
     return new Promise((resolve, reject) => {
-      writeQueue.push({
+      const queue = isPriorityQuery(sql) ? priorityQueue : bulkQueue;
+      queue.push({
         task: () => originalQuery(sql, ...rest),
         resolve,
         reject,
@@ -461,6 +556,19 @@ function applySQLiteResilience(sequelizeInstance) {
         return Promise.resolve([[], 0]);
       }
 
+      if (DISABLE_SESSION_DB_WRITES && isSessionWriteQuery(sql)) {
+        logger.warn("DISABLE_SESSION_DB_WRITES aktif: sessions tablosuna yazma atlandı");
+        return Promise.resolve([[], 0]);
+      }
+
+      if (isSessionWriteQuery(sql)) {
+        const now = Date.now();
+        if (now - _lastSessionWriteQueuedAt < SESSION_WRITE_COALESCE_MS) {
+          return Promise.resolve([[], 0]);
+        }
+        _lastSessionWriteQueuedAt = now;
+      }
+
       if (!isWriteQuery(sql)) {
         return originalQueryRaw(sql, ...rest);
       }
@@ -473,14 +581,15 @@ function applySQLiteResilience(sequelizeInstance) {
           
           if (bufferedMessageQueries.length > SQLITE_BUFFER_MAX) {
              const pending = bufferedMessageQueries.splice(0);
-             writeQueue.push(...pending);
+             bulkQueue.push(...pending);
              setImmediate(flushQueue);
           }
           return Promise.resolve([[], 0]);
       }
 
       return new Promise((resolve, reject) => {
-        writeQueue.push({
+        const queue = isPriorityQuery(sql) ? priorityQueue : bulkQueue;
+        queue.push({
           task: () => originalQueryRaw(sql, ...rest),
           resolve,
           reject,
