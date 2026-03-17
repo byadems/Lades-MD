@@ -70,6 +70,32 @@ let _scheduledExitTimer = null;
 let _manualReauthMode = false;
 const _botConnectionStateMap = new Map();
 
+
+function parseHeapLimitMbFromArgs() {
+  const argSources = [
+    ...(Array.isArray(process.execArgv) ? process.execArgv : []),
+    ...String(process.env.NODE_OPTIONS || "").split(/\s+/).filter(Boolean),
+  ];
+
+  for (const arg of argSources) {
+    const match = arg.match(/^--max-old-space-size=(\d+)$/);
+    if (match) return Number.parseInt(match[1], 10);
+  }
+
+  return null;
+}
+
+function getEffectiveMemoryLimits() {
+  const heapFromArgs = parseHeapLimitMbFromArgs();
+  const heapFromEnv = Number.parseInt(process.env.HEAP_LIMIT_MB || "", 10);
+  const pm2RestartFromEnv = Number.parseInt(process.env.PM2_RESTART_LIMIT_MB || "", 10);
+
+  return {
+    heapLimitMb: Number.isFinite(heapFromEnv) ? heapFromEnv : heapFromArgs,
+    pm2RestartLimitMb: Number.isFinite(pm2RestartFromEnv) ? pm2RestartFromEnv : null,
+  };
+}
+
 function isLikelyPermanentAuthError(text) {
   if (!text) return false;
   return /(invalid\s*pre\s*key|prekey\s*id|session\s+logged\s+out|logged\s*out|manual\s*re-?auth|device\s*removed|bad\s*session|session\s*invalid|401\b|unauthori[sz]ed|no\s+session\s+found\s+to\s+decrypt\s+message|failed\s+to\s+decrypt)/i.test(text);
@@ -382,6 +408,11 @@ async function main() {
   console.log(`Lades v${require("./package.json").version}`);
   console.log(`- Yapılandırılan oturumlar: ${SESSION.join(", ")}`);
   logger.info(`Yapılandırılan oturumlar: ${SESSION.join(", ")}`);
+  const { heapLimitMb, pm2RestartLimitMb } = getEffectiveMemoryLimits();
+  logger.info(
+    { heapLimitMb, pm2RestartLimitMb, memoryProfile: process.env.MEMORY_PROFILE || "unset" },
+    "Efektif bellek limitleri"
+  );
   if (SESSION.length === 0) {
     const warnMsg =
       "⚠️ Oturum yapılandırılmadı. Lütfen SESSION ortam değişkenini ayarlayın.";
