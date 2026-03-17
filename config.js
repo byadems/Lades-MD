@@ -88,7 +88,9 @@ function applyPostgresResilience(sequelizeInstance) {
     }
   }, PG_BUFFER_FLUSH_MS);
 
-  const DB_QUERY_TIMEOUT_MS = 30000; // 30s — asılı sorgu deadlock'unu önle
+  const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "20000", 10); // 20s — env ile ayarlanabilir
+  const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "5", 10); // event-loop tıkanmasını önlemek için flush chunk boyutu
+
 
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
@@ -98,19 +100,27 @@ function applyPostgresResilience(sequelizeInstance) {
     queueActive = true;
 
     while (writeQueue.length > 0) {
-      const { task, resolve, reject, isBuffered } = writeQueue.shift();
-      try {
-        const result = await Promise.race([
-          task(),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout (30s)')), DB_QUERY_TIMEOUT_MS))
-        ]);
-        if (resolve) resolve(result);
-      } catch (error) {
-        if (!isBuffered) {
-          if (reject) reject(error);
-        } else {
-          logger.error({ err: error }, "Bekleyen veritabanı yazma sorgusu çalıştırılamadı");
+      // Yield to the event loop every DB_BATCH_SIZE items to prevent starvation
+      const batch = writeQueue.splice(0, DB_BATCH_SIZE);
+      for (const { task, resolve, reject, isBuffered } of batch) {
+        try {
+          const result = await Promise.race([
+            task(),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS))
+          ]);
+          if (resolve) resolve(result);
+        } catch (error) {
+          if (!isBuffered) {
+            if (reject) reject(error);
+          } else {
+            logger.warn({ err: error.message }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
+          }
         }
+      }
+
+      // Yield between batches so the event loop can process other work
+      if (writeQueue.length > 0) {
+        await new Promise(resolve => setImmediate(resolve));
       }
     }
 
@@ -142,7 +152,7 @@ function applyPostgresResilience(sequelizeInstance) {
 
   const HIGH_VOLUME_TABLES = [
     "messages", "message_stats", "chats", "contacts", "group_metadata",
-    "users", "userstats", "antideletecaches", "spamtrackers",
+    "users", "userstats", "antideletecaches", "spamtrackers", "sessions",
   ];
 
   const isHighVolumeQuery = (sql) => {
@@ -282,7 +292,8 @@ function applySQLiteResilience(sequelizeInstance) {
     }
   }, SQLITE_BUFFER_FLUSH_MS);
 
-  const DB_QUERY_TIMEOUT_MS = 30000; // 30s — asılı sorgu deadlock'unu önle
+  const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "20000", 10); // 20s
+  const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "5", 10);
 
   const flushQueue = async () => {
     if (queueActive || writeQueue.length === 0) {
@@ -292,19 +303,25 @@ function applySQLiteResilience(sequelizeInstance) {
     queueActive = true;
 
     while (writeQueue.length > 0) {
-      const { task, resolve, reject, isBuffered } = writeQueue.shift();
-      try {
-        const result = await Promise.race([
-          task(),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout (30s)')), DB_QUERY_TIMEOUT_MS))
-        ]);
-        if (resolve) resolve(result);
-      } catch (error) {
-        if (!isBuffered) {
-           if (reject) reject(error);
-        } else {
-           logger.error({ err: error }, "Bekleyen veritabanı yazma sorgusu çalıştırılamadı");
+      const batch = writeQueue.splice(0, DB_BATCH_SIZE);
+      for (const { task, resolve, reject, isBuffered } of batch) {
+        try {
+          const result = await Promise.race([
+            task(),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS))
+          ]);
+          if (resolve) resolve(result);
+        } catch (error) {
+          if (!isBuffered) {
+            if (reject) reject(error);
+          } else {
+            logger.warn({ err: error.message }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
+          }
         }
+      }
+
+      if (writeQueue.length > 0) {
+        await new Promise(resolve => setImmediate(resolve));
       }
     }
 
@@ -337,7 +354,7 @@ function applySQLiteResilience(sequelizeInstance) {
   
   const SQLITE_HV_TABLES = [
     "messages", "message_stats", "chats", "users", "userstats",
-    "antideletecaches", "spamtrackers", "contacts", "group_metadata",
+    "antideletecaches", "spamtrackers", "contacts", "group_metadata", "sessions",
   ];
 
   const isHighVolumeQuery = (sql) => {

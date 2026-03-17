@@ -6,7 +6,7 @@ const RECOVERABLE_SSE_REGEX = /(terminated:\s*other side closed|other side close
 const BASE_BACKOFF_MS = [1000, 2000, 5000];
 const MAX_BACKOFF_MS = 30000;
 const JITTER_RATIO = 0.2;
-const OPERATOR_ALERT_THRESHOLD = Math.max(parseInt(process.env.SSE_OPERATOR_ALERT_THRESHOLD || "5", 10), 1);
+const OPERATOR_ALERT_THRESHOLD = Math.max(parseInt(process.env.SSE_OPERATOR_ALERT_THRESHOLD || "10", 10), 1);
 
 const sessionFailures = new Map();
 

@@ -353,8 +353,7 @@ Module(
     let target = match[1]?.trim();
     if (!target) {
       return await message.sendReply(
-        `_*Mesaj silme engeli*_\n\n_Silinen mesajları kurtarır ve otomatik gönderir_\n\n_Mevcut durum: ${
-          config.ANTI_DELETE || "kapalı"
+        `_*Mesaj silme engeli*_\n\n_Silinen mesajları kurtarır ve otomatik gönderir_\n\n_Mevcut durum: ${config.ANTI_DELETE || "kapalı"
         }_\n\n_Kullanım:_\n\`.antidelete chat\` - _orijinal sohbete gönderir_\n\`.antidelete sudo\` - _ilk yöneticiye gönderir_\n\`.antidelete <jid>\` - _belirtilen JID'e gönderir_\n\`.antidelete off\` - _mesaj silme engelini kapatır_`
       );
     }
@@ -635,8 +634,8 @@ Module(
         var { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `🚨 *Bot Engelleme Sistemi*` +
-            "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") + 
-            "\n💬 *Kullanım:* `.antibot aç/kapat`"
+          "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
+          "\n💬 *Kullanım:* `.antibot aç/kapat`"
         );
       }
       await message.sendReply(
@@ -650,7 +649,7 @@ Module(
   {
     pattern: "antispam ?(.*)",
     fromMe: false,
-    desc: "Spam mesajları tespit eder ve kullanıcıyı atar.",
+    desc: "Spam mesajları tespit eder ve kullanıcıyı çıkarır.",
     use: "group",
   },
   async (message, match) => {
@@ -676,13 +675,13 @@ Module(
         var status = jids.includes(message.jid) ? "Açık" : "Kapalı";
         var { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
-          `🚨 *Antispam Kontrol Menüsü*` +
-            "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") + 
-            "\n💬 *Kullanım:* `.antispam aç/kapat`"
+          `🚨 *Anti-Spam Kontrol Menüsü*` +
+          "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
+          "\n💬 *Kullanım:* `.antispam aç/kapat`"
         );
       }
       await message.sendReply(
-        (match[1] === "aç" || match[1] === "on") ? "_Antispam etkinleştirildi!_" : "_Antispam kapatıldı!_"
+        (match[1] === "aç" || match[1] === "on") ? "_Anti-Spam etkinleştirildi!_" : "_Anti-Spam kapatıldı!_"
       );
     }
   }
@@ -692,7 +691,7 @@ Module(
   {
     pattern: "pdm ?(.*)",
     fromMe: false,
-    desc: "Terfi/yetki alımlarını tespit eder ve uyarı gönderir.",
+    desc: "Yetki verme/alma durumlarını tespit eder ve uyarı gönderir.",
     use: "group",
   },
   async (message, match) => {
@@ -717,8 +716,8 @@ Module(
         var { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `🚨 *Yetki Değişikliği Uyarısı (PDM)*` +
-            "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") + 
-            "\n💬 *Kullanım:* `.pdm aç/kapat`"
+          "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
+          "\n💬 *Kullanım:* `.pdm aç/kapat`"
         );
       }
       await message.sendReply(
@@ -753,8 +752,8 @@ Module(
       var { subject } = await message.client.groupMetadata(message.jid);
       return await message.sendReply(
         `🚨 *Anti Yetki Düşürme Tespit Menüsü*` +
-          "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") + 
-          "\n💬 *Kullanım:* `.antiyetkidüşürme aç/kapat`"
+        "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
+        "\n💬 *Kullanım:* `.antiyetkidüşürme aç/kapat`"
       );
     }
     await message.sendReply(
@@ -788,8 +787,8 @@ Module(
       var { subject } = await message.client.groupMetadata(message.jid);
       return await message.sendReply(
         `🚨 *Anti Yetki Verme Tespit Menüsü*` +
-          "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") + 
-          "\n💬 *Kullanım:* `.antiyetkiverme aç/kapat`"
+        "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
+        "\n💬 *Kullanım:* `.antiyetkiverme aç/kapat`"
       );
     }
     await message.sendReply(
@@ -842,10 +841,10 @@ Module(
             });
           }
 
-          return await message.sendReply(`✅ *Bağlantı Engelleme Etkin!*\n\n` +
-              `• Mod: *${config.mode.toUpperCase()}*\n` +
-              `• Tür: *${config.isWhitelist ? "BEYAZ LİSTE" : "KARA LİSTE"}*\n` +
-              `• Daha fazla seçenek için \`${handler}antibağlantı help\` kullanın`
+          return await message.sendReply(`✅ *Anti-Bağlantı Engelleme Etkin!*\n\n` +
+            `• Mod: *${config.mode.toUpperCase()}*\n` +
+            `• Tür: *${config.isWhitelist ? "BEYAZ LİSTE" : "KARA LİSTE"}*\n` +
+            `• Daha fazla seçenek için \`${handler}antibağlantı help\` kullanın`
           );
 
         case "off":
@@ -857,15 +856,15 @@ Module(
             });
           }
 
-          return await message.sendReply("❌ *Bağlantı Engelleme Kapatıldı!*");
+          return await message.sendReply("❌ *Anti-Bağlantı Engelleme Kapatıldı!*");
 
         case "mode":
           if (!value || !["uyar", "kick", "delete"].includes(value)) {
             return await message.sendReply(`_❌ Geçersiz mod! Mevcut modlar:_\n\n` +
-                `• \`uyar\` - Bağlantı gönderenleri uyar\n` +
-                `• \`çıkar\` - Bağlantı gönderenleri at\n` +
-                `• \`sil\` - Sadece mesajını sil\n\n` +
-                `💬 _Örnek:_ \`${handler}antibağlantı mod sil\``
+              `• \`uyar\` - Bağlantı gönderenleri uyar\n` +
+              `• \`çıkar\` - Bağlantı gönderenleri at\n` +
+              `• \`sil\` - Sadece mesajını sil\n\n` +
+              `💬 _Örnek:_ \`${handler}antibağlantı mod sil\``
             );
           }
 
@@ -887,22 +886,21 @@ Module(
           }
 
           return await message.sendReply(
-            `✅ *Anti Bağlantı modu ${value.toUpperCase()} olarak ayarlandı!*\n\n` +
-              `${
-                value === "uyar"
-                  ? "⚠️ Bağlantı gönderen kullanıcılar uyarılacak"
-                  : value === "çıkar"
-                  ? "👢 Bağlantı gönderen kullanıcılar atılacak"
-                  : "🗑️ Bağlantılar işlem yapılmadan silinecek"
-              }`
+            `✅ *Anti-Bağlantı Engelleme modu ${value.toUpperCase()} olarak ayarlandı!*\n\n` +
+            `${value === "uyar"
+              ? "⚠️ Bağlantı gönderen kullanıcılar uyarılacak"
+              : value === "çıkar"
+                ? "👢 Bağlantı gönderen kullanıcılar atılacak"
+                : "🗑️ Bağlantılar işlem yapılmadan silinecek"
+            }`
           );
 
         case "istisna":
         case "whitelist":
           if (!value) {
             return await message.sendReply(`_💬 Alan adlarını beyaz listeye ekleyin:_\n\n` +
-                `_Kullanım:_ \`${handler}antibağlantı istisna google.com,youtube.com\`\n` +
-                `_Mevcut:_ ${config?.allowedLinks || "gist,instagram,youtu"}`
+              `_Kullanım:_ \`${handler}antibağlantı istisna google.com,youtube.com\`\n` +
+              `_Mevcut:_ ${config?.allowedLinks || "gist,instagram,youtu"}`
             );
           }
 
@@ -927,16 +925,16 @@ Module(
           }
 
           return await message.sendReply(`✅ *İzin verilen bağlantılar güncellendi!*\n\n` +
-              `*Beyaz liste modu:* Sadece bu alan adlarına izin verilir\n` +
-              `*Alan adları:* ${allowedDomains.join(", ")}`
+            `*Beyaz liste modu:* Sadece bu alan adlarına izin verilir\n` +
+            `*Alan adları:* ${allowedDomains.join(", ")}`
           );
 
         case "engelle":
         case "blacklist":
           if (!value) {
             return await message.sendReply(`_💬 Alan adlarını kara listeye ekleyin:_\n\n` +
-                `_Kullanım:_ \`${handler}antibağlantı engelle facebook.com,twitter.com\`\n` +
-                `_Mevcut:_ ${config?.blockedLinks || "Yok"}`
+              `_Kullanım:_ \`${handler}antibağlantı engelle facebook.com,twitter.com\`\n` +
+              `_Mevcut:_ ${config?.blockedLinks || "Yok"}`
             );
           }
 
@@ -961,16 +959,16 @@ Module(
           }
 
           return await message.sendReply(`✅ *Engellenen bağlantılar güncellendi!*\n\n` +
-              `*Kara liste modu:* Bu alan adları engellendi\n` +
-              `*Alan adları:* ${blockedDomains.join(", ")}`
+            `*Kara liste modu:* Bu alan adları engellendi\n` +
+            `*Alan adları:* ${blockedDomains.join(", ")}`
           );
 
         case "mesaj":
         case "msj":
           if (!value) {
             return await message.sendReply(`_⚠️ Özel uyarı mesajı ayarlayın:_\n\n` +
-                `_Kullanım:_ \`${handler}antibağlantı mesaj Bağlantılara izin verilmiyor!\`\n` +
-                `_Mevcut:_ ${config?.customMessage || "Varsayılan mesaj"}`
+              `_Kullanım:_ \`${handler}antibağlantı mesaj Bağlantılara izin verilmiyor!\`\n` +
+              `_Mevcut:_ ${config?.customMessage || "Varsayılan mesaj"}`
             );
           }
 
@@ -994,30 +992,30 @@ Module(
           if (config) {
             await antilinkConfig.delete(message.jid);
           }
-          return await message.sendReply("🔄 *Bağlantı engelleme ayarları sıfırlandı!*"
+          return await message.sendReply("🔄 *Anti-Bağlantı Engelleme ayarları sıfırlandı!*"
           );
 
         case "help":
-          return await message.sendReply(`🛡️ *Bağlantı Engelleme Sistemi Yardımı*\n\n` +
-              `*Temel Komutlar:*\n` +
-              `• \`${handler}antibağlantı aç/kapat\` - Aç/Kapat\n` +
-              `• \`${handler}antibağlantı mod uyar/çıkar/sil\` - İşlemi ayarla\n\n` +
-              `*Bağlantı Kontrolü:*\n` +
-              `• \`${handler}antibağlantı istisna alan1,alan2\` - Beyaz liste modu\n` +
-              `• \`${handler}antibağlantı engelle alan1,alan2\` - Kara liste modu\n\n` +
-              `*Özelleştirme:*\n` +
-              `• \`${handler}antibağlantı mesaj Metniniz\` - Özel uyarı\n` +
-              `• \`${handler}antibağlantı sıfırla\` - Varsayılana sıfırla\n` +
-              `• \`${handler}antibağlantı durum\` - Mevcut ayarları görüntüle\n\n` +
-              `*Algılama:*\n` +
-              `• \`https://ornek.com\` yakalar\n` +
-              `• \`www.ornek.com\` yakalar\n` +
-              `• \`ornek.com\` yakalar\n` +
-              `• \`ornek.com/yol\` yakalar\n\n` +
-              `*Modlar:*\n` +
-              `• *UYAR* - Uyarı verir, sınıra ulaşınca atar\n` +
-              `• *ÇIKAR* - Hemen atar\n` +
-              `• *SİL* - Sadece mesajı siler`
+          return await message.sendReply(`🛡️ *Anti-Bağlantı Engelleme Sistemi Yardımı*\n\n` +
+            `*Temel Komutlar:*\n` +
+            `• \`${handler}antibağlantı aç/kapat\` - Aç/Kapat\n` +
+            `• \`${handler}antibağlantı mod uyar/çıkar/sil\` - İşlemi ayarla\n\n` +
+            `*Bağlantı Kontrolü:*\n` +
+            `• \`${handler}antibağlantı istisna alan1,alan2\` - Beyaz liste modu\n` +
+            `• \`${handler}antibağlantı engelle alan1,alan2\` - Kara liste modu\n\n` +
+            `*Özelleştirme:*\n` +
+            `• \`${handler}antibağlantı mesaj Metniniz\` - Özel uyarı\n` +
+            `• \`${handler}antibağlantı sıfırla\` - Varsayılana sıfırla\n` +
+            `• \`${handler}antibağlantı durum\` - Mevcut ayarları görüntüle\n\n` +
+            `*Algılama:*\n` +
+            `• \`https://ornek.com\` yakalar\n` +
+            `• \`www.ornek.com\` yakalar\n` +
+            `• \`ornek.com\` yakalar\n` +
+            `• \`ornek.com/yol\` yakalar\n\n` +
+            `*Modlar:*\n` +
+            `• *UYAR* - Uyarı verir, sınıra ulaşınca atar\n` +
+            `• *ÇIKAR* - Hemen atar\n` +
+            `• *SİL* - Sadece mesajı siler`
           );
 
         case "durum":
@@ -1036,19 +1034,17 @@ Module(
           const { subject } = await message.client.groupMetadata(message.jid);
 
           return await message.sendReply(
-            `🚨 *Bağlantı Engelleme Sistemi - ${subject}*\n\n` +
-              `ℹ️ *Mevcut Durum:* ${config.enabled ? "Açık ✅" : "Kapalı ❌"}\n` +
-              `⚙️ *Mod:* ${config.mode?.toUpperCase() || "DELETE"}\n` +
-              `🏷️ *Tür:* ${
-                config.isWhitelist ? "⚪ BEYAZ LİSTE" : "⚫ KARA LİSTE"
-              }\n\n` +
-              `*${config.isWhitelist ? "İzin Verilen" : "Engellenen"} Alan Adları:*\n` +
-              `${
-                config.isWhitelist
-                  ? config.allowedLinks || "gist,instagram,youtu"
-                  : config.blockedLinks || "Yok"
-              }\n\n` +
-              `💬 *Kullanım:* \`${handler}antibağlantı yardım\``
+            `🚨 *Anti-Bağlantı Engelleme Sistemi - ${subject}*\n\n` +
+            `ℹ️ *Mevcut Durum:* ${config.enabled ? "Açık ✅" : "Kapalı ❌"}\n` +
+            `⚙️ *Mod:* ${config.mode?.toUpperCase() || "DELETE"}\n` +
+            `🏷️ *Tür:* ${config.isWhitelist ? "⚪ BEYAZ LİSTE" : "⚫ KARA LİSTE"
+            }\n\n` +
+            `*${config.isWhitelist ? "İzin Verilen" : "Engellenen"} Alan Adları:*\n` +
+            `${config.isWhitelist
+              ? config.allowedLinks || "gist,instagram,youtu"
+              : config.blockedLinks || "Yok"
+            }\n\n` +
+            `💬 *Kullanım:* \`${handler}antibağlantı yardım\``
           );
       }
     } catch (error) {
@@ -1118,9 +1114,9 @@ Module(
         var { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `_${subject} yasaklı kelime menüsü_` +
-            "\n\n_Yasaklı kelime engeli şu anda *" +
-            status +
-            "*_\n\n_Ör: .antiword aç/kapat_\n_.antiword warn aç/kapat_\n\n_Özel kelimeler engellemek için `setvar ANTI_WORDS:küfür,hakaret` kullanın veya otomatik algılama için `ANTI_WORDS:auto` ayarlayın (varsayılan olarak zaten etkin!)_"
+          "\n\n_Yasaklı kelime engeli şu anda *" +
+          status +
+          "*_\n\n_Ör: .antikelime aç/kapat_\n_.antikelime uyar aç/kapat_\n\n_Özel kelimeler engellemek için otomatik algılama için `ANTI_WORDS:auto` ayarlayın (varsayılan olarak zaten etkin!)_"
         );
       }
       await message.sendReply(
@@ -1136,7 +1132,7 @@ Module(
     fromMe: true,
     desc: "Kapsamlı arama reddetme yönetim sistemi",
     usage:
-      ".callreject aç/kapat\n.callreject allow <numara>\n.callreject remove <numara>\n.callreject list\n.callreject clear\n.callreject msg <mesaj>\n.callreject msg kapat",
+      ".aramaengel aç/kapat\n.aramaengel beyazlisteyeekle <numara>\n.aramaengel beyazlistelerisil <numara>\n.aramaengel beyazlistelerigöster\n.aramaengel beyazlistelerisil\n.aramaengel mesaj <mesaj>\n.aramaengel mesaj kapat",
     use: "owner",
   },
   async (message, match) => {
@@ -1144,15 +1140,15 @@ Module(
 
     if (!input) {
       return await message.sendReply("🚨 *Arama Reddetme Yönetimi*\n\n" +
-          "ℹ️ *Mevcut Durum:*\n" +
-          `• Arama Reddetme: ${config.REJECT_CALLS ? "Açık ✅" : "Kapalı ❌"}\n` +
-          `• Reddetme Mesajı: ${config.CALL_REJECT_MESSAGE ? "Ayarlı ✅" : "Ayarlanmamış ❌"}\n` +
-          `• Beyaz Listedeki Numaralar: ${config.ALLOWED_CALLS ? config.ALLOWED_CALLS.split(",").length : 0}\n\n` +
-          "💬 *Kullanım:*\n" +
-          "• `.callreject aç/kapat` - Sistemi aç/kapat\n" +
-          "• `.callreject allow <numara>` - Beyaz listeye ekle\n" +
-          "• `.callreject list` - Beyaz listeyi göster\n" +
-          "• `.callreject msg <metin>` - Mesaj ayarla"
+        "ℹ️ *Mevcut Durum:*\n" +
+        `• Arama Reddetme: ${config.REJECT_CALLS ? "Açık ✅" : "Kapalı ❌"}\n` +
+        `• Reddetme Mesajı: ${config.CALL_REJECT_MESSAGE ? "Ayarlı ✅" : "Ayarlanmamış ❌"}\n` +
+        `• Beyaz Listedeki Numaralar: ${config.ALLOWED_CALLS ? config.ALLOWED_CALLS.split(",").length : 0}\n\n` +
+        "💬 *Kullanım:*\n" +
+        "• `.aramaengel aç/kapat` - Sistemi aç/kapat\n" +
+        "• `.aramaengel beyazlisteyeekle <numara>` - Beyaz listeye ekle\n" +
+        "• `.aramaengel beyazlistelerigöster` - Beyaz listeyi göster\n" +
+        "• `.aramaengel mesaj <metin>` - Mesaj ayarla"
       );
     }
 
@@ -1177,6 +1173,7 @@ Module(
         break;
 
       case "allow":
+      case "beyazlisteyeekle":
         if (!rest) {
           if (!message.jid.includes("@g.us")) {
             const chatNumber = message.jid.split("@")[0];
@@ -1189,8 +1186,8 @@ Module(
 
             let allowedNumbers = config.ALLOWED_CALLS
               ? config.ALLOWED_CALLS.split(",")
-                  .map((n) => n.trim())
-                  .filter((n) => n)
+                .map((n) => n.trim())
+                .filter((n) => n)
               : [];
 
             if (allowedNumbers.includes(chatNumber)) {
@@ -1217,8 +1214,8 @@ Module(
 
           let allowedNumbers = config.ALLOWED_CALLS
             ? config.ALLOWED_CALLS.split(",")
-                .map((n) => n.trim())
-                .filter((n) => n)
+              .map((n) => n.trim())
+              .filter((n) => n)
             : [];
 
           if (allowedNumbers.includes(number)) {
@@ -1230,19 +1227,20 @@ Module(
           allowedNumbers.push(number);
           await setVar("ALLOWED_CALLS", allowedNumbers.join(","), false);
           await message.sendReply(
-            `*✅ Whitelisted +${number}*\n\nThis number can now call you even when call rejection is enabled.`
+            `*✅ +${number} beyaz listeye eklendi*\n\nBu numara arama reddetme etkin olsa bile sizi arayabilir.`
           );
         }
         break;
 
       case "remove":
+      case "beyazlistelerisil":
         if (!rest) {
           if (!message.jid.includes("@g.us")) {
             const chatNumber = message.jid.split("@")[0];
             let allowedNumbers = config.ALLOWED_CALLS
               ? config.ALLOWED_CALLS.split(",")
-                  .map((n) => n.trim())
-                  .filter((n) => n)
+                .map((n) => n.trim())
+                .filter((n) => n)
               : [];
 
             if (!allowedNumbers.includes(chatNumber)) {
@@ -1269,8 +1267,8 @@ Module(
 
           let allowedNumbers = config.ALLOWED_CALLS
             ? config.ALLOWED_CALLS.split(",")
-                .map((n) => n.trim())
-                .filter((n) => n)
+              .map((n) => n.trim())
+              .filter((n) => n)
             : [];
 
           if (!allowedNumbers.includes(number)) {
@@ -1282,16 +1280,17 @@ Module(
           allowedNumbers = allowedNumbers.filter((n) => n !== number);
           await setVar("ALLOWED_CALLS", allowedNumbers.join(","), false);
           await message.sendReply(
-            `*🚫 Removed +${number} from whitelist*\n\nThis number will now be blocked when call rejection is enabled.`
+            `*🚫 +${number} beyaz listeden kaldırıldı*\n\nArama reddetme etkin olduğunda bu numara engellenecektir.`
           );
         }
         break;
 
       case "list":
+      case "beyazlistelerigöster":
         const allowedNumbers = config.ALLOWED_CALLS
           ? config.ALLOWED_CALLS.split(",")
-              .map((n) => n.trim())
-              .filter((n) => n)
+            .map((n) => n.trim())
+            .filter((n) => n)
           : [];
 
         if (allowedNumbers.length === 0) {
@@ -1308,10 +1307,11 @@ Module(
         break;
 
       case "clear":
+      case "temizle":
         const currentAllowed = config.ALLOWED_CALLS
           ? config.ALLOWED_CALLS.split(",")
-              .map((n) => n.trim())
-              .filter((n) => n)
+            .map((n) => n.trim())
+            .filter((n) => n)
           : [];
 
         if (currentAllowed.length === 0) {
@@ -1324,16 +1324,16 @@ Module(
         );
         break;
 
-      case "msg":
-      case "message":
+      case "msj":
+      case "mesaj":
         if (!rest) {
           const currentMsg = config.CALL_REJECT_MESSAGE;
           return await message.sendReply("*📞 Arama Reddetme Mesajı*\n\n" +
-              `*Mevcut Mesaj:* ${currentMsg || "Ayarlanmamış"}\n\n` +
-              "*Komutlar:*\n" +
-              "• `.callreject msg <mesajınız>` - Reddetme mesajı ayarla\n" +
-              "• `.callreject msg kapat` - Reddetme mesajını kapat\n\n" +
-              "*Örnek:* `.callreject msg Üzgünüm, şu an meşgulüm. Sizi daha sonra ararım.`"
+            `*Mevcut Mesaj:* ${currentMsg || "Ayarlanmamış"}\n\n` +
+            "*Komutlar:*\n" +
+            "• `.aramaengel msg <mesajınız>` - Reddetme mesajı ayarla\n" +
+            "• `.aramaengel msg kapat` - Reddetme mesajını kapat\n\n" +
+            "*Örnek:* `.aramaengel msg Üzgünüm, şu an meşgulüm. Sizi daha sonra ararım.`"
           );
         }
 
@@ -1351,12 +1351,12 @@ Module(
 
       default:
         await message.sendReply("*❌ Geçersiz komut*\n\n" +
-            "*Geçerli komutlar:* aç, kapat, allow, remove, list, clear, msg\n\n" +
-            "*Örnekler:*\n" +
-            "• `.callreject aç` - Arama reddetmeyi aç\n" +
-            "• `.callreject allow 905554443322` - Numara beyaz listeye ekle\n" +
-            "• `.callreject msg Meşgulüm` - Reddetme mesajı ayarla\n\n" +
-            "Tam yardım menüsü için `.callreject` yazın."
+          "*Geçerli komutlar:* aç, kapat, beyazlisteyeekle, beyazlistelerisil, beyazlistelerigöster, temizle, mesaj\n\n" +
+          "*Örnekler:*\n" +
+          "• `.aramaengel aç` - Arama reddetmeyi aç\n" +
+          "• `.aramaengel allow 905554443322` - Numara beyaz listeye ekle\n" +
+          "• `.aramaengel msg Meşgulüm` - Reddetme mesajı ayarla\n\n" +
+          "Tam yardım menüsü için `.aramaengel` yazın."
         );
         break;
     }
@@ -1387,7 +1387,7 @@ Module(
       }
     } else if (
       message.message?.match(/^(1|2)$/) &&
-      message.reply_message?.text?.includes("1. ON") &&
+      message.reply_message?.text?.includes("1. Açık") &&
       message.quoted.key.fromMe
     ) {
       const quotedMsg = message.reply_message.message;
@@ -1412,7 +1412,7 @@ Module(
       let thatWord = containsDisallowedWords(message.message, disallowedWords);
       if (thatWord) {
         await message.sendReply(
-          `_${thatWord} kelimesi bu sohbette yasaklıdır!_`
+          `🤬 _${thatWord} kelimesi bu sohbette yasaklıdır!_`
         );
         await message.client.groupParticipantsUpdate(
           message.jid,
@@ -1437,7 +1437,7 @@ Module(
         if (message.isGroup) {
           try {
             currentGroupCode = await message.client.groupInviteCode(message.jid);
-          } catch (_) {}
+          } catch (_) { }
         }
 
         for (const link of foundLinks) {
@@ -1466,7 +1466,7 @@ Module(
           await message.send("🚨 *Hey! Grup reklamı yapmamalısın.* 🤐");
           try {
             await message.client.sendMessage(message.jid, { delete: message.data.key });
-          } catch {}
+          } catch { }
           await message.client.groupParticipantsUpdate(
             message.jid,
             [message.sender],
@@ -1541,8 +1541,8 @@ Module(
                   );
                   await message.sendMessage(
                     `${customMessage}\n\n` +
-                      `*İşlem:* Uyarı sınırını aştığı için kullanıcı atıldı\n` +
-                      `*Uyarılar:* ${currentWarns}/${warnLimit}`,
+                    `*İşlem:* Uyarı sınırını aştığı için kullanıcı atıldı\n` +
+                    `*Uyarılar:* ${currentWarns}/${warnLimit}`,
                     "text",
                     {
                       mentions: [usr],
@@ -1551,8 +1551,8 @@ Module(
                 } catch (kickError) {
                   await message.sendMessage(
                     `${customMessage}\n\n` +
-                      `*Uyarılar:* ${currentWarns}/${warnLimit}\n` +
-                      `*Hata:* Kullanıcı atılamadı`,
+                    `*Uyarılar:* ${currentWarns}/${warnLimit}\n` +
+                    `*Hata:* Kullanıcı atılamadı`,
                     "text",
                     {
                       mentions: [usr],
@@ -1562,13 +1562,12 @@ Module(
               } else {
                 await message.sendMessage(
                   `${customMessage}\n\n` +
-                    `*Uyarılar:* ${currentWarns}/${warnLimit}\n` +
-                    `*Kalan:* ${kalan}\n\n` +
-                    `${
-                      kalan === 1
-                        ? "_Sonraki ihlal atılmayla sonuçlanacak!_"
-                        : `_${kalan} uyarı daha kaldı._`
-                    }`,
+                  `*Uyarılar:* ${currentWarns}/${warnLimit}\n` +
+                  `*Kalan:* ${kalan}\n\n` +
+                  `${kalan === 1
+                    ? "_Sonraki ihlal atılmayla sonuçlanacak!_"
+                    : `_${kalan} uyarı daha kaldı._`
+                  }`,
                   "text",
                   {
                     mentions: [usr],

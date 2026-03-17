@@ -41,16 +41,16 @@ async function extractData(message) {
 }
 Module(
   {
-    pattern: "stickcmd ?(.*)",
+    pattern: "otoçıkartma ?(.*)",
     fromMe: true,
     desc: "Komutları çıkartmalara yapıştırır. Çıkartma gönderilirse komut gibi çalışır!",
-    usage: ".stickcmd .kick",
+    usage: ".otoçıkartma .çıkar",
     warn: "Sadece çıkartmalarda çalışır",
     use: "utility",
   },
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.sticker)
-      return await message.sendReply("_💬 Bir çıkartmayı yanıtlayın_\n_Ör: *.stickcmd kick*_"
+      return await message.sendReply("_💬 Bir çıkartmayı yanıtlayın_\n_Ör: *.otoçıkartma .çıkar*_"
       );
     try {
       await stickcmd.set(match[1], await extractData(message));
@@ -71,7 +71,7 @@ Module(
 
 Module(
   {
-    pattern: "çıkartmasil ?(.*)",
+    pattern: "ptoçıkartmasil ?(.*)",
     fromMe: true,
     desc: "Çıkartmalardaki komutları siler",
     usage: ".çıkartmasil kick",
@@ -212,7 +212,7 @@ Module(
 
 Module(
   {
-    pattern: "getmute ?(.*)",
+    pattern: "otosohbet ?(.*)",
     fromMe: false,
     use: "group",
   },
@@ -230,9 +230,9 @@ Module(
           mute[e].unmute = temp.time;
         }
         msg +=
-          `*${Math.floor(parseInt(e) + 1)}. Group:* ${(await message.client.groupMetadata(mute[e].chat)).subject
+          `*${Math.floor(parseInt(e) + 1)}. Grup:* ${(await message.client.groupMetadata(mute[e].chat)).subject
           }
-*➥ Mute:* ${tConvert(mute[e].time)}
+*➥ Sessizlik:* ${tConvert(mute[e].time)}
 *➥ Sessizlik Açılış:* ${tConvert(mute[e].unmute || "Ayarlanmadı")}` + "\n\n";
       }
       if (!msg) return await message.sendReply("_❌ Susturma/Açma kaydı bulunamadı!_");
@@ -300,7 +300,7 @@ Module(
 
       const buttonMessage = {
         text: `🚨 *Anti-Numara Kontrol Menüsü*\n\nℹ️ *Mevcut Durum:* ${status}\n\n💬 *Kullanım:* \`.antinumara aç/kapat\``,
-        footer: config.BOT_NAME || "",
+        footer: "",
         buttons: buttons,
         headerType: 1,
       };
