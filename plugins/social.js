@@ -173,15 +173,15 @@ Module(
 
 Module(
   {
-    pattern: "igbio ?(.*)",
+    pattern: "igara ?(.*)",
     fromMe: isFromMe,
     desc: "Instagram kullanıcı profili bilgilerini gösterir",
-    usage: ".igbio username",
+    usage: ".igara kullanıcıadı",
     use: "stalker",
   },
   async (message, match) => {
     const user = (match[1] || "").trim().replace(/^@/, "");
-    if (!user) return await message.sendReply("📸 _Kullanıcı adı girin:_ `.igbio username`");
+    if (!user) return await message.sendReply("📸 _Kullanıcı adı girin:_ `.igara kullanıcıadı`");
     try {
       const r = await nxTry([
         `/stalker/instagram?username=${encodeURIComponent(user)}`,

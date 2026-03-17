@@ -28,26 +28,12 @@ var handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
 
 
 async function sendBanAudio(message) {
-  const fsp = fs.promises;
-  const tempDir = path.join(__dirname, "temp");
-  const audioPath = path.join(tempDir, "ban.mp3");
+  const audioPath = path.join(__dirname, "utils", "sounds", "Ban.mp3");
 
   try {
-    if (!fs.existsSync(tempDir)) {
-      await fsp.mkdir(tempDir, { recursive: true });
-    }
-
     if (!fs.existsSync(audioPath)) {
-      const response = await axios.get("https://dl.sndup.net/bq7y/Ban.mp3", {
-        responseType: "stream",
-      });
-
-      await new Promise((resolve, reject) => {
-        const writer = fs.createWriteStream(audioPath);
-        response.data.pipe(writer);
-        writer.on("finish", resolve);
-        writer.on("error", reject);
-      });
+      console.error("Ban sesi dosyası bulunamadı:", audioPath);
+      return; // Do not send error to user, just skip audio
     }
 
     const stream = fs.createReadStream(audioPath);
@@ -58,7 +44,6 @@ async function sendBanAudio(message) {
     }
   } catch (err) {
     console.error("Ban sesini gönderirken hata:", err);
-    await message.sendReply("⚠️ _Ban sesi gönderilemedi, işlem devam ediyor._");
   }
 }
 
@@ -90,12 +75,12 @@ Module(
 
 Module(
   {
-    pattern: "çıkar ?(.*)",
+    pattern: "ban ?(.*)",
     fromMe: false,
     desc: Lang.KICK_DESC,
     use: "group",
     usage:
-      ".çıkar @etiket veya yanıtla\n.çıkar hepsi (herkesi at)\n.çıkar 90 (90 ile başlayan numaraları atar)",
+      ".ban @etiket veya yanıtla\n.ban herkes (herkesi at)\n.ban 90 (90 ile başlayan numaraları atar)",
   },
   async (message, match) => {
     if (!message.isGroup) return await message.sendReply(Lang.GROUP_COMMAND);
@@ -108,10 +93,10 @@ Module(
       message.jid
     );
     if (match[1]) {
-      if (match[1] === "all") {
+      if (match[1] === "herkes") {
         let users = participants.filter((member) => !member.admin);
         await message.send(
-          `_❗❗ ${subject} grubunun *tüm* üyeleri atılıyor. Bu işlemi durdurmak için botu hemen yeniden başlatın ❗❗_\n_*5 saniyeniz var*_`
+          `_❗ ${subject} grubunun *tüm* üyeleri atılıyor. Bu işlemi durdurmak için botu hemen yeniden başlatın ❗_\n_*5 saniyeniz var*_`
         );
         await new Promise((r) => setTimeout(r, 5000));
         for (let member of users) {
@@ -345,7 +330,7 @@ Module(
       message.jid
     );
     if (!approvalList.length)
-      return await message.sendReply("_📭 Bekleyen istek yok!_");
+      return await message.sendReply("_📭 Bekleyen katılma isteği yok!_");
     let approvalJids = approvalList.map((x) => x.jid);
     if (match[1]) {
       match = match[1].toLowerCase();

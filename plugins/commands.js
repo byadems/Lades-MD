@@ -50,41 +50,6 @@ const retrieveCommandDetails = (commandName) => {
   };
 };
 
-Module(
-  {
-    pattern: "komut ?(.*)",
-    fromMe: isPrivateMode,
-    desc: "Komut bilgisini verir",
-  },
-  async (message, args) => {
-    const commandName = args[1]?.trim();
-    if (!commandName) {
-      return await message.sendReply("_⚠️ Lütfen bir komut adı girin. Örnek: .komut insta_"
-      );
-    }
-
-    const commandDetails = retrieveCommandDetails(commandName);
-    if (!commandDetails) {
-      return await message.sendReply(
-        `_❌ '${commandName}' komutu bulunamadı. Yazımı kontrol edin._`
-      );
-    }
-
-    let infoMessage = `*📋 ───「 Komut Detayları 」───*\n\n`;
-    infoMessage += `• *Komut:* \`${commandDetails.name}\`\n`;
-    infoMessage += `• *Açıklama:* ${commandDetails.desc || "Yok"}\n`;
-    infoMessage += `• *Sahip Komutu:* ${
-      commandDetails.fromMe ? "Evet" : "Hayır"
-    }\n`;
-    if (commandDetails.use) infoMessage += `• *Tür:* ${commandDetails.use}\n`;
-    if (commandDetails.usage)
-      infoMessage += `• *Kullanım:* ${commandDetails.name} ${commandDetails.usage}\n`;
-    if (commandDetails.warn)
-      infoMessage += `• *Uyarı:* ${commandDetails.warn}\n`;
-
-    await message.sendReply(infoMessage);
-  }
-);
 
 Module(
   {
@@ -348,13 +313,11 @@ Module(
       for (const x of cmd_obj[n]) {
         i = i + 1;
         const newn = CATEGORY_TR[n] || n.charAt(0).toUpperCase() + n.slice(1);
-        final += `${
-          final.includes(newn) ? "" : "\n\n╭════〘 *_`" + newn + "`_* 〙════⊷❍"
-        }\n┃${star}│ _\`${i}.\` ${handlerPrefix}${x.trim()}_${
-          cmd_obj[n]?.indexOf(x) === cmd_obj[n]?.length - 1
+        final += `${final.includes(newn) ? "" : "\n\n╭════〘 *_`" + newn + "`_* 〙════⊷❍"
+          }\n┃${star}│ _\`${i}.\` ${handlerPrefix}${x.trim()}_${cmd_obj[n]?.indexOf(x) === cmd_obj[n]?.length - 1
             ? `\n┃${star}╰─────────────────❍\n╰══════════════════⊷❍`
             : ""
-        }`;
+          }`;
       }
     }
 
@@ -465,10 +428,6 @@ _\`.setinfo\` yerine bu ayrı komutları kullanın:_
 - Örnek: \`.setname Lades\`
 - Açıklama: _Botun görünen adını ayarlar_
 
-*Bot Sahibi:*
-- Komut: \`.setowner <sahip>\`
-- Örnek: \`.setowner Ahmet\`
-- Açıklama: _Bot sahibi adını ayarlar_
 
 *Bot Görseli:*
 - Komut: \`.setimage\`
@@ -503,26 +462,6 @@ Module(
     await setVar("BOT_INFO", parts.join(";"));
     return await message.sendReply(
       `_✅ Bot adı başarıyla güncellendi!_\n\n*📋 Yeni Ad:* ${name}`
-    );
-  }
-);
-
-Module(
-  {
-    pattern: "setowner ?(.*)",
-    fromMe: true,
-    desc: "Bot sahibini ayarlar",
-    use: "settings",
-  },
-  async (message, match) => {
-    const owner = match[1]?.trim();
-    if (!owner)
-      return await message.sendReply("_💬 Sahip verin: .setowner SahipAdi_");
-    const parts = config.BOT_INFO.split(";");
-    parts[1] = owner;
-    await setVar("BOT_INFO", parts.join(";"));
-    return await message.sendReply(
-      `_✅ Bot sahibi başarıyla güncellendi!_\n\n*📋 Yeni Sahip:* ${owner}`
     );
   }
 );
@@ -633,14 +572,14 @@ Module(
     if (!input) {
       return message.sendReply(
         `📣 *Bot Bildirim Merkezi*\n\n` +
-          `_Bot hakkındaki her türlü görüşünü bize iletebilirsin!_\n\n` +
-          `*Kategoriler:*\n` +
-          `🙏🏻 \.bildir istek <mesaj>\` — Özellik isteği\n` +
-          `😤 \.bildir şikayet <mesaj>\` — Şikayet\n` +
-          `🐛 \.bildir hata <mesaj>\` — Hata bildirimi\n` +
-          `💡 \.bildir öneri <mesaj>\` — Fikir/Öneri\n` +
-          `📋 \.bildir talep <mesaj>\` — Özel talep\n\n` +
-          `💬 _Örnek: \.bildir hata Şarkı komutu çalışmıyor\`_`
+        `_Bot hakkındaki her türlü görüşünü bize iletebilirsin!_\n\n` +
+        `*Kategoriler:*\n` +
+        `🙏🏻 \.bildir istek <mesaj>\` — Özellik isteği\n` +
+        `😤 \.bildir şikayet <mesaj>\` — Şikayet\n` +
+        `🐛 \.bildir hata <mesaj>\` — Hata bildirimi\n` +
+        `💡 \.bildir öneri <mesaj>\` — Fikir/Öneri\n` +
+        `📋 \.bildir talep <mesaj>\` — Özel talep\n\n` +
+        `💬 _Örnek: \.bildir hata Şarkı komutu çalışmıyor\`_`
       );
     }
 
@@ -649,8 +588,8 @@ Module(
     if (!kategoriKey) {
       return message.sendReply(
         `❓ *Geçersiz kategori:* \`${parts[0]}\`\n\n` +
-          `🔻 _Geçerli kategoriler:_\n` +
-          `🙏 istek · 😤 şikayet · 🐛 hata · 💡 öneri · 📋 talep`
+        `🔻 _Geçerli kategoriler:_\n` +
+        `🙏 istek · 😤 şikayet · 🐛 hata · 💡 öneri · 📋 talep`
       );
     }
 
@@ -659,7 +598,7 @@ Module(
       const { emoji, label } = KATEGORILER[kategoriKey];
       return message.sendReply(
         `${emoji} *${label}* için bir mesaj yazmalısın.\n\n` +
-          `_Örnek: \.bildir ${parts[0]} Mesajınız buraya...\`_`
+        `_Örnek: \.bildir ${parts[0]} Mesajınız buraya...\`_`
       );
     }
 
@@ -672,7 +611,7 @@ Module(
     if (!hedefJid) {
       return message.sendReply(
         `⚙️ _Bildirim sistemi henüz yapılandırılmamış!_\n` +
-          `_Lütfen geliştiricimi bilgilendirin._`
+        `_Lütfen geliştiricimi bilgilendirin._`
       );
     }
 
@@ -712,13 +651,13 @@ Module(
         mentions: [gonderenJid],
       });
       return message.sendReply(
-          `✅ *Bildiriminizi gönderdim, teşekkürler!*\n\n` +
-          `${emoji} *Kategori:* ${label}\n` +
-          `📝 *Mesajınız:* _${iletilecekMetin}_\n` +
-          (kufurIceriyor
-            ? `🚫➡️✅ *Not:* Uygunsuz ifadeler sansürlenerek iletildi.\n\n`
-            : `\n`) +
-          `_En kısa sürede değerlendirilecektir._ 🙌🏻`
+        `✅ *Bildiriminizi gönderdim, teşekkürler!*\n\n` +
+        `${emoji} *Kategori:* ${label}\n` +
+        `📝 *Mesajınız:* _${iletilecekMetin}_\n` +
+        (kufurIceriyor
+          ? `🚫➡️✅ *Not:* Uygunsuz ifade varsa sansürlenerek iletildi.\n\n`
+          : `\n`) +
+        `_En kısa sürede değerlendirilecektir._ 🙌🏻`
       );
     } catch (err) {
       console.error("[Bildir] Mesaj gönderilemedi:", err?.message || err);
@@ -862,9 +801,9 @@ Module(
       await sendWeatherMessage(
         m,
         `📍 *${cityName}${cityBadge}* için hava durumu:\n` +
-          `${emojiPair.start} Sıcaklık: *${temp}°C* - ${description} ${emojiPair.end}\n` +
-          `💧 Nem: *%${humidity}*\n` +
-          `💨 Rüzgar: *${windSpeed} m/s*`
+        `${emojiPair.start} Sıcaklık: *${temp}°C* - ${description} ${emojiPair.end}\n` +
+        `💧 Nem: *%${humidity}*\n` +
+        `💨 Rüzgar: *${windSpeed} m/s*`
       );
     } catch (error) {
       if (error.response?.status === 404) {
@@ -1016,16 +955,16 @@ Module(
       const portions = r.porsi || r.portions || "-";
       const diff = r.kesulitan || r.difficulty || "-";
       const thumb = r.thumb || r.thumbnail || r.image;
-      
+
       let caption = `🍳 *${title}*\n\n`;
       if (desc) caption += `📝 ${desc}\n\n`;
       caption += `⏱️ *Süre:* ${time}\n`;
       caption += `🍽️ *Porsiyon:* ${portions}\n`;
       caption += `📊 *Zorluk:* ${diff}\n\n`;
-      
+
       if (r.bahan || r.ingredients) caption += `🛒 *Malzemeler:*\n${r.bahan || r.ingredients}\n\n`;
       if (r.cara || r.instructions || r.steps) caption += `👨‍🍳 *Hazırlanışı:*\n${r.cara || r.instructions || r.steps}`;
-      
+
       await message.edit("✅ _Bulundu!_", message.jid, wait.key);
       if (thumb) {
         await message.client.sendMessage(message.jid, { image: { url: thumb }, caption }, { quoted: message.data });

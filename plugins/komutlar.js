@@ -1,12 +1,39 @@
-const { Module } = require('../main');
+const { Module, commands } = require('../main');
+
+// Komut adını çıkaran yardımcı fonksiyon
+const extractCommandName = (pattern) => {
+  const raw = pattern instanceof RegExp ? pattern.source : String(pattern || "");
+  const start = raw.search(/[\p{L}\p{N}]/u);
+  if (start === -1) return "";
+  const cmdPart = raw.slice(start);
+  const match = cmdPart.match(/^[\p{L}\p{N}]+/u);
+  return match && match[0] ? match[0].trim() : "";
+};
+
+// Komut detaylarını bulan yardımcı fonksiyon
+const retrieveCommandDetails = (commandName) => {
+  const foundCommand = commands.find(
+    (cmd) => extractCommandName(cmd.pattern) === commandName
+  );
+  if (!foundCommand) return null;
+  return {
+    name: commandName,
+    ...foundCommand,
+  };
+};
 
 Module({
-  pattern: 'komutlar ?(.*)',
+  pattern: 'komut ?(.*)',
   fromMe: false,
-  desc: 'Türkçe komut listesini getirir.',
+  desc: 'Bot komutlarını listeler veya belirtilen komutun detaylarını gösterir.',
   use: 'utility',
-}, async (m, t) => {
-  await m.sendReply(
+  usage: '.komutlar | .komut spotify'
+}, async (m, match) => {
+  const arg = match[1]?.trim().toLowerCase();
+
+  // Eğer 'lar' yazılmışsa tam listeyi göster
+  if (arg === 'lar') {
+    return await m.sendReply(
     "📣 *GENEL KOMUTLAR*\n" +
     "🧑 .uzakta\nSizi AFK (Uzakta) yapar. Etiketlenirseniz Bot sizin yerinize cevap verir.\n\n" +
     "💻 .kontrol\nBotun çalışıp çalışmadığını kontrol etmenizi sağlar.\n\n" +
@@ -44,7 +71,7 @@ Module({
     "🔽 .ytvideo\nYouTube'daki videoyu istediğiniz kalitede indirmenizi sağlar.\n\n" +
     "" +
     "📷 .insta\nInstagram'dan Gönderi/Reel İndirir.\nÖrnek: .insta bağlantı veya bağlantı mesajına yanıtlayın.\n\n" +
-    "🔎 .igbio\nInstagram'dan kullanıcı bilgilerini getirir. (Stalk)\nÖrnek: .ig Kullanıcı Adı\n\n" +
+    "🔎 .igara\nInstagram'dan kullanıcı bilgilerini getirir. (Stalk)\nÖrnek: .igara Kullanıcı Adı\n\n" +
     "📘 .fb\nFacebook'dan gönderi/video indirir.\nÖrnek: .fb bağlantı veya bağlantı mesajına yanıtlayın\n\n" +
     "" +
     "📌 .pinterest\nPinterest içeriğini indirmeyi sağlar.\nÖrnek: .pinterest bağlantı veya bağlantı mesajına yanıtlayın.\n\n" +
@@ -100,7 +127,8 @@ Module({
     "📋 .plandurum\nPlanlanmış tüm mesajları ve gönderilme zamanlarını listeler.\n\n" +
     "🗑️ .plansil\nPlanlanan mesajı ID numarasıyla iptal eder.\nÖrnek: .plansil 3\n\n" +
     "🔧 *GRUP YÖNETİM KOMUTLARI*\n" +
-    "😈 .at\nEtiketlenen kişiyi (sürprizli bir şekilde) çıkarır.\n\n" +
+    "😈 .at\nEtiketlenen kişiyi (sürprizli bir şekilde) gruptan çıkarır.\n\n" +
+    "❌ .ban\nEtiketlenen kişiyi gruptan çıkarır.\n\n" +
     "🛡️ .ytetiket\nTüm yöneticileri etiketlemeyi sağlar. (Olası bir olayda oldukça kullanışlıdır. Aynı zamanda şikayet/talep/öneri için de kullanılabilir)\n\n" +
     "📢 .tagall\nEtiketlenen mesajı tüm grup üyelerini etiketleyecek şekilde yeniden gönderir. (Duyurular vb. için kullanışlıdır.)\n\n" +
     "👥 .etiket\nGrubun tüm üyelerini etiketler.\n\n" +
@@ -110,7 +138,6 @@ Module({
     "🚫 .filtresil\nFiltreyi (otomatik yanıtı) durdurur.\n\n" +
     "👋 .welcome\nGrup için hoş geldiniz mesajını ayarlar. Eğer mesaj yazmazsanız, ayarlı hoş geldiniz mesajını getirir.\n\n" +
     "👋 .goodbye\nGrup için görüşürüz mesajını ayarlar. Eğer mesaj yazmazsanız, ayarlı görüşürüz mesajını getirir.\n\n" +
-    "❌ .at\nKişiyi gruptan atar. Mesaja yanıt veriniz ya da komutu yazdıktan sonra kişiyi etiketleyiniz.\nÖrnek: .at @abc\n\n" +
     "✅ .istekler\nBekleyen katılım isteklerini toplu onaylamayı veya toplu reddetmeyi sağlar.\nÖrnek: .requests approve all ya da reject all\n\n" +
     "💬 .quoted\nYanıtlanan mesajın yanıtını gösterir. Silinen mesajları geri almak için kullanışlıdır.\n\n" +
     "📈 .mesajlar\nŞu ana kadar üyelerin gönderdiği mesajların sayısını gösterir. (Sadece Bot'un gruba dahil olduğu andan itibaren)\n\n" +
@@ -139,4 +166,36 @@ Module({
     "🔁 .sıfırlauyarı\nKişinin uyarı sayısını sıfırlar.\n\n" +
     "⚙️ .uyarılimit\nGrubun maksimum uyarı limitini ayarlar. (Varsayılan: 3)"
   );
+  return;
+}
+
+// Eğer 'lar' değilse ama yine de bir argüman varsa detay göster
+if (arg) {
+  const commandDetails = retrieveCommandDetails(arg);
+  if (!commandDetails) {
+    return await m.sendReply(
+      `_❌ '${arg}' komutu bulunamadı. Komut listesine bakmak için *.komut lar* yazın._`
+    );
+  }
+
+  let infoMessage = `*📋 ───「 Komut Detayları 」───*\n\n`;
+  infoMessage += `• *Komut:* \`${commandDetails.name}\`\n`;
+  infoMessage += `• *Açıklama:* ${commandDetails.desc || "Yok"}\n`;
+  infoMessage += `• *Sahibi:* ${commandDetails.fromMe ? "Bot Sahibi" : "Herkes"}\n`;
+  if (commandDetails.use) infoMessage += `• *Tür:* ${commandDetails.use}\n`;
+  if (commandDetails.usage)
+    infoMessage += `• *Kullanım:* ${commandDetails.usage}\n`;
+  if (commandDetails.warn)
+    infoMessage += `• *Uyarı:* ${commandDetails.warn}\n`;
+
+  return await m.sendReply(infoMessage);
+}
+
+// Hiçbir şey yazılmamışsa kullanım hatırlatıcısı ver
+await m.sendReply(
+  "*💬 Kullanım:* \n\n" +
+  "• *.komutlar* - Tüm komut listesini gösterir.\n" +
+  "• *.komut <isim>* - Belirli bir komutun detaylarını gösterir.\n" +
+  "_Örnek: .komut spotify_"
+);
 });

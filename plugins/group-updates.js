@@ -44,13 +44,13 @@ Module(
     pattern: "otoçıkartma ?(.*)",
     fromMe: true,
     desc: "Komutları çıkartmalara yapıştırır. Çıkartma gönderilirse komut gibi çalışır!",
-    usage: ".otoçıkartma .çıkar",
+    usage: ".otoçıkartma .ban",
     warn: "Sadece çıkartmalarda çalışır",
     use: "utility",
   },
   async (message, match) => {
     if (!match[1] || !message.reply_message || !message.reply_message.sticker)
-      return await message.sendReply("_💬 Bir çıkartmayı yanıtlayın_\n_Ör: *.otoçıkartma .çıkar*_"
+      return await message.sendReply("_💬 Bir çıkartmayı yanıtlayın_\n_Ör: *.otoçıkartma .ban*_"
       );
     try {
       await stickcmd.set(match[1], await extractData(message));
@@ -71,10 +71,10 @@ Module(
 
 Module(
   {
-    pattern: "ptoçıkartmasil ?(.*)",
+    pattern: "otoçıkartmasil ?(.*)",
     fromMe: true,
     desc: "Çıkartmalardaki komutları siler",
-    usage: ".çıkartmasil kick",
+    usage: ".otoçıkartmasil .ban",
     use: "utility",
   },
   async (message, match) => {
@@ -110,7 +110,7 @@ Module(
       if (!deleted)
         return await message.sendReply("_❌ Böyle bir komut bulunamadı!_");
     } else
-      return await message.sendReply("_💬 Çıkartmaya yanıt verin veya komut girin!_\n_Ör: *.çıkartmasil kick*_"
+      return await message.sendReply("_💬 Çıkartmaya yanıt verin veya komut girin!_\n_Ör: *.otoçıkartmasil .ban*_"
       );
   }
 );
@@ -133,7 +133,7 @@ Module(
 Module(
   {
     pattern: "otosohbetkapat ?(.*)",
-    fromMe: false,
+    fromMe: true,
     warn: "Sunucu saatine göre çalışır",
     use: "group",
   },
@@ -174,7 +174,7 @@ Module(
 Module(
   {
     pattern: "otosohbetaç ?(.*)",
-    fromMe: false,
+    fromMe: true,
     warn: "Sunucu saatine göre çalışır",
     use: "group",
   },
@@ -213,7 +213,7 @@ Module(
 Module(
   {
     pattern: "otosohbet ?(.*)",
-    fromMe: false,
+    fromMe: true,
     use: "group",
   },
   async (message, match) => {
