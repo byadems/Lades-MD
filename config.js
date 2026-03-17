@@ -72,7 +72,8 @@ function applyPostgresResilience(sequelizeInstance) {
 
   // Query buffering (messages, message_stats) - same logic as SQLite to reduce egress
   const originalQuery = sequelizeInstance.query.bind(sequelizeInstance);
-  const writeQueue = [];
+  const priorityQueue = [];
+  const bulkQueue = [];
   const bufferedMessageQueries = [];
   let queueActive = false;
 
@@ -83,7 +84,7 @@ function applyPostgresResilience(sequelizeInstance) {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Periyodik: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
       const pending = bufferedMessageQueries.splice(0);
-      writeQueue.push(...pending);
+      bulkQueue.push(...pending);
       setImmediate(flushQueue);
     }
   }, PG_BUFFER_FLUSH_MS);
@@ -93,15 +94,27 @@ function applyPostgresResilience(sequelizeInstance) {
 
 
   const flushQueue = async () => {
-    if (queueActive || writeQueue.length === 0) {
+    if (queueActive || (priorityQueue.length === 0 && bulkQueue.length === 0)) {
       return;
     }
 
     queueActive = true;
 
-    while (writeQueue.length > 0) {
-      // Yield to the event loop every DB_BATCH_SIZE items to prevent starvation
-      const batch = writeQueue.splice(0, DB_BATCH_SIZE);
+    while (priorityQueue.length > 0 || bulkQueue.length > 0) {
+      // Fairness: if both queues are non-empty, consume 1 priority + N bulk per batch
+      const batch = [];
+      if (priorityQueue.length > 0) {
+        batch.push(priorityQueue.shift());
+      }
+
+      while (batch.length < DB_BATCH_SIZE && bulkQueue.length > 0) {
+        batch.push(bulkQueue.shift());
+      }
+
+      while (batch.length < DB_BATCH_SIZE && priorityQueue.length > 0) {
+        batch.push(priorityQueue.shift());
+      }
+
       for (const { task, resolve, reject, isBuffered } of batch) {
         let timeout;
         try {
@@ -116,7 +129,10 @@ function applyPostgresResilience(sequelizeInstance) {
           if (!isBuffered) {
             if (reject) reject(error);
           } else {
-            logger.warn({ err: error.message }, "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)");
+            logger.warn(
+              { err: error.message, priorityLen: priorityQueue.length, bulkLen: bulkQueue.length },
+              "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)"
+            );
           }
         } finally {
           clearTimeout(timeout);
@@ -124,7 +140,7 @@ function applyPostgresResilience(sequelizeInstance) {
       }
 
       // Yield between batches so the event loop can process other work
-      if (writeQueue.length > 0) {
+      if (priorityQueue.length > 0 || bulkQueue.length > 0) {
         await new Promise(resolve => setImmediate(resolve));
       }
     }
@@ -136,7 +152,7 @@ function applyPostgresResilience(sequelizeInstance) {
     if (bufferedMessageQueries.length > 0) {
       logger.info(`Kapatma: ${bufferedMessageQueries.length} bekleyen mesaj sorgusu veritabanına yazılıyor...`);
       const pending = bufferedMessageQueries.splice(0);
-      writeQueue.push(...pending);
+      bulkQueue.push(...pending);
       await flushQueue();
     }
     clearInterval(_bufferFlushInterval);
@@ -157,7 +173,11 @@ function applyPostgresResilience(sequelizeInstance) {
 
   const HIGH_VOLUME_TABLES = [
     "messages", "message_stats", "chats", "contacts", "group_metadata",
-    "users", "userstats", "antideletecaches", "spamtrackers", "sessions",
+    "users", "userstats", "antideletecaches", "spamtrackers",
+  ];
+
+  const PRIORITY_TABLES = [
+    "sessions", "auth", "auth_state", "botvars", "bot_vars",
   ];
 
   const isHighVolumeQuery = (sql) => {
@@ -175,6 +195,19 @@ function applyPostgresResilience(sequelizeInstance) {
   const isAntiDeleteQuery = (sql) => {
     if (!sql || typeof sql !== "string") return false;
     return sql.toLowerCase().includes("antideletecache");
+  };
+
+  const isPriorityQuery = (sql) => {
+    if (!sql || typeof sql !== "string") return false;
+    const lower = sql.toLowerCase();
+    for (const t of PRIORITY_TABLES) {
+      if (
+        lower.includes(`into "${t}"`) || lower.includes(`into \`${t}\``) || lower.includes(`into ${t} `) ||
+        lower.includes(`update "${t}"`) || lower.includes(`update \`${t}\``) || lower.includes(`update ${t} `) ||
+        lower.includes(`from "${t}"`) || lower.includes(`from \`${t}\``) || lower.includes(`from ${t} `)
+      ) return true;
+    }
+    return false;
   };
 
   sequelizeInstance.query = function serializedQuery(sql, ...rest) {
@@ -195,7 +228,7 @@ function applyPostgresResilience(sequelizeInstance) {
       if (bufferedMessageQueries.length > PG_BUFFER_MAX) {
         logger.info(`Tampon ${PG_BUFFER_MAX} öğeye ulaştı, erken yazma yapılıyor...`);
         const pending = bufferedMessageQueries.splice(0);
-        writeQueue.push(...pending);
+        bulkQueue.push(...pending);
         setImmediate(flushQueue);
       }
 
@@ -203,7 +236,8 @@ function applyPostgresResilience(sequelizeInstance) {
     }
 
     return new Promise((resolve, reject) => {
-      writeQueue.push({
+      const queue = isPriorityQuery(sql) ? priorityQueue : bulkQueue;
+      queue.push({
         task: () => originalQuery(sql, ...rest),
         resolve,
         reject,
@@ -231,14 +265,15 @@ function applyPostgresResilience(sequelizeInstance) {
 
         if (bufferedMessageQueries.length > PG_BUFFER_MAX) {
           const pending = bufferedMessageQueries.splice(0);
-          writeQueue.push(...pending);
+          bulkQueue.push(...pending);
           setImmediate(flushQueue);
         }
         return Promise.resolve([[], 0]);
       }
 
       return new Promise((resolve, reject) => {
-        writeQueue.push({
+        const queue = isPriorityQuery(sql) ? priorityQueue : bulkQueue;
+        queue.push({
           task: () => originalQueryRaw(sql, ...rest),
           resolve,
           reject,
