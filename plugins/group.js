@@ -11,7 +11,7 @@ const baileysPromise = loadBaileys()
     console.error("Baileys yüklenemedi:", err.message);
     process.exit(1);
   });
-const { isAdmin, isNumeric, mentionjid } = require("./utils");
+const { isAdmin, isNumeric, mentionjid, censorBadWords } = require("./utils");
 const config = require("../config");
 const { ADMIN_ACCESS, MODE } = config;
 const { Module } = require("../main");
@@ -678,12 +678,22 @@ Module(
     const botIsAdmin = await isAdmin(message);
     if (!botIsAdmin) return await message.sendReply("❌ _Bot'un bu işlemi yapabilmesi için yönetici olması gerekiyor!_");
 
-    let newName = match[1] || message.reply_message?.text;
+    const newName = (match[1] || message.reply_message?.text || "").trim();
     if (!newName) return await message.sendReply("_⚠️ Metin gerekli!_");
-    return await message.client.groupUpdateSubject(
-      message.jid,
-      (match[1] || message.reply_message?.text).slice(0, 25)
-    );
+
+    try {
+      const oldName = (await message.client.groupMetadata(message.jid)).subject || "Bilinmeyen Grup";
+      const finalName = newName.slice(0, 25);
+
+      await message.client.groupUpdateSubject(message.jid, finalName);
+
+      return await message.sendReply(
+        `✅ _Grup adı değiştirildi!_\n\n*Şöyleydi:* ${censorBadWords(oldName)}\n*Şöyle oldu:* ${censorBadWords(finalName)}`
+      );
+    } catch (error) {
+      console.error("Grup adı değiştirme hatası:", error);
+      return await message.sendReply("❌ _Grup adı değiştirilemedi!_");
+    }
   }
 );
 Module(

@@ -51,18 +51,40 @@ Module(
     use: "whatsapp",
   },
   async (m, t) => {
-    if (!m.reply_message) return await m.sendReply("_💬 Bir mesajı yanıtlayın_");
-    const query = t[1] || m.jid;
-    const jidMap = query.split(" ").filter((x) => x.includes("@"));
-    if (!jidMap.length) {
-      return await m.sendReply("_❌ Sorguda geçerli bir Jid bulunamadı, şunu kullanın: `send jid1 jid2 ...`_"
-      );
+    const query = (t[1] || "").trim();
+
+    if (m.reply_message) {
+      const jidMap = (query || m.jid).split(" ").filter((x) => x.includes("@"));
+      if (!jidMap.length) {
+        return await m.sendReply("_❌ Sorguda geçerli bir Jid bulunamadı, şunu kullanın: `msjat jid1 jid2 ...`_"
+        );
+      }
+      for (const jid of jidMap) {
+        await m.forwardMessage(jid, m.quoted, {
+          contextInfo: { isForwarded: false },
+        });
+      }
+      return;
     }
-    for (const jid of jidMap) {
-      await m.forwardMessage(jid, m.quoted, {
-        contextInfo: { isForwarded: false },
-      });
+
+    if (!query) {
+      return await m.sendReply("_💬 Bir mesajı yanıtlayın veya `.msjat jid mesaj` şeklinde kullanın._");
     }
+
+    const firstSpace = query.indexOf(" ");
+    const jid = firstSpace === -1 ? query : query.slice(0, firstSpace).trim();
+    const text = firstSpace === -1 ? "" : query.slice(firstSpace + 1).trim();
+
+    if (!jid.includes("@")) {
+      return await m.sendReply("_❌ Geçerli bir JID girin. Örnek: `.msjat 120363xxxx@g.us Merhaba`_" );
+    }
+
+    if (!text) {
+      return await m.sendReply("_❌ Gönderilecek mesaj metni eksik!_" );
+    }
+
+    await m.client.sendMessage(jid, { text });
+    return await m.sendReply("_✅ Mesaj gönderildi!_");
   }
 );
 Module(
@@ -73,18 +95,42 @@ Module(
     use: "whatsapp",
   },
   async (m, t) => {
-    if (!m.reply_message) return await m.sendReply("_💬 Bir mesajı yanıtlayın_");
-    const query = t[1] || m.jid;
-    const jidMap = query.split(" ").filter((x) => x.includes("@"));
-    if (!jidMap.length) {
-      return await m.sendReply("_❌ Sorguda geçerli bir Jid bulunamadı, şunu kullanın: `forward jid1 jid2 ...`_"
-      );
+    const query = (t[1] || "").trim();
+
+    if (m.reply_message) {
+      const jidMap = (query || m.jid).split(" ").filter((x) => x.includes("@"));
+      if (!jidMap.length) {
+        return await m.sendReply("_❌ Sorguda geçerli bir Jid bulunamadı, şunu kullanın: `msjyönlendir jid1 jid2 ...`_"
+        );
+      }
+      for (const jid of jidMap) {
+        await m.forwardMessage(jid, m.quoted, {
+          contextInfo: { isForwarded: true, forwardingScore: 2 },
+        });
+      }
+      return;
     }
-    for (const jid of jidMap) {
-      await m.forwardMessage(jid, m.quoted, {
-        contextInfo: { isForwarded: true, forwardingScore: 2 },
-      });
+
+    if (!query) {
+      return await m.sendReply("_💬 Bir mesajı yanıtlayın veya `.msjyönlendir jid mesaj` şeklinde kullanın._");
     }
+
+    const firstSpace = query.indexOf(" ");
+    const jid = firstSpace === -1 ? query : query.slice(0, firstSpace).trim();
+    const text = firstSpace === -1 ? "" : query.slice(firstSpace + 1).trim();
+
+    if (!jid.includes("@")) {
+      return await m.sendReply("_❌ Geçerli bir JID girin. Örnek: `.msjyönlendir 120363xxxx@g.us Merhaba`_" );
+    }
+
+    if (!text) {
+      return await m.sendReply("_❌ Gönderilecek mesaj metni eksik!_" );
+    }
+
+    await m.client.sendMessage(jid, { text }, {
+      contextInfo: { isForwarded: true, forwardingScore: 2 },
+    });
+    return await m.sendReply("_✅ Mesaj gönderildi!_");
   }
 );
 Module(
