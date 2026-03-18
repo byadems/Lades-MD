@@ -1455,10 +1455,22 @@ Module(
           if (currentGroupCode && inviteMatch[2] === currentGroupCode) continue;
 
           const groupMetadata = await message.client.groupMetadata(message.jid);
-          const senderNumber = message.sender.split("@")[0];
+          
+          let senderNumber = message.sender.split("@")[0];
+          let senderName = senderNumber;
+          try {
+            const contact = await message.client.getContact(message.sender);
+            senderName = contact.name || contact.notify || senderNumber;
+            if (contact.number) {
+              senderNumber = contact.number;
+            }
+          } catch {
+            senderName = message.senderName || senderNumber;
+          }
+          
           const infoMessage =
             `Saygıdeğer yöneticilerim; *${groupMetadata.subject}* grubunda ` +
-            `şu şahsı *${senderNumber}* suçüstü yakaladım. 😈
+            `şu şahsı *${senderName}* (+${senderNumber}) suçüstü yakaladım. 😈
 
 🔗 ${message.message}`;
 
