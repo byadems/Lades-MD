@@ -55,7 +55,9 @@ function suppressLibsignalLogs() {
     "No session found",
     "No matching sessions",
     "session not found",
+    "Bad MAC",
     "Bad Mac",
+    "Session error",
     "MessageCounterError",
     "Closing session",
     "Opening session",
@@ -94,6 +96,10 @@ function suppressLibsignalLogs() {
   // console.warn — libsignal session_record.js ("Session already closed/open")
   const _origWarn = console.warn.bind(console);
   console.warn = (...args) => { if (!isNoise(args)) _origWarn(...args); };
+
+  // console.error — libsignal session_cipher.js ("Session error: Bad MAC")
+  const _origError = console.error.bind(console);
+  console.error = (...args) => { if (!isNoise(args)) _origError(...args); };
 }
 
 const jimp = require("jimp");
