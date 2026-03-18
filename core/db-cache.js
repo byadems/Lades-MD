@@ -15,9 +15,10 @@
 const config = require("../config");
 const { logger } = config;
 
-const STATS_FLUSH_INTERVAL = parseInt(process.env.STATS_FLUSH_INTERVAL || String(15 * 60 * 1000), 10);
-const ANTIDELETE_MAX_ENTRIES = parseInt(process.env.ANTIDELETE_MAX || "200", 10);
-const MAX_CACHE_SIZE = parseInt(process.env.MAX_CACHE_SIZE || "2000", 10);
+// 0.2 vCPU / 512MB RAM için optimize edilmiş değerler
+const STATS_FLUSH_INTERVAL = parseInt(process.env.STATS_FLUSH_INTERVAL || String(10 * 60 * 1000), 10);
+const ANTIDELETE_MAX_ENTRIES = parseInt(process.env.ANTIDELETE_MAX || "100", 10);
+const MAX_CACHE_SIZE = parseInt(process.env.MAX_CACHE_SIZE || "500", 10);
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
 

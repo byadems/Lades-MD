@@ -103,22 +103,24 @@ const sequelize = (() => {
   const pgInstance = new Sequelize(DATABASE_URL, {
     dialectOptions: {
       ssl: { require: true, rejectUnauthorized: false },
-      connectTimeout: 30000,
+      connectTimeout: 15000,
+      statement_timeout: 10000,
+      query_timeout: 10000,
     },
     logging: DEBUG,
     pool: isPostgres
       ? {
-          max: parseInt(process.env.PG_POOL_MAX || "3", 10),
-          min: parseInt(process.env.PG_POOL_MIN || "1", 10),
-          acquire: 60000,
-          idle: 20000,
-          evict: 10000,
+          max: parseInt(process.env.PG_POOL_MAX || "2", 10),
+          min: parseInt(process.env.PG_POOL_MIN || "0", 10),
+          acquire: 10000,
+          idle: 5000,
+          evict: 3000,
         }
       : {
-          max: 3,
+          max: 2,
           min: 0,
-          acquire: 60000,
-          idle: 5000,
+          acquire: 10000,
+          idle: 3000,
           evict: 1000,
         },
     retry: {

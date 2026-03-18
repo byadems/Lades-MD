@@ -66,8 +66,8 @@ function applyResilience(sequelizeInstance, opts = {}) {
     ? parseInt(process.env.PG_BUFFER_MAX || "300", 10)
     : 100;
 
-  const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "20000", 10);
-  const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "5", 10);
+  const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "8000", 10);
+  const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "3", 10);
   const DISABLE_SESSION_DB_WRITES = process.env.DISABLE_SESSION_DB_WRITES === "true";
   const SESSION_WRITE_COALESCE_MS = parseInt(process.env.SESSION_WRITE_COALESCE_MS || "2000", 10);
 

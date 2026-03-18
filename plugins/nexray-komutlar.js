@@ -189,7 +189,7 @@ Module(
 );
 
 // ══════════════════════════════════════════════════════════
-// 7. SÖZ — Şarkı sözü bulma
+// 7. SÖZ — Şarkı sözü bulma (lyrics.ovh + LRCLib + Nexray fallback)
 // ══════════════════════════════════════════════════════════
 Module(
   {
@@ -202,18 +202,61 @@ Module(
   async (message, match) => {
     const query = (match[1] || "").trim();
     if (!query) return await message.sendReply("🎵 _Şarkı adı girin:_ `.söz Tarkan Şımarık`");
+    
+    let lyrics = null;
+    let title = query;
+    let artist = null;
+
+    // 1. LRCLib API (en güvenilir)
     try {
-      const r = await nexGet(`/search/lyrics?q=${encodeURIComponent(query)}`);
-      if (!r?.lyrics) throw new Error("Şarkı sözü bulunamadı");
-      const lyrics = r.lyrics.length > 3000 ? r.lyrics.substring(0, 3000) + "\n..." : r.lyrics;
-      await message.sendReply(
-        `🎵 *${r.title || query}*\n` +
-        (r.artist ? `👤 _${r.artist}_\n\n` : "\n") +
-        lyrics
-      );
-    } catch (e) {
-      await message.sendReply(`❌ _Şarkı sözü bulunamadı:_ ${e.message}`);
+      const lrcRes = await axios.get(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`, { timeout: 15000 });
+      if (lrcRes.data?.length > 0) {
+        const track = lrcRes.data[0];
+        lyrics = track.plainLyrics || track.syncedLyrics;
+        title = track.trackName || title;
+        artist = track.artistName;
+      }
+    } catch (_) {}
+
+    // 2. lyrics.ovh API (yedek)
+    if (!lyrics) {
+      try {
+        const parts = query.split(/[-–—]/);
+        if (parts.length >= 2) {
+          const artistName = parts[0].trim();
+          const songName = parts.slice(1).join("-").trim();
+          const ovhRes = await axios.get(`https://api.lyrics.ovh/v1/${encodeURIComponent(artistName)}/${encodeURIComponent(songName)}`, { timeout: 15000 });
+          if (ovhRes.data?.lyrics) {
+            lyrics = ovhRes.data.lyrics;
+            artist = artistName;
+            title = songName;
+          }
+        }
+      } catch (_) {}
     }
+
+    // 3. Nexray API (son yedek)
+    if (!lyrics) {
+      try {
+        const r = await nexGet(`/search/lyrics?q=${encodeURIComponent(query)}`, { timeout: 20000 });
+        if (r?.lyrics) {
+          lyrics = r.lyrics;
+          title = r.title || title;
+          artist = r.artist;
+        }
+      } catch (_) {}
+    }
+
+    if (!lyrics) {
+      return await message.sendReply("❌ _Şarkı sözü bulunamadı. Şarkıcı - Şarkı adı formatında deneyin._");
+    }
+
+    lyrics = lyrics.length > 3000 ? lyrics.substring(0, 3000) + "\n..." : lyrics;
+    await message.sendReply(
+      `🎵 *${title}*\n` +
+      (artist ? `👤 _${artist}_\n\n` : "\n") +
+      lyrics
+    );
   }
 );
 

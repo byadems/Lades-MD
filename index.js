@@ -41,24 +41,26 @@ const {
 const { applyDatabaseCaching, shutdownCache } = require("./core/db-cache");
 const { noteError, hasAnyDegradedSession, withLogThrottle } = require("./core/auth-health");
 
-const MEMORY_CHECK_INTERVAL = 3 * 60 * 1000; // 3 dakikada bir
-const HEAP_WARN_THRESHOLD_MB = 300;
+// 0.2 vCPU / 512MB RAM için optimize edilmiş değerler
+const MEMORY_CHECK_INTERVAL = 2 * 60 * 1000; // 2 dakikada bir
+const HEAP_WARN_THRESHOLD_MB = 250;
 // Her JID için tutulacak maksimum mesaj sayısı
-const MAX_MESSAGES_PER_JID = 30;
+const MAX_MESSAGES_PER_JID = 15;
 // Store'da tutulacak maksimum JID (sohbet) sayısı
-const MAX_STORE_JIDS = 200;
+const MAX_STORE_JIDS = 100;
 
 let _memoryMonitorTimer = null;
 let _runtimeWatchdogTimer = null;
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
-const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || (IS_PRODUCTION ? "1000" : "700"), 10);
-const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || (IS_PRODUCTION ? "12000" : "6000"), 10);
-const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "60000", 10);
-const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String((IS_PRODUCTION ? 45 : 20) * 60 * 1000), 10);
-const EVENT_LOOP_BREACH_WINDOW = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_WINDOW || "5", 10), 1);
-const EVENT_LOOP_BREACH_REQUIRED = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_REQUIRED || "3", 10), 1);
-const EVENT_LOOP_MITIGATION_COOLDOWN_MS = parseInt(process.env.EVENT_LOOP_MITIGATION_COOLDOWN_MS || "120000", 10);
+// 0.2 vCPU / 512MB RAM için optimize edilmiş değerler
+const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || (IS_PRODUCTION ? "5000" : "3000"), 10);
+const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || (IS_PRODUCTION ? "60000" : "30000"), 10);
+const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "120000", 10);
+const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String((IS_PRODUCTION ? 60 : 30) * 60 * 1000), 10);
+const EVENT_LOOP_BREACH_WINDOW = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_WINDOW || "10", 10), 1);
+const EVENT_LOOP_BREACH_REQUIRED = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_REQUIRED || "7", 10), 1);
+const EVENT_LOOP_MITIGATION_COOLDOWN_MS = parseInt(process.env.EVENT_LOOP_MITIGATION_COOLDOWN_MS || "300000", 10);
 const EXIT_GUARD_WINDOW_MS = parseInt(process.env.WATCHDOG_EXIT_GUARD_MS || String(5 * 60 * 1000), 10);
 
 let _allBotsDownSince = null;

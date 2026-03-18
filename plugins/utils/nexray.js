@@ -207,11 +207,32 @@ async function downloadInstagram(url, options = {}) {
 }
 
 /**
- * TikTok indirme
+ * TikTok indirme - TikWM API (birincil) + Nexray (yedek)
  * @param {string} url - TikTok URL
  * @returns {Promise<{url?: string, video?: string}|null>} Video URL veya null
  */
 async function downloadTiktok(url, options = {}) {
+  // 1. TikWM API (daha güvenilir)
+  try {
+    const res = await axios.post("https://www.tikwm.com/api/",
+      `url=${encodeURIComponent(url)}&count=12&cursor=0&web=1&hd=1`,
+      withSignal({
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        timeout: TIMEOUT,
+      }, options.signal)
+    );
+    const data = res.data?.data;
+    if (data) {
+      const videoUrl = data.hdplay || data.play || data.wmplay;
+      if (videoUrl) {
+        return { url: videoUrl, title: data.title, thumbnail: data.cover };
+      }
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[TikWM]", e?.message);
+  }
+
+  // 2. Nexray API (yedek)
   try {
     const res = await axios.get(`${BASE}/downloader/tiktok`, withSignal({
       params: { url },
@@ -274,11 +295,35 @@ async function downloadPinterest(url, options = {}) {
 }
 
 /**
- * Twitter/X video indirme
+ * Twitter/X video indirme - TwDown scraping + Nexray yedek
  * @param {string} url - Twitter/X URL
  * @returns {Promise<{url?: string, video?: string}|null>}
  */
 async function downloadTwitter(url, options = {}) {
+  // 1. TwDown.net scraping (en güvenilir)
+  try {
+    const res = await axios.post("https://twdown.net/download.php",
+      `URL=${encodeURIComponent(url)}`,
+      withSignal({
+        headers: { 
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        },
+        timeout: TIMEOUT,
+      }, options.signal)
+    );
+    // HTML'den video URL'lerini çıkar
+    const html = res.data;
+    const mp4Match = html.match(/https:\/\/[^"'\s]+\.mp4[^"'\s]*/gi);
+    if (mp4Match && mp4Match.length > 0) {
+      // En yüksek kaliteli olanı seç (genellikle ilk)
+      return { url: mp4Match[0].replace(/&amp;/g, "&") };
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("[TwDown]", e?.message);
+  }
+
+  // 2. Nexray API (yedek)
   try {
     const res = await axios.get(`${BASE}/downloader/twitter`, withSignal({
       params: { url },
