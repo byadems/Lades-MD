@@ -20,10 +20,19 @@ async function updateOrCreate(model, findCriteria, createData) {
 const AutoMuteDB = config.sequelize.define("automute", {
   chat: { type: DataTypes.STRING, allowNull: false },
   time: { type: DataTypes.STRING, allowNull: false },
-}, { indexes: [{ fields: ['chat'] }] });
+}, { 
+  indexes: [{ fields: ['chat'] }],
+  timestamps: false,
+});
+
+let _autoMuteSynced = false;
 
 const automute = {
   async get() {
+    if (!_autoMuteSynced) {
+      await AutoMuteDB.sync({ alter: false }).catch(() => {});
+      _autoMuteSynced = true;
+    }
     return await AutoMuteDB.findAll();
   },
   async set(jid, time) {
@@ -38,10 +47,19 @@ const automute = {
 const AutoUnMuteDB = config.sequelize.define("autounmute", {
   chat: { type: DataTypes.STRING, allowNull: false },
   time: { type: DataTypes.STRING, allowNull: false },
-}, { indexes: [{ fields: ['chat'] }] });
+}, { 
+  indexes: [{ fields: ['chat'] }],
+  timestamps: false,
+});
+
+let _autoUnMuteSynced = false;
 
 const autounmute = {
   async get() {
+    if (!_autoUnMuteSynced) {
+      await AutoUnMuteDB.sync({ alter: false }).catch(() => {});
+      _autoUnMuteSynced = true;
+    }
     return await AutoUnMuteDB.findAll();
   },
   async set(jid, time) {
@@ -60,10 +78,19 @@ const autounmute = {
 const StickyCmdDB = config.sequelize.define("stickcmd", {
   command: { type: DataTypes.STRING(1000), allowNull: false },
   file: { type: DataTypes.STRING(1000), allowNull: false },
-}, { indexes: [{ fields: ['command'] }, { fields: ['file'] }] });
+}, { 
+  indexes: [{ fields: ['command'] }, { fields: ['file'] }],
+  timestamps: false,
+});
+
+let _stickyCmdSynced = false;
 
 const stickcmd = {
   async get() {
+    if (!_stickyCmdSynced) {
+      await StickyCmdDB.sync({ alter: false }).catch(() => {});
+      _stickyCmdSynced = true;
+    }
     return await StickyCmdDB.findAll();
   },
   async set(commandName, fileContent) {
@@ -95,10 +122,19 @@ const ScheduledMessageDB = config.sequelize.define("scheduled_messages", {
   message: { type: DataTypes.STRING(2048), allowNull: false },
   scheduleTime: { type: DataTypes.DATE, allowNull: false },
   isSent: { type: DataTypes.BOOLEAN, defaultValue: false },
-}, { indexes: [{ fields: ['scheduleTime', 'isSent'] }, { fields: ['jid'] }] });
+}, { 
+  indexes: [{ fields: ['scheduleTime', 'isSent'] }, { fields: ['jid'] }],
+  timestamps: false,
+});
+
+let _scheduledMsgSynced = false;
 
 const scheduledMessages = {
   async getDueForSending() {
+    if (!_scheduledMsgSynced) {
+      await ScheduledMessageDB.sync({ alter: false }).catch(() => {});
+      _scheduledMsgSynced = true;
+    }
     return await ScheduledMessageDB.findAll({
       where: {
         scheduleTime: { [Op.lte]: new Date() },
@@ -106,6 +142,10 @@ const scheduledMessages = {
     });
   },
   async getAllPending() {
+    if (!_scheduledMsgSynced) {
+      await ScheduledMessageDB.sync({ alter: false }).catch(() => {});
+      _scheduledMsgSynced = true;
+    }
     return await ScheduledMessageDB.findAll();
   },
   async add(jid, message, scheduleTime) {
