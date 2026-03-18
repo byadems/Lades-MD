@@ -245,11 +245,13 @@ Module(
   },
   async (message, match) => {
     try {
+      const variables = await BotVariable.findAll();
       let msg = "*Tüm Bot Değişkenleri:*\n\n";
-      for (const key in config) {
-        if (!variables.find((v) => v.key === key)) {
-          msg += `*${key}*: ${config[key]}\n`;
-        }
+      for (const v of variables) {
+        msg += `*${v.key}*: ${v.value}\n`;
+      }
+      if (!variables.length) {
+        msg += "_Henüz bir değişken ayarlanmamış._";
       }
 
       await message.sendReply(msg);
@@ -398,7 +400,7 @@ Module(
     use: "owner",
   },
   async (message, mm) => {
-    var m = message;
+    const m = message;
     let targetLid;
 
     // determine target based on context
@@ -616,7 +618,7 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       match[1] = match[1] ? match[1].toLowerCase() : "";
-      var db = await antibot.get();
+      const db = await antibot.get();
       const jids = [];
       db.map((data) => {
         jids.push(data.jid);
@@ -630,8 +632,8 @@ Module(
         await antibot.delete(message.jid);
       }
       if (match[1] !== "aç" && match[1] !== "kapat" && match[1] !== "on" && match[1] !== "off") {
-        var status = jids.includes(message.jid) ? "Açık" : "Kapalı";
-        var { subject } = await message.client.groupMetadata(message.jid);
+        const status = jids.includes(message.jid) ? "Açık" : "Kapalı";
+        const { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `🚨 *Bot Engelleme Sistemi*` +
           "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
@@ -658,7 +660,7 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       match[1] = match[1] ? match[1].toLowerCase() : "";
-      var db = await antispam.get();
+      const db = await antispam.get();
       const jids = [];
       db.map((data) => {
         jids.push(data.jid);
@@ -672,8 +674,8 @@ Module(
         await antispam.delete(message.jid);
       }
       if (match[1] !== "aç" && match[1] !== "kapat" && match[1] !== "on" && match[1] !== "off") {
-        var status = jids.includes(message.jid) ? "Açık" : "Kapalı";
-        var { subject } = await message.client.groupMetadata(message.jid);
+        const status = jids.includes(message.jid) ? "Açık" : "Kapalı";
+        const { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `🚨 *Anti-Spam Kontrol Menüsü*` +
           "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
@@ -700,7 +702,7 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       match[1] = match[1] ? match[1].toLowerCase() : "";
-      var db = await pdm.get();
+      const db = await pdm.get();
       const jids = [];
       db.map((data) => {
         jids.push(data.jid);
@@ -712,8 +714,8 @@ Module(
         await pdm.delete(message.jid);
       }
       if (match[1] !== "aç" && match[1] !== "kapat" && match[1] !== "on" && match[1] !== "off") {
-        var status = jids.includes(message.jid) ? "Açık" : "Kapalı";
-        var { subject } = await message.client.groupMetadata(message.jid);
+        const status = jids.includes(message.jid) ? "Açık" : "Kapalı";
+        const { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `🚨 *Yetki Değişikliği Uyarısı (PDM)*` +
           "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
@@ -736,7 +738,7 @@ Module(
   },
   async (message, match) => {
     match[1] = match[1] ? match[1].toLowerCase() : "";
-    var db = await antidemote.get();
+    const db = await antidemote.get();
     const jids = [];
     db.map((data) => {
       jids.push(data.jid);
@@ -748,8 +750,8 @@ Module(
       await antidemote.delete(message.jid);
     }
     if (match[1] !== "aç" && match[1] !== "kapat" && match[1] !== "on" && match[1] !== "off") {
-      var status = jids.includes(message.jid) ? "Açık" : "Kapalı";
-      var { subject } = await message.client.groupMetadata(message.jid);
+      const status = jids.includes(message.jid) ? "Açık" : "Kapalı";
+      const { subject } = await message.client.groupMetadata(message.jid);
       return await message.sendReply(
         `🚨 *Anti Yetki Düşürme Tespit Menüsü*` +
         "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
@@ -771,7 +773,7 @@ Module(
   },
   async (message, match) => {
     match[1] = match[1] ? match[1].toLowerCase() : "";
-    var db = await antipromote.get();
+    const db = await antipromote.get();
     const jids = [];
     db.map((data) => {
       jids.push(data.jid);
@@ -783,8 +785,8 @@ Module(
       await antipromote.delete(message.jid);
     }
     if (match[1] !== "aç" && match[1] !== "kapat" && match[1] !== "on" && match[1] !== "off") {
-      var status = jids.includes(message.jid) ? "Açık" : "Kapalı";
-      var { subject } = await message.client.groupMetadata(message.jid);
+      const status = jids.includes(message.jid) ? "Açık" : "Kapalı";
+      const { subject } = await message.client.groupMetadata(message.jid);
       return await message.sendReply(
         `🚨 *Anti Yetki Verme Tespit Menüsü*` +
         "\n\nℹ️ *Mevcut Durum:* " + status + " " + (jids.includes(message.jid) ? "✅" : "❌") +
@@ -1068,12 +1070,12 @@ Module(
       : false;
     if (message.fromOwner || adminAccesValidated) {
       match[1] = match[1] ? match[1].toLowerCase() : "";
-      var db = await antiword.get();
+      const db = await antiword.get();
       const jids = [];
       db.map((data) => {
         jids.push(data.jid);
       });
-      var antiwordWarn = config.ANTIWORD_WARN?.split(",") || [];
+      const antiwordWarn = config.ANTIWORD_WARN?.split(",") || [];
       if (match[1].includes("warn")) {
         if (match[1].endsWith("on") || match[1].endsWith("aç")) {
           if (!(await isAdmin(message)))
@@ -1107,11 +1109,11 @@ Module(
         await antiword.delete(message.jid);
       }
       if (match[1] !== "aç" && match[1] !== "kapat" && match[1] !== "on" && match[1] !== "off") {
-        var status =
+        const status =
           jids.includes(message.jid) || antiwordWarn.includes(message.jid)
             ? "Açık"
             : "Kapalı";
-        var { subject } = await message.client.groupMetadata(message.jid);
+        const { subject } = await message.client.groupMetadata(message.jid);
         return await message.sendReply(
           `_${subject} yasaklı kelime menüsü_` +
           "\n\n_Yasaklı kelime engeli şu anda *" +
@@ -1404,7 +1406,7 @@ Module(
 
     const antiwordjids = await getCachedAntiwordJids();
     if (antiwordjids.has(message.jid)) {
-      var antiwordWarn = config.ANTIWORD_WARN?.split(",") || [];
+      const antiwordWarn = config.ANTIWORD_WARN?.split(",") || [];
       if (antiwordWarn.includes(message.jid)) return;
       let disallowedWords = (config.ANTI_WORDS || "auto").split(",");
       if (config.ANTI_WORDS == "auto")
@@ -1460,9 +1462,14 @@ Module(
 
 🔗 ${message.message}`;
 
-          await message.client.sendMessage("120363258254647790@g.us", {
-            text: infoMessage,
-          });
+          const adminGroupJid = config.ADMIN_GROUP_JID;
+          if (adminGroupJid) {
+            try {
+              await message.client.sendMessage(adminGroupJid, {
+                text: infoMessage,
+              });
+            } catch (_) { /* admin grubuna gönderilemedi, devam et */ }
+          }
           await message.send("🚨 *Hey! Grup reklamı yapmamalısın.* 🤐");
           try {
             await message.client.sendMessage(message.jid, { delete: message.data.key });
@@ -1675,7 +1682,7 @@ Module(
   },
   async (message) => {
     if (message.message?.startsWith(">")) {
-      var m = message;
+      const m = message;
       const util = require("util");
       const js = (x) => JSON.stringify(x, null, 2);
       try {

@@ -1,8 +1,8 @@
 const { Module } = require("../main");
-const { ADMIN_ACCESS, HANDLERS } = require("../config");
+const { ADMIN_ACCESS, HANDLER_PREFIX } = require("../config");
 const { isAdmin, filter } = require("./utils");
 
-const handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+const handler = HANDLER_PREFIX;
 
 Module(
   {

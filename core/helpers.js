@@ -49,19 +49,51 @@ async function loadBaileys() {
 }
 
 function suppressLibsignalLogs() {
-  const LIBSIGNAL_NOISE = [
+  // Birincil savunma: postinstall patch (scripts/patch-libsignal.js)
+  // Bu fonksiyon ikincil fallback: patch uygulanamamışsa runtime'da yakalar.
+  const LIBSIGNAL_NOISE_STR = [
     "No session found",
     "No matching sessions",
     "session not found",
     "Bad Mac",
     "MessageCounterError",
+    "Closing session",
+    "Opening session",
+    "Removing old closed session",
+    "Session already closed",
+    "Session already open",
+    "Closing stale open session",
+    "Closing open session",
+    "SessionEntry",
   ];
+
+  function isSignalObject(arg) {
+    if (!arg || typeof arg !== "object") return false;
+    const name = arg.constructor?.name;
+    if (name === "SessionEntry" || name === "SessionRecord") return true;
+    if (arg._chains !== undefined || arg.currentRatchet !== undefined || arg.pendingPreKey !== undefined) return true;
+    return false;
+  }
+
+  function isNoise(args) {
+    for (const arg of args) {
+      if (typeof arg === "string" && LIBSIGNAL_NOISE_STR.some((p) => arg.includes(p))) return true;
+      if (isSignalObject(arg)) return true;
+    }
+    return false;
+  }
+
+  // console.log — Baileys session_builder.js
   const _origLog = console.log.bind(console);
-  console.log = (...args) => {
-    const msg = typeof args[0] === "string" ? args[0] : "";
-    if (LIBSIGNAL_NOISE.some((p) => msg.includes(p))) return;
-    _origLog(...args);
-  };
+  console.log = (...args) => { if (!isNoise(args)) _origLog(...args); };
+
+  // console.info — libsignal session_record.js (closeSession, openSession, removeOldSessions)
+  const _origInfo = console.info.bind(console);
+  console.info = (...args) => { if (!isNoise(args)) _origInfo(...args); };
+
+  // console.warn — libsignal session_record.js ("Session already closed/open")
+  const _origWarn = console.warn.bind(console);
+  console.warn = (...args) => { if (!isNoise(args)) _origWarn(...args); };
 }
 
 const jimp = require("jimp");

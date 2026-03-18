@@ -7,7 +7,7 @@ const config = require("../config");
 const fs = require("fs").promises;
 const axios = require("axios");
 
-const handler = config.HANDLERS !== "false" ? config.HANDLERS.split("")[0] : "";
+const handler = config.HANDLER_PREFIX;
 const localPackageJson = require("../package.json");
 
 async function isGitRepo() {

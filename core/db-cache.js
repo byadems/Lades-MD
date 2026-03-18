@@ -51,8 +51,8 @@ class LRUCache {
 
 // ─── Caches ──────────────────────────────────────────────────────────────────
 
-const chatCache = new Map();
-const userCache = new Map();
+const chatCache = new LRUCache(MAX_CACHE_SIZE);
+const userCache = new LRUCache(MAX_CACHE_SIZE);
 const antiDeleteCache = new LRUCache(ANTIDELETE_MAX_ENTRIES);
 const userStatsCache = new Map();
 
@@ -174,7 +174,6 @@ function applyDatabaseCaching() {
     try {
       const result = await _origChatFindOrCreate(options);
       if (jid && result?.[0]) chatCache.set(jid, result[0]);
-      pruneMap(chatCache);
       return result;
     } catch (e) {
       if (jid && options?.defaults) {
@@ -204,7 +203,6 @@ function applyDatabaseCaching() {
     try {
       const result = await _origChatUpsert(values, options);
       if (jid && result?.[0]) chatCache.set(jid, result[0]);
-      pruneMap(chatCache);
       return result;
     } catch (e) {
       if (jid) {
@@ -243,7 +241,6 @@ function applyDatabaseCaching() {
     try {
       const result = await _origUserFindOrCreate(options);
       if (jid && result?.[0]) userCache.set(jid, result[0]);
-      pruneMap(userCache);
       return result;
     } catch (e) {
       if (jid && options?.defaults) {
@@ -273,7 +270,6 @@ function applyDatabaseCaching() {
     try {
       const result = await _origUserUpsert(values, options);
       if (jid && result?.[0]) userCache.set(jid, result[0]);
-      pruneMap(userCache);
       return result;
     } catch (e) {
       if (jid) {
@@ -512,12 +508,9 @@ function pruneMap(map) {
   }
 }
 
-// Periyodik cache temizliği: her 20 dakikada bir tüm cache Map'lerini prune et.
-// pruneMap normalde sadece set() çağrısında tetiklenir; bu timer yazma
-// işlemlerinin azaldığı saatlerde süregelen bellek şişmesini önler.
+// Periyodik cache temizliği: her 20 dakikada bir userStatsCache'i prune et.
+// chatCache ve userCache artık LRUCache kullandığından otomatik eviction yapar.
 const _cacheCleanupTimer = setInterval(() => {
-  pruneMap(chatCache);
-  pruneMap(userCache);
   pruneMap(userStatsCache);
 }, 20 * 60 * 1000);
 if (_cacheCleanupTimer.unref) _cacheCleanupTimer.unref();

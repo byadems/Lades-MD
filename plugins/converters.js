@@ -137,8 +137,8 @@ Module(
   },
   async (message, match) => {
     if (match[1] && match[1].trim() !== "") {
-      var result = await attp(match[1].trim());
-      var exif = {
+      const result = await attp(match[1].trim());
+      const exif = {
         author: STICKER_DATA.split(";")[1] || "",
         packname: message.senderName,
         categories: STICKER_DATA.split(";")[2] || "😂",
@@ -154,7 +154,7 @@ Module(
     if (message.reply_message === false)
       return await message.send(Lang.STICKER_NEED_REPLY);
 
-    var exif = {
+    const exif = {
       author: STICKER_DATA.split(";")[1] || "",
       packname: message.senderName,
       categories: STICKER_DATA.split(";")[2] || "😂",
@@ -188,7 +188,7 @@ Module(
       return;
     }
 
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     if (message.reply_message.image === true) {
       return await message.sendMessage(
         fs.readFileSync(await addExif(await sticker(savedFile), exif)),
@@ -308,12 +308,12 @@ Module(
       return;
     }
 
-    var { seconds } =
+    const { seconds } =
       message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 120)
       await message.sendReply(`_❌ Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
       );
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
       .audioFilter("atempo=0.5")
       .outputOptions(["-y", "-af", "asetrate=44100*0.9"])
@@ -373,12 +373,12 @@ Module(
       return;
     }
 
-    var { seconds } =
+    const { seconds } =
       message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 120)
       await message.sendReply(`_❌ Uyarı: Süre 2 dakikadan uzun. Bu işlem başarısız olabilir veya çok daha uzun sürebilir!_`
       );
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
       .audioFilter("atempo=0.5")
       .outputOptions(["-y", "-af", "asetrate=44100*1.2"])
@@ -426,7 +426,7 @@ Module(
       return;
     }
 
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     bass(savedFile, match[1], async function (audio) {
       await message.sendMessage(audio, "audio", { quoted: message.data });
     });
@@ -441,7 +441,7 @@ Module(
   async (message, match) => {
     if (message.reply_message === false)
       return await message.send(Lang.PHOTO_NEED_REPLY);
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     ffmpeg(savedFile)
       .fromFormat("webp_pipe")
       .save("output.png")
@@ -458,8 +458,8 @@ Module(
   },
   async (message, match) => {
     if (match[1] == "") return await message.send("*_💬 Metin gerekli!_*");
-    var result = await attp(match[1]);
-    var exif = {
+    const result = await attp(match[1]);
+    const exif = {
       author: STICKER_DATA.split(";")[1] || "",
       packname: message.senderName,
       categories: STICKER_DATA.split(";")[2] || "😂",
@@ -479,11 +479,11 @@ Module(
     use: "utility",
   },
   async (message, match) => {
-    var query = match[1] || message.reply_message.text;
+    let query = match[1] || message.reply_message.text;
     if (!query) return await message.sendReply(Lang.TTS_NEED_REPLY);
     const ttsDir = getTempSubdir("tts");
     query = query.replace("tts", "");
-    var lng = "en";
+    let lng = "en";
     if (/[\u0D00-\u0D7F]+/.test(query)) lng = "ml";
     let LANG = lng,
       ttsMessage = query,
@@ -702,9 +702,9 @@ Module(
         try {
           const filePath = allFiles[i];
           const stream = fs.createReadStream(filePath);
-          var randomHash = Math.random().toString(36).substring(2, 8);
-          var fileName = match[1] || `album_${i}_${randomHash}`;
-          var mimetype = "application/octet-stream";
+          const randomHash = Math.random().toString(36).substring(2, 8);
+          let fileName = match[1] || `album_${i}_${randomHash}`;
+          const mimetype = "application/octet-stream";
 
           if (!fileName.includes(".")) {
             const ext = filePath.split(".").pop();
@@ -736,9 +736,9 @@ Module(
 
       const filePath = await message.reply_message.download();
       const stream = fs.createReadStream(filePath);
-      var randomHash = Math.random().toString(36).substring(2, 8);
-      var fileName = match[1];
-      var mimetype = mediaInfo.mimetype || "application/octet-stream";
+      const randomHash = Math.random().toString(36).substring(2, 8);
+      let fileName = match[1];
+      const mimetype = mediaInfo.mimetype || "application/octet-stream";
 
       if (message.reply_message.document && mediaInfo.fileName && !match[1]) {
         fileName = mediaInfo.fileName;
@@ -794,7 +794,7 @@ Module(
     desc: "URL'den dosya indirir ve belge olarak gönderir",
   },
   async (message, match) => {
-    var url =
+    let url =
       match[1] || (message.reply_message ? message.reply_message.text : "");
 
     const urlMatch = url.match(/https?:\/\/[^\s]+/);
@@ -816,9 +816,9 @@ Module(
         timeout: 60000,
       });
 
-      var randomHash = Math.random().toString(36).substring(2, 8);
-      var fileName = `downloaded_file_${randomHash}`;
-      var mimetype =
+      const randomHash = Math.random().toString(36).substring(2, 8);
+      let fileName = `downloaded_file_${randomHash}`;
+      let mimetype =
         response.headers["content-type"] || "application/octet-stream";
 
       const contentDisposition = response.headers["content-disposition"];

@@ -373,7 +373,7 @@ Module(
     )
       return await message.send(Lang.AVMIX_NEED_FILES);
     if (message.reply_message.audio) {
-      var savedFile = await message.reply_message.download();
+      const savedFile = await message.reply_message.download();
       await fs.writeFileSync(
         getTempPath("avmix/audio.mp3"),
         fs.readFileSync(savedFile)
@@ -381,7 +381,7 @@ Module(
       return await message.sendReply(Lang.AVMIX_AUDIO_ADDED);
     }
     if (message.reply_message.video) {
-      var savedFile = await message.reply_message.download();
+      const savedFile = await message.reply_message.download();
       await fs.writeFileSync(
         getTempPath("avmix/video.mp4"),
         fs.readFileSync(savedFile)
@@ -416,7 +416,7 @@ Module(
     )
       return await message.send("_🎬 Bana videolar verin_");
     if (message.reply_message.video && files.length == 1) {
-      var savedFile = await message.reply_message.download();
+      const savedFile = await message.reply_message.download();
       await fs.writeFileSync(
         getTempPath("vmix/video1.mp4"),
         fs.readFileSync(savedFile)
@@ -425,7 +425,7 @@ Module(
       );
     }
     if (message.reply_message.video && files.length == 0) {
-      var savedFile = await message.reply_message.download();
+      const savedFile = await message.reply_message.download();
       await fs.writeFileSync(
         getTempPath("vmix/video2.mp4"),
         fs.readFileSync(savedFile)
@@ -434,7 +434,7 @@ Module(
     }
     async function merge(files, folder, filename) {
       return new Promise((resolve, reject) => {
-        var cmd = ffmpeg({ priority: 20 })
+        const cmd = ffmpeg({ priority: 20 })
           .fps(29.7)
           .on("error", function (err) {
             resolve();
@@ -443,7 +443,7 @@ Module(
             resolve(fs.readFileSync(folder + "/" + filename));
           });
 
-        for (var i = 0; i < files.length; i++) {
+        for (let i = 0; i < files.length; i++) {
           cmd.input(files[i]);
         }
 
@@ -475,7 +475,7 @@ Module(
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     await message.sendReply("*✨ Hareket enterpolasyonu ve işleniyor..*");
     ffmpeg(savedFile)
       .videoFilters("minterpolate=fps=120")
@@ -509,7 +509,7 @@ Module(
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     await message.sendReply("*⏳ İşleniyor..*");
     ffmpeg(savedFile)
       .fps(13)
@@ -536,7 +536,7 @@ Module(
       return await message.send("*⚠️ FPS değeri düşük*\n*Minimum = 10*");
     if (match[1] >= 500)
       return await message.send("*⚠️ FPS değeri yüksek*\n*Maksimum = 500*");
-    var savedFile = await message.reply_message.download();
+    const savedFile = await message.reply_message.download();
     await message.sendReply("*✨ Hareket enterpolasyonu ve işleniyor..*");
     ffmpeg(savedFile)
       .videoFilters(`minterpolate=fps=${match[1]}:mi_mode=mci:me_mode=bidir`)
@@ -562,23 +562,23 @@ Module(
     if (!message.reply_message?.audio)
       return await message.sendReply("⚠️ Bir ses dosyasına etiketleyerek yazın!");
 
-    var { seconds } = message.quoted.message[Object.keys(message.quoted.message)[0]];
+    const { seconds } = message.quoted.message[Object.keys(message.quoted.message)[0]];
     if (seconds > 60)
       return await message.sendReply(
         "⚠️ *Ses çok uzun! .trim komutunu kullanıp sesi 60 saniyeye düşürmenizi öneririm.*"
       );
 
     await message.send("🧐 Şarkıyı dinliyorum...");
-    var audio = await message.reply_message.download("buffer");
-    var data = await findMusic(audio);
+    const audio = await message.reply_message.download("buffer");
+    const data = await findMusic(audio);
     if (!data)
       return await message.sendReply(
         "🤯 Eşleşen bir sonuç bulunamadı! 👩🏻‍🔧 Dilerseniz daha iyi bir analiz için 15 saniyenin üzerinde kaydederek tekrar deneyin."
       );
 
     function getDuration(millis) {
-      var minutes = Math.floor(millis / 60000);
-      var seconds = ((millis % 60000) / 1000).toFixed(0);
+      const minutes = Math.floor(millis / 60000);
+      const seconds = ((millis % 60000) / 1000).toFixed(0);
       return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
 
@@ -607,8 +607,8 @@ Module(
     if (!match[1] || !message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*\n*.rotate sol|sağ|ters*"
       );
-    var file = await message.reply_message.download();
-    var angle = "1";
+    const file = await message.reply_message.download();
+    let angle = "1";
     const dir = (match[1] || "").toLowerCase();
     if (dir === "left" || dir === "sol") angle = "2";
     if (dir === "flip" || dir === "ters") angle = "3";
@@ -624,8 +624,8 @@ Module(
   async (message, match) => {
     if (!message.reply_message || !message.reply_message.video)
       return await message.sendReply("*🎬 Bir videoyu yanıtla*");
-    var file = await message.reply_message.download();
-    var angle = "3";
+    const file = await message.reply_message.download();
+    const angle = "3";
     await message.send("_⏳ İşleniyor..._");
     await message.sendReply(
       fs.readFileSync(await rotate(file, angle)),

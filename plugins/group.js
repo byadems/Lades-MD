@@ -89,7 +89,7 @@ Module(
     const botIsAdmin = await isAdmin(message);
     if (!botIsAdmin) return await message.sendReply("❌ _Bot'un bu işlemi yapabilmesi için yönetici olması gerekiyor!_");
     
-    var { participants, subject } = await message.client.groupMetadata(
+    const { participants, subject } = await message.client.groupMetadata(
       message.jid
     );
     if (match[1]) {
@@ -586,7 +586,7 @@ Module(
           ? await isAdmin(message, message.sender)
           : false;
       if (message.fromOwner || adminAccesValidated) {
-        var jid = message.reply_message?.jid || message.jid;
+        const jid = message.reply_message?.jid || message.jid;
         await message.sendReply(jid);
       }
     } else {
@@ -602,7 +602,7 @@ Module({pattern: 'davet', fromMe: true, use: 'group', desc: Lang.INVITE_DESC}, (
     const botIsAdmin = await isAdmin(message);
     if (!botIsAdmin) return await message.sendReply("❌ _Bot'un bu işlemi yapabilmesi için yönetici olması gerekiyor!_");
 
-    var code = await message.client.groupInviteCode(message.jid)
+    const code = await message.client.groupInviteCode(message.jid)
     await message.client.sendMessage(message.jid, {
         text: "*Grubun Davet Bağlantısı: 👇🏻*\n https://chat.whatsapp.com/" + code,detectLinks: true
     },{detectLinks: true})
@@ -732,14 +732,14 @@ Module(
       return await message.sendReply("_*⚠️ Jid'ler gerekli*_\n_*.common jid1,jid2*_\n _VEYA_ \n_*.common kick grup_jid*_"
       );
       if (match[1].includes("kick")) {
-        var co = match[1].split(" ")[1];
-        var g1 = await message.client.groupMetadata(co);
-        var g2 = await message.client.groupMetadata(message.jid);
-        var common = g1.participants.filter(({ id: id1 }) =>
+        const co = match[1].split(" ")[1];
+        const g1 = await message.client.groupMetadata(co);
+        const g2 = await message.client.groupMetadata(message.jid);
+        const common = g1.participants.filter(({ id: id1 }) =>
           g2.participants.some(({ id: id2 }) => id2 === id1)
         );
-        var jids = [];
-        var msg = `_${g1.subject}_ & _${g2.subject}_ grubundaki ortak katılımcılar atılıyor_\n_sayı: ${common.length}_\n`;
+        const jids = [];
+        let msg = `_${g1.subject}_ & _${g2.subject}_ grubundaki ortak katılımcılar atılıyor_\n_sayı: ${common.length}_\n`;
         common
           .map((e) => e.id)
           .filter((e) => !e.includes(message.client.user?.id?.split(":")[0]))
@@ -761,14 +761,14 @@ Module(
         }
         return;
       }
-      var co = match[1].split(",");
-      var g1 = await message.client.groupMetadata(co[0]);
-      var g2 = await message.client.groupMetadata(co[1]);
-      var common = g1.participants.filter(({ id: id1 }) =>
+      const co = match[1].split(",");
+      const g1 = await message.client.groupMetadata(co[0]);
+      const g2 = await message.client.groupMetadata(co[1]);
+      const common = g1.participants.filter(({ id: id1 }) =>
         g2.participants.some(({ id: id2 }) => id2 === id1)
       );
-      var msg = `_*${g1.subject}* & *${g2.subject}* ortak katılımcıları:_\n_sayı: ${common.length}_\n`;
-      var jids = [];
+      let msg = `_*${g1.subject}* & *${g2.subject}* ortak katılımcıları:_\n_sayı: ${common.length}_\n`;
+      const jids = [];
       common.map(async (s) => {
         msg += "```@" + s.id.split("@")[0] + "```\n";
         jids.push(s.id);
@@ -794,13 +794,13 @@ Module(
 
     if (!match[1])
         return await message.sendReply("_*⚠️ Jid'ler gerekli*_\n_*.diff jid1,jid2*_");
-      var co = match[1].split(",");
-      var g1 = (await message.client.groupMetadata(co[0])).participants;
-      var g2 = (await message.client.groupMetadata(co[1])).participants;
-      var common = g1.filter(
+      const co = match[1].split(",");
+      const g1 = (await message.client.groupMetadata(co[0])).participants;
+      const g2 = (await message.client.groupMetadata(co[1])).participants;
+      const common = g1.filter(
         ({ id: jid1 }) => !g2.some(({ id: jid2 }) => jid2 === jid1)
       );
-      var msg =
+      let msg =
         "_*Farklı katılımcılar*_\n_sayı: " + common.length + "_\n";
       common.map(async (s) => {
         msg += "```" + s.id.split("@")[0] + "``` \n";
@@ -877,8 +877,8 @@ Module(
     usage: ".block (bir mesaja yanıtla)\n.block @etiket",
   },
   async (message, match) => {
-    var isGroup = message.jid.endsWith("@g.us");
-    var user = message.jid;
+    const isGroup = message.jid.endsWith("@g.us");
+    let user = message.jid;
     if (isGroup) user = message.mention?.[0] || message.reply_message?.jid;
     await message.client.updateBlockStatus(user, "block");
   }
@@ -909,9 +909,9 @@ Module(
     usage: ".unblock (reply to a message)\n.unblock @mention",
   },
   async (message) => {
-    var isGroup = message.jid.endsWith("@g.us");
+    const isGroup = message.jid.endsWith("@g.us");
     if (!isGroup) return;
-    var user = message.mention?.[0] || message.reply_message?.jid;
+    const user = message.mention?.[0] || message.reply_message?.jid;
     await message.client.updateBlockStatus(user, "unblock");
   }
 );
@@ -1093,8 +1093,8 @@ Module(
       );
     }
     if (command === "all") {
-      var allGroups = await message.client.groupFetchAllParticipating();
-      var gruplar = Object.keys(allGroups);
+      const allGroups = await message.client.groupFetchAllParticipating();
+      const gruplar = Object.keys(allGroups);
       const recentChats = await fetchRecentChats(100);
       const dmChats = recentChats.filter((chat) => chat.type === "private");
       const totalChats = gruplar.length + dmChats.length;
@@ -1476,7 +1476,7 @@ Module(
   },
   async (message, match) => {
     if (message.reply_message && message.reply_message.image) {
-      var image = await message.reply_message.download();
+      const image = await message.reply_message.download();
       const botJid = message.client.user?.id?.split(":")[0] + "@s.whatsapp.net";
       await message.client.setProfilePicture(botJid, {
         url: image,
@@ -1485,14 +1485,14 @@ Module(
     }
     if (message.reply_message && !message.reply_message.image) {
       try {
-        var image = await message.client.profilePictureUrl(
+        const image = await message.client.profilePictureUrl(
           message.reply_message?.jid,
           "image"
         );
+        return await message.sendReply({ url: image }, "image");
       } catch {
         return await message.sendReply("_❌ Profil resmi bulunamadı!_");
       }
-      return await message.sendReply({ url: image }, "image");
     }
   }
 );
@@ -1512,16 +1512,17 @@ Module(
     if (!botIsAdmin) return await message.sendReply("❌ _Bot'un bu işlemi yapabilmesi için yönetici olması gerekiyor!_");
 
     if (message.reply_message && message.reply_message.image) {
-        var image = await message.reply_message.download();
+        const image = await message.reply_message.download();
         await message.client.setProfilePicture(message.jid, { url: image });
         return await message.sendReply("_*⚙️ Grup simgesi güncellendi ✅*_");
       }
       if (!message.reply_message.image) {
         try {
-          var image = await message.client.profilePictureUrl(
+          const image = await message.client.profilePictureUrl(
             message.jid,
             "image"
           );
+          return await message.sendReply({ url: image }, "image");
         } catch {
           return await message.sendReply("_❌ Profil resmi bulunamadı!_");
         }
@@ -1639,9 +1640,9 @@ ${index + 1}. @${jid.split('@')[0]}`;
 });
 
 Module({pattern: 'ytetiket', use: 'group', fromMe: false, desc: 'Tüm yöneticileri etiketler.'}, async (message, match) => {
-    var target = message.jid;
-    var group = await message.client.groupMetadata(target);
-    var admins = group.participants.filter(v => v.admin !== null).map(x => x.id);
+    const target = message.jid;
+    const group = await message.client.groupMetadata(target);
+    const admins = group.participants.filter(v => v.admin !== null).map(x => x.id);
     let text = "🚨 *Yöneticiler:*";
       admins.forEach(jid => {
       text += `

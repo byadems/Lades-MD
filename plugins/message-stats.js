@@ -8,7 +8,7 @@ const {
 } = require("../core/store");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
+
 
 function timeSince(date, lang = "tr") {
   if (!date) return lang === "tr" ? "Hiç" : "Never";
@@ -47,21 +47,11 @@ function parseDuration(number, unit) {
 
 
 async function sendBanAudio(message) {
-  const fsp = fs.promises;
-  const tempDir = path.join(__dirname, "temp");
-  const audioPath = path.join(tempDir, "ban.mp3");
+  const audioPath = path.join(__dirname, "utils", "sounds", "Ban.mp3");
   try {
-    if (!fs.existsSync(tempDir)) {
-      await fsp.mkdir(tempDir, { recursive: true });
-    }
     if (!fs.existsSync(audioPath)) {
-      const response = await axios.get("https://dl.sndup.net/bq7y/Ban.mp3", { responseType: "stream" });
-      await new Promise((resolve, reject) => {
-        const writer = fs.createWriteStream(audioPath);
-        response.data.pipe(writer);
-        writer.on("finish", resolve);
-        writer.on("error", reject);
-      });
+      console.error("Ban sesi dosyası bulunamadı:", audioPath);
+      return;
     }
     const stream = fs.createReadStream(audioPath);
     try {
@@ -71,7 +61,6 @@ async function sendBanAudio(message) {
     }
   } catch (err) {
     console.error("Ban sesini gönderirken hata:", err);
-    await message.sendReply("⚠️ _Ban sesi gönderilemedi, işlem devam ediyor._");
   }
 }
 

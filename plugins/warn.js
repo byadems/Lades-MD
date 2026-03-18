@@ -1,5 +1,5 @@
 const { Module } = require("../main");
-const { ADMIN_ACCESS, HANDLERS, WARN, SUDO } = require("../config");
+const { ADMIN_ACCESS, HANDLER_PREFIX, WARN, SUDO } = require("../config");
 const {
   isAdmin,
   getWarn,
@@ -11,7 +11,7 @@ const {
   censorBadWords,
 } = require("./utils");
 
-const handler = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+const handler = HANDLER_PREFIX;
 const warnLimit = parseInt(WARN || "4");
 const sudoUsers = (SUDO || "").split(",");
 
