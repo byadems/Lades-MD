@@ -25,6 +25,18 @@ const AutoMuteDB = config.sequelize.define("automute", {
   timestamps: false,
 });
 
+// Obfuscated handler.js .sync() çağrısını bypass et
+let _autoMuteSyncDone = false;
+AutoMuteDB.sync = async function () {
+  if (_autoMuteSyncDone) return AutoMuteDB;
+  _autoMuteSyncDone = true;
+  try {
+    const qi = config.sequelize.getQueryInterface();
+    await qi.createTable(AutoMuteDB.getTableName(), AutoMuteDB.rawAttributes, {}).catch(() => {});
+  } catch (_) {}
+  return AutoMuteDB;
+};
+
 let _autoMuteSynced = false;
 
 const automute = {
@@ -51,6 +63,17 @@ const AutoUnMuteDB = config.sequelize.define("autounmute", {
   indexes: [{ fields: ['chat'] }],
   timestamps: false,
 });
+
+let _autoUnMuteSyncDone = false;
+AutoUnMuteDB.sync = async function () {
+  if (_autoUnMuteSyncDone) return AutoUnMuteDB;
+  _autoUnMuteSyncDone = true;
+  try {
+    const qi = config.sequelize.getQueryInterface();
+    await qi.createTable(AutoUnMuteDB.getTableName(), AutoUnMuteDB.rawAttributes, {}).catch(() => {});
+  } catch (_) {}
+  return AutoUnMuteDB;
+};
 
 let _autoUnMuteSynced = false;
 
@@ -82,6 +105,17 @@ const StickyCmdDB = config.sequelize.define("stickcmd", {
   indexes: [{ fields: ['command'] }, { fields: ['file'] }],
   timestamps: false,
 });
+
+let _stickyCmdSyncDone = false;
+StickyCmdDB.sync = async function () {
+  if (_stickyCmdSyncDone) return StickyCmdDB;
+  _stickyCmdSyncDone = true;
+  try {
+    const qi = config.sequelize.getQueryInterface();
+    await qi.createTable(StickyCmdDB.getTableName(), StickyCmdDB.rawAttributes, {}).catch(() => {});
+  } catch (_) {}
+  return StickyCmdDB;
+};
 
 let _stickyCmdSynced = false;
 
@@ -126,6 +160,22 @@ const ScheduledMessageDB = config.sequelize.define("scheduled_messages", {
   indexes: [{ fields: ['scheduleTime', 'isSent'] }, { fields: ['jid'] }],
   timestamps: false,
 });
+
+// handler.js (obfuscated) doğrudan .sync() çağırıyor ve
+// PostgreSQL index metadata sorgusu 10s+ timeout'a neden oluyor.
+// Tablo zaten mevcut olduğu için sync'i CREATE IF NOT EXISTS ile değiştiriyoruz.
+const _origScheduledSync = ScheduledMessageDB.sync.bind(ScheduledMessageDB);
+let _scheduledSyncDone = false;
+ScheduledMessageDB.sync = async function () {
+  if (_scheduledSyncDone) return ScheduledMessageDB;
+  _scheduledSyncDone = true;
+  try {
+    // Index kontrolü yapmadan sadece tablo oluştur (varsa atla)
+    const qi = config.sequelize.getQueryInterface();
+    await qi.createTable(ScheduledMessageDB.getTableName(), ScheduledMessageDB.rawAttributes, {}).catch(() => {});
+  } catch (_) { /* tablo zaten var, sessizce geç */ }
+  return ScheduledMessageDB;
+};
 
 let _scheduledMsgSynced = false;
 

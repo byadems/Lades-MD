@@ -187,6 +187,26 @@ const FilterDB = config.sequelize.define("filter", {
   },
 }, { indexes: [{ fields: ['jid'] }, { fields: ['trigger'] }] });
 
+// handler.js (obfuscated) doğrudan .sync() çağırıyor ve
+// PostgreSQL index metadata sorgusu timeout'a neden oluyor.
+// Tablolar zaten mevcut — sync'i hafif CREATE IF NOT EXISTS ile değiştir.
+function overrideSyncForModel(Model) {
+  let _done = false;
+  Model.sync = async function () {
+    if (_done) return Model;
+    _done = true;
+    try {
+      const qi = config.sequelize.getQueryInterface();
+      await qi.createTable(Model.getTableName(), Model.rawAttributes, {}).catch(() => {});
+    } catch (_) {}
+    return Model;
+  };
+}
+
+[warnDB, FakeDB, AntilinkConfigDB, antiSpamDB, PDMDB,
+ antiDemote, antiPromote, antiBotDB, antiWordDB,
+ WelcomeDB, GoodbyeDB, FilterDB].forEach(overrideSyncForModel);
+
 module.exports = {
   warnDB,
   FakeDB,
