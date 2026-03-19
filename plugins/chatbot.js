@@ -764,6 +764,13 @@ Module({
 
     if (rawInput) {
       prompt = rawInput;
+      // Eğer yanıtlanan bir metin mesajı varsa, onu da prompt'a ekle
+      if (message.reply_message?.text) {
+        prompt = `Yanıtlanan mesaj: "${message.reply_message.text}"\n\nSoru: ${rawInput}`;
+      }
+    } else if (message.reply_message?.text && !rawInput) {
+      // Sadece yanıtlanan metin mesajı varsa, onu analiz et
+      prompt = `Bu metni analiz et ve yanıtla: "${message.reply_message.text}"`;
     } else if (message.reply_message?.image) {
       try {
         const buffer = await message.reply_message.download("buffer");
@@ -772,7 +779,12 @@ Module({
           return await message.sendReply("❌ Görsel işlenemedi.");
         }
         imageParts.push(imagePart);
-        prompt = "Bu görselde ne görüyorsun? Kısa ve net analiz et.";
+        // Eğer görsele yanıt verilirken ek metin de yazıldıysa
+        if (rawInput) {
+          prompt = rawInput;
+        } else {
+          prompt = "Bu görselde ne görüyorsun? Kısa ve net analiz et.";
+        }
       } catch (error) {
         console.error("YZ görsel analiz indirme hatası:", error);
         return await message.sendReply("❌ Görsel indirilemedi.");
@@ -782,8 +794,12 @@ Module({
         "✨ *Yapay Zeka (Lades AI) Kullanım Rehberi*\n\n" +
         "🤖 *Soru Sorma:*\n" +
         "└ `.yz yemek tarifi` — Herhangi bir konuda soru sorabilirsiniz.\n\n" +
-        "🖼️ *Görsel Analizi:*\n" +
-        "└ Bir görsele yanıt vererek `.yz` yazarsanız görseli analiz eder ve açıklarım.\n\n" +
+        "� *Metin Analizi:*\n" +
+        "└ Bir metne yanıt vererek `.yz` yazarsanız metni analiz ederim.\n" +
+        "└ Bir metne yanıt vererek `.yz bu metni özetle` yazarsanız metne göre yanıt veririm.\n\n" +
+        "�🖼️ *Görsel Analizi:*\n" +
+        "└ Bir görsele yanıt vererek `.yz` yazarsanız görseli analiz eder ve açıklarım.\n" +
+        "└ Bir görsele yanıt vererek `.yz bu görselde ne var?` yazarsanız görseli açıklarsınız.\n\n" +
         "🎨 *Görsel Üretimi:*\n" +
         "└ `.yzgörsel uzayda kedi` — Yazdığınız metinden görsel oluştururum.\n\n" +
         "🖌️ *Görsel Düzenlemesi:*\n" +
