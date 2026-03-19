@@ -34,304 +34,137 @@ Module({
   // Eğer 'lar' yazılmışsa tam listeyi göster
   if (arg === 'lar') {
     return await m.sendReply(
-    "📋 *UTILITY KOMUTLARI*\n" +
+    "📣 *GENEL KOMUTLAR*\n" +
     "🧑 .uzakta\nSizi AFK (Uzakta) yapar. Etiketlenirseniz Bot sizin yerinize cevap verir.\n\n" +
     "💻 .kontrol\nBotun çalışıp çalışmadığını kontrol etmenizi sağlar.\n\n" +
     "📶 .ping\nPing süresini (tepki hızını) ölçer.\n\n" +
     "⏱️ .uptime\nSistem (OS) ve işlem çalışma süresini gösterir.\n\n" +
-    "📋 .liste\nTüm komutları kategorilere ayrılmış şekilde listeler.\n\n" +
-    "📋 .menü\nBot komut menüsünü gösterir.\n\n" +
-    "🎮 .oyunlar\nMevcut tüm oyunları listeler.\n\n" +
+    "🕌 .ezan\nEzan vakitlerini detaylı bir şekilde sağlar.\nÖrnek: .ezan Şehir Adı & Plaka\n\n" +
+    "🕵️‍♀️ .sahur\nAnlık sahur vaktine ne kadar süre kaldığını hesaplar.\n\n" +
+    "🕵️‍♂️ .iftar\nAnlık iftar vaktine ne kadar süre kaldığını hesaplar.\n\n" +
+    "☁️ .hava\nAnlık hava durumu bilgisi verir.\nÖrnek: .hava 21 | .hava Diyarbakır\n\n" +
+    "💱 .kur\nDöviz kuru dönüşümü yapar.\nÖrnek: .kur 1 DOLAR TL\n\n" +
+    "🪙 .altın\nGüncel altın fiyatlarını gösterir. (Kur, Gram, Çeyrek, Yarım, Tam Altın — alış/satış/değişim)\n\n" +
+    "🈷️ .çevir\nÇeviri yapar. (Bir mesaja yanıt vermeniz gerekir)\nÖrnek: .çevir en tr (İngilizceden Türkçeye çevirir.)\n\n" +
+    "🈵 .detectlang\nYanıtlanan mesajın dilini bulmaya çalışır.\n\n" +
+    "📲 .true\nBilinmeyen numara uygulaması TrueCaller'da numara sorgular.\n\n" +
+    "📱 .onwa\nNumaranın WhatsApp'da kayıtlı olup olmadığını sorgular.\nÖrnek: .onwa +90530xxxxxxx\n\n" +
+    "🎬 .movie\nFilm araması yapar.\n\n" +
+    "💻 .hackernews\nHacker haber makalelerini getirir.\n\n" +
+    "📲 .waupdate\nYaklaşan WhatsApp güncelleme haberlerini getirir.\n\n" +
+    "📰 .news\nEn son haberleri getirir. (Dünyadan)\n\n" +
+    "📊 .wapoll\nAnket oluşturur.\nÖrnek: .wapoll Anket başlığı, seçenek1, seçenek2, seçenek3\n\n" +
     "📝 .take\nÇıkartma/ses dosyalarını değiştirir. Başlık, sanatçı, kapak resmi vb. değişiklik yapar.\n\n" +
     "🖋️ .fancy\nŞık yazı tipleri oluşturur.\n\n" +
     "🔁 .tekrar\nYanıtlanan komutu tekrar çalıştırır.\n\n" +
-    "📣 .bildir\nBot hakkında istek, şikayet, hata bildirimi, öneri veya talep iletir.\n\n" +
-    "📝 .düzenle\nBot'un yazdığı mesajı düzenlemeye yarar.\n\n" +
-    "⏫ .url\nGörseli imgur.com'a yükler ve bağlantısını paylaşır.\n\n" +
-    "🔁 .react\nYanıtlanan mesaja emoji tepkisi verir.\n\n" +
-    "📨 .msjat\nBot'un attığı mesaja kendiniz cevap verir.\n\n" +
-    "↪️ .msjyönlendir\nBot'un mesajını başka bir sohbete yönlendirir.\n\n" +
-    "🗑️ .msjsil\nEtiketlenen mesajı herkesten siler.\n\n" +
-    "💬 .quoted\nYanıtlanan mesajın yanıtını gösterir. Silinen mesajları geri almak için kullanışlıdır.\n\n" +
-    "👀 .vv\nTek seferlik görüntülenebilen medyayı gösterir.\n\n" +
-    "📲 .dc\nDestek grubu iletişim bilgilerini gösterir.\n\n" +
-    "🔗 .bağla\nBotu kapatır.\n\n" +
-    "🔄 .otodl\nOtomatik indirme özelliğini aç/kapat.\n\n" +
-    "🔄 .ybaşlat|reload|reboot\nBotu yeniden başlatır.\n\n" +
-    "🔄 .güncelle\nBot'u günceller.\n\n" +
-    "📦 .modülyükle\nHarici bir modül yükler.\n\n" +
-    "📦 .modül\nYüklenmiş modülleri listeler.\n\n" +
-    "🗑️ .modülsil\nYüklenmiş bir modülü siler.\n\n" +
-    "🔄 .mgüncelle\nModülleri günceller.\n\n" +
-    "🎂 .yaşhesap\nYaş hesaplar.\n\n" +
-    "⏳ .gerisayım\nZaman hesabı yapar. Belirlediğiniz tarihe ne kadar kaldığını söyler.\n\n" +
-    "⚡ .hıztesti\nİnternet hızınızı test eder.\n\n" +
-    "❤️ .aşkölç\nAşk ölçer.\n\n" +
-    "🧠 .beyin\nBeyin oyunu.\n\n" +
-    "🤔 .bilmece\nBilmece sorar.\n\n" +
-    "🔬 .kimyasoru\nKimya sorusu sorar.\n\n" +
-    "😂 .alay\nAlaycı mesaj oluşturur.\n\n" +
-    "🐉 .dragonyazı\nDragon tarzı yazı yazdırır.\n\n" +
-    "💫 .neonyazı\nNeon tarzı yazı yazdırır.\n\n" +
-    "🎨 .grafitiyazı\nGrafiti tarzı yazı yazdırır.\n\n" +
-    "😈 .devilyazı\nŞeytan tarzı yazı yazdırır.\n\n" +
-    "🎵 .muzikkartı\nMüzik kartı oluşturur.\n\n" +
-    "🎭 *SYSTEM KOMUTLARI*\n" +
-    "⚙️ .setalive\nBot için çevrimiçi mesajı ayarlar.\n\n" +
-    "⚙️ .setinfo\nBot yapılandırma komutları hakkında bilgi gösterir.\n\n" +
-    "⚙️ .setname\nBot adını ayarlar.\n\n" +
-    "🖼️ .setimage\nBot resmini ayarlar.\n\n" +
-    "🧪 .testalive\nMevcut çevrimiçi mesajını test eder.\n\n" +
-    "📊 .mesajlar\nÜyelerin mesaj istatistiklerini gösterir.\n\n" +
-    "📉 .inactive\nAktif olmayan üyeleri listeler.\n\n" +
-    "👥 .üyetemizle\nAktif olmayan üyeleri temizler.\n\n" +
-    "👥 .users\nKullanıcı listesini gösterir.\n\n" +
-    "🚫 .bahsetme\nBahsetmeyi engeller.\n\n" +
-    "🔧 *GRUP YÖNETİM KOMUTLARI*\n" +
-    "🗑️ .sohbetsil\nGrup sohbetini tamamen siler.\n\n" +
-    "❌ .ban\nEtiketlenen kişiyi gruptan çıkarır.\n\n" +
-    "😈 .at\nEtiketlenen kişiyi (sürprizli bir şekilde) gruptan çıkarır.\n\n" +
-    "➕ .ekle\nKişiyi gruba ekler.\n\n" +
-    "👑 .yetkiver\nYönetici yetkisi verir.\n\n" +
-    "✅ .istekler\nBekleyen katılım isteklerini yönetir.\n\n" +
-    "👋 .ayrıl\nGruptan ayrılır.\n\n" +
-    "🔗 .davet\nGrup davet linki oluşturur.\n\n" +
-    "🔄 .davetyenile\nGrup davet linkini yeniler.\n\n" +
-    "🔕 .gayaryt\nSadece yöneticileri etiketlemeyi kapatır.\n\n" +
-    "🔕 .gayarherkes\nHerkesi etiketlemeyi kapatır.\n\n" +
-    "📝 .grupadı\nGrup adını değiştirir.\n\n" +
-    "📄 .grupaçıklama\nGrup açıklamasını değiştirir.\n\n" +
-    "🤝 .common\nİki grup arasındaki ortak üyeleri gösterir.\n\n" +
-    "🔍 .diff\nİki grup arasındaki farkları gösterir.\n\n" +
-    "📢 .tagall\nTüm üyeleri etiketler.\n\n" +
-    "🚫 .engelle\nKişiyi engeller.\n\n" +
-    "✅ .katıl\nBelirtilen gruba katılır.\n\n" +
-    "🔓 .engelkaldır\nEngeli kaldırır.\n\n" +
-    "👥 .toplukatıl\nToplu olarak gruba katılır.\n\n" +
-    "🆔 .tümjid\nTüm JID'leri gösterir.\n\n" +
-    "📢 .duyuru\nDuyuru yapar.\n\n" +
-    "📌 .sabitle\nMesajı sabitler.\n\n" +
-    "📸 .pp\nProfil fotoğrafını gösterir.\n\n" +
-    "🖼️ .grupfoto\nGrup fotoğrafını değiştirir.\n\n" +
-    "🪙 .altın\nGüncel altın fiyatlarını gösterir.\n\n" +
-    "👥 .etiket\nTüm üyeleri etiketler.\n\n" +
-    "🛡️ .ytetiket\nTüm yöneticileri etiketler.\n\n" +
-    "🔇 .sohbetkapat\nGrup sohbetini kapatır.\n\n" +
-    "🔊 .sohbetaç\nGrup sohbetini açar.\n\n" +
-    "🆔 .jid\nJID bilgisi verir.\n\n" +
-    "👑 .yetkial\nYönetici yetkisini alır.\n\n" +
-    "🕒 .otoçıkartma\nOtomatik çıkartma ayarlar.\n\n" +
-    "🗑️ .otoçıkartmasil\nOtomatik çıkartma siler.\n\n" +
-    "📋 .otoçıkartmalar\nOtomatik çıkartmaları listeler.\n\n" +
-    "🕒 .otosohbetkapat\nOtomatik sohbet kapatma ayarlar.\n\n" +
-    "📅 .otosohbetaç\nOtomatik sohbet açma ayarlar.\n\n" +
-    "🔇 .otosohbet\nOtomatik sohbet ayarları.\n\n" +
-    "🚫 .antinumara\nNumara engelleme ayarları.\n\n" +
-    "⚠️ .uyar\nÜyeyi uyarır.\n\n" +
-    "📊 .kaçuyarı\nUyarı sayısını gösterir.\n\n" +
-    "➖ .uyarısil\nUyarı siler.\n\n" +
-    "🔄 .uyarısıfırla\nTüm uyarıları sıfırlar.\n\n" +
-    "📋 .uyarıliste\nUyarı listesini gösterir.\n\n" +
-    "⚙️ .uyarılimit\nUyarı limitini ayarlar.\n\n" +
-    "🚫 .filtre\nKelime filtresi ekler.\n\n" +
-    "📋 .filtreler\nFiltreleri listeler.\n\n" +
-    "🗑️ .filtresil\nFiltre siler.\n\n" +
-    "🔄 .togglefilter\nFiltreyi aç/kapar.\n\n" +
-    "🧪 .filtretest\nFiltreyi test eder.\n\n" +
-    "❓ .filtreyardım\nFiltre yardımını gösterir.\n\n" +
-    "📥 *DOWNLOAD KOMUTLARI*\n" +
-    "🎶 .şarkı\nYouTube'dan şarkı indirir.\n\n" +
-    "🎧 .spotify\nSpotify'dan şarkı indirir.\n\n" +
-    "📹 .video\nYouTube'dan video indirir.\n\n" +
-    "🔽 .ytvideo\nYouTube'dan videoyi istenen kalitede indirir.\n\n" +
-    "🎵 .ytses\nYouTube'dan ses indirir.\n\n" +
-    "📷 .insta\nInstagram'dan gönderi/reel indirir.\n\n" +
-    "🔎 .igara\nInstagram'dan kullanıcı bilgilerini getirir.\n\n" +
-    "📘 .fb\nFacebook'tan gönderi/video indirir.\n\n" +
-    "📌 .pinterest\nPinterest içeriği indirir.\n\n" +
-    "🎥 .tiktok\nTikTok'tan video indirir.\n\n" +
-    "🔎 .ttara\nTikTok'tan kullanıcı bilgilerini getirir.\n\n" +
-    "🎬 .capcut\nCapCut'tan video indirir.\n\n" +
-    "🧵 .threads\nThreads'ten içerik indirir.\n\n" +
-    "🎧 .soundcloud\nSoundCloud'dan müzik indirir.\n\n" +
-    "⬆️ .upload\nURL'den medya indirir.\n\n" +
-    "🔍 *SEARCH KOMUTLARI*\n" +
-    "🎬 .movie\nFilm araması yapar.\n\n" +
-    "💻 .hackernews\nHaber makalelerini getirir.\n\n" +
-    "📲 .waupdate\nWhatsApp güncelleme haberlerini getirir.\n\n" +
-    "📰 .news\nEn son haberleri getirir.\n\n" +
-    "📊 .wapoll\nAnket oluşturur.\n\n" +
-    "🖼️ .görsel\nGoogle'dan görsel arar.\n\n" +
-    "🍳 .reçete\nYemek tarifi arar.\n\n" +
-    "🔎 .ytara\nYouTube'dan kanal bilgisi alır.\n\n" +
-    "📖 .hikaye\nInstagram hikayesini indirir.\n\n" +
-    "🐦 .twitter\nTwitter'dan içerik indirir.\n\n" +
-    "😂 .emojimix\nİki emoji'yi birleştirir.\n\n" +
-    "📝 .yazı\nYazı yazdırır.\n\n" +
-    "🥷 .naruto\nNaruto tarzı sticker oluşturur.\n\n" +
-    "🦸 .marvel\nMarvel tarzı sticker oluşturur.\n\n" +
-    "💖 .blackpink\nBlackpink tarzı sticker oluşturur.\n\n" +
-    "👑 .brat\nBrat tarzı sticker oluşturur.\n\n" +
-    "💭 .söz\nGüzel sözler paylaşır.\n\n" +
-    "🖼️ .duvar\nDuvar kağıdı arar.\n\n" +
-    "🔍 .çıkartmabul\nSticker arar.\n\n" +
-    "📚 .vikipedi\nVikipedi'den arama yapar.\n\n" +
-    "💬 .alıntı\nAlıntı paylaşır.\n\n" +
-    "💭 .rüya\nRüya tabiri yapar.\n\n" +
-    "🕌 .ezan\nEzan vakitlerini gösterir.\n\n" +
-    "🕋 .sahur\nSahur vaktini hesaplar.\n\n" +
-    "🌙 .iftar\nİftar vaktini hesaplar.\n\n" +
-    "☁️ .hava\nHava durumu bilgisi verir.\n\n" +
-    "💱 .kur\nDöviz kuru dönüşümü yapar.\n\n" +
-    "🌍 .çevir\nÇeviri yapar.\n\n" +
-    "🔤 .detectlang\nMesaj dilini tespit eder.\n\n" +
-    "📲 .true\nNumara sorgular.\n\n" +
-    "📱 .onwa\nWhatsApp'da numara sorgular.\n\n" +
-    "📳 .sondepremler\nSon depremleri listeler.\n\n" +
-    "📳 .sondeprem\nSon depremi gösterir.\n\n" +
-    "🎓 .bilgikaçnet\nÜniversite bölümleri hakkında bilgi verir.\n\n" +
-    "⏰ *WHATSAPP KOMUTLARI*\n" +
-    "👋 .welcome\nHoş geldiniz mesajı ayarlar.\n\n" +
-    "👋 .goodbye\nGörüşürüz mesajı ayarlar.\n\n" +
-    "🧪 .testwelcome\nHoş geldiniz mesajını test eder.\n\n" +
-    "🧪 .testgoodbye\nGörüşürüz mesajını test eder.\n\n" +
-    "⚙️ *SETTINGS KOMUTLARI*\n" +
-    " .değişkengetir\nDeğişken getirir.\n\n" +
-    "🗑️ .değişkensil\nDeğişken siler.\n\n" +
-    "📋 .değişkenler\nTüm değişkenleri listeler.\n\n" +
-    "💻 .platform\nPlatform bilgisini gösterir.\n\n" +
-    "🌍 .dil\nDil ayarları.\n\n" +
-    "⚙️ .ayarlar\nBot ayarlarını gösterir.\n\n" +
-    "️ .antisilme\nAnti-silme özelliği.\n\n" +
-    "👑 .sudolar\nSudo kullanıcılarını listeler.\n\n" +
-    "🔄 .toggle\nÖzellik aç/kapar.\n\n" +
-    "🤖 .antibot\nBot koruması.\n\n" +
-    "🚫 .antispam\nSpam koruması.\n\n" +
-    "📵 .pdm\nPDM (Private Message) koruması.\n\n" +
-    "📉 .antiyetkidüşürme\nAnti-yetki düşürme.\n\n" +
-    "📈 .antiyetkiverme\nAnti-yetki verme.\n\n" +
-    "🔗 .antibağlantı\nBağlantı engelleme.\n\n" +
-    "🚫 .antikelime\nKelime engelleme.\n\n" +
-    "🔍 .aramaengel\nArama engelleme.\n\n" +
-    "🎨 *EDIT KOMUTLARI*\n" +
-    "🖌️ .editör\nFotoğraf düzenleme komutlarını listeler.\n\n" +
-    "🎮 .wasted\nWasted efekti uygular.\n\n" +
-    "🕵️ .wanted\nWanted poster efekti uygular.\n\n" +
-    "🌸 .anime\nAnime efekti uygular.\n\n" +
-    "🎨 .ghiblistil\nGhibli stili efekti uygular.\n\n" +
-    "👶 .chibi\nChibi efekti uygular.\n\n" +
-    "🎬 .efektsinema\nSinema efekti uygular.\n\n" +
-    "🎨 .grafitisokak\nGrafiti sokak efekti uygular.\n\n" +
-    "🎮 .pikselart\nPiksel art efekti uygular.\n\n" +
-    "😂 .komik\nKomik efekti uygular.\n\n" +
-    "🎭 .mafia\nMafia efekti uygular.\n\n" +
-    "🔄 *CONVERTERS KOMUTLARI*\n" +
-    "🖼️ .çıkartma\nMedyayı stickere çevirir.\n\n" +
-    "🎵 .mp3\nVideodan ses çıkarır.\n\n" +
-    "🐢 .slow\nMüziği yavaşlatır.\n\n" +
-    "⚡ .sped\nMüziği hızlandırır.\n\n" +
-    "🔊 .basartır\nBass ayarı yapar.\n\n" +
-    "🏞️ .foto\nStickerı fotoğrafa çevirir.\n\n" +
-    "✨ .yazıçıkartma\nMetinden sticker oluşturur.\n\n" +
-    "🎞️ .mp4\nStickerı videoya çevirir.\n\n" +
-    "📂 .belge\nMedyayı belgeye çevirir.\n\n" +
-    "📄 .pdf\nFotoğrafları PDF'ye çevirir.\n\n" +
-    "🔈 .ses\nMetni sese çevirir.\n\n" +
-    "🎙️ .dinle\nSesi metne çevirir.\n\n" +
-    "🔎 .bul\nŞarkıyı tanır.\n\n" +
-    "📐 .square\nMedyayı kare yapar.\n\n" +
-    "📏 .resize\nMedyayı yeniden boyutlandırır.\n\n" +
-    "🗜️ .sıkıştır\nMedyayı sıkıştırır.\n\n" +
-    "🎮 *GAME KOMUTLARI*\n" +
-    "🎂 .testgay\nGay testi yapar.\n\n" +
-    "🧊 .testlez\nLezbiyen testi yapar.\n\n" +
-    "👸 .testprenses\nPrenses testi yapar.\n\n" +
-    "🩸 .testregl\nRegl testi yapar.\n\n" +
-    "🙏 .testinanç\nİnanç testi yapar.\n\n" +
-    "⏳ .ykssayaç\nYKS sayacı.\n\n" +
-    "📅 .kpsssayaç\nKPSS sayacı.\n\n" +
-    "📜 .msüsayaç\nMSÜ sayacı.\n\n" +
-    "🏫 .okulsayaç\nOkul sayacı.\n\n" +
-    "🌙 .ramazansayaç\nRamazan sayacı.\n\n" +
-    "⏰ .planla\nMesaj planlar.\n\n" +
-    "📋 .plandurum\nPlan durumunu gösterir.\n\n" +
-    "🗑️ .plansil\nPlanı siler.\n\n" +
-    "🎲 *MISC KOMUTLARI*\n" +
-    "🎥 .trim\nMedyayı keser.\n\n" +
-    "⚫ .siyahvideo\nSiyah video yapar.\n\n" +
-    "🎬 .birleştir\nSes ve video birleştirir.\n\n" +
-    "🎥 .vmix\nİki video birleştirir.\n\n" +
-    "🐌 .ağırçekim\nAğır çekim efekti.\n\n" +
-    "⚙️ .interp\nFPS artırır.\n\n" +
-    "🔄 .döndür\nVideoyu döndürür.\n\n" +
-    "🔀 .flip\nVideoyu ters çevirir.\n\n" +
-    "⭕ .oval\nDaire yapar.\n\n" +
-    "📽️ .gif\nVideoyu GIF'e çevirir.\n\n" +
-    "🖼️ .ss\nEkran görüntüsü alır.\n\n" +
-    "🎨 .renklendir\nMedyayı renklendirir.\n\n" +
-    "💻 .kodgörsel\nKoddan görsel oluşturur.\n\n" +
-    "😂 .meme\nMeme oluşturur.\n\n" +
-    "👑 *OWNER KOMUTLARI*\n" +
-    "🔧 .değişkenler\nDeğişkenleri yönetir.\n\n" +
-    "👑 .sudolar\nSudo kullanıcılarını yönetir.\n\n" +
-    "🔄 .toggle\nÖzellikleri yönetir.\n\n" +
-    "🛡️ .antibot\nBot korumasını ayarlar.\n\n" +
-    "🚫 .antispam\nSpam korumasını ayarlar.\n\n" +
-    "📵 .pdm\nPDM ayarları.\n\n" +
-    "📉 .antiyetkidüşürme\nAnti-yetki düşürme ayarları.\n\n" +
-    "📈 .antiyetkiverme\nAnti-yetki verme ayarları.\n\n" +
-    "🔗 .antibağlantı\nBağlantı engelleme ayarları.\n\n" +
-    "🚫 .antikelime\nKelime engelleme ayarları.\n\n" +
-    "🔍 .aramaengel\nArama engelleme ayarları.\n\n" +
+    "📣 .bildir\nBot hakkında istek, şikayet, hata bildirimi, öneri veya talep iletir.\nÖrnek: .bildir öneri Müzik komutu eklensin\n\n" +
     "🧠 *YAPAY ZEKA KOMUTLARI*\n" +
-    "🤖 .yz\nGemini AI'ya soru sor.\n\n" +
-    "🎨 .yzgörsel\nMetni görsele çevirir.\n\n" +
-    "🖌️ .yzdüzenle\nGörüntüyü AI ile düzenler.\n\n" +
-    "🎭 .yzanime\nGörüntüyü anime yapar.\n\n" +
-    "🧩 .soruçöz\nSınav sorularını çözer.\n\n" +
-    "🤖 .yzayar\nAI ayarlarını yönetir.\n\n" +
+    "🤖 .yz\nGemini Yapay Zeka'ya soru sorun.\n\n" +
+    "🎨 .yzgörsel\nMetni görsele dönüştürür.\n\n" +
+    "🖌️ .yzdüzenle\nFotoğrafı talimata göre Yapay Zeka ile düzenler.\n\n" +
+    "🎭 .yzanime\nFotoğrafı anime stiline çevirir.\n\n" +
+    "🧩 .soruçöz\nSınav sorularını Yapay Zeka ile çözer.\n\n" +
     "📸 *MEDYA KOMUTLARI*\n" +
-    "🔍 .apsil\nArka planı kaldırır.\n\n" +
-    "⬆️ .hd\nGörüntü kalitesini artırır.\n\n" +
-    "🎙️ .ses\nMetni sese çevirir.\n\n" +
-    "🎧 .dinle\nSesi metne çevirir.\n\n" +
-    "🔎 .bul\nŞarkıyı tanır.\n\n" +
-    "🖼️ .görsel\nGörsel arar.\n\n" +
-    "⬆️ .upload\nURL'den medya indirir.\n\n" +
-    "📂 .belge\nMedyayı belgeye çevirir.\n\n" +
-    "📄 .pdf\nPDF oluşturur.\n\n" +
-    "🖼️ .çıkartma\nSticker oluşturur.\n\n" +
-    "🎵 .mp3\nSes çıkarır.\n\n" +
-    "🐢 .slow\nMüziği yavaşlatır.\n\n" +
-    "⚡ .sped\nMüziği hızlandırır.\n\n" +
-    "🔊 .basartır\nBass ayarları.\n\n" +
-    "🏞️ .foto\nStickerı fotoğraf yapar.\n\n" +
-    "✨ .yazıçıkartma\nMetinden sticker yapar.\n\n" +
-    "🎞️ .mp4\nStickerı video yapar.\n\n" +
-    "👀 .vv\nView-once medyayı gösterir.\n\n" +
-    "✂️ .trim\nMedyayı keser.\n\n" +
-    "⚫ .siyahvideo\nSiyah video yapar.\n\n" +
-    "🎬 .birleştir\nMedya birleştirir.\n\n" +
-    "🎥 .vmix\nVideo birleştirir.\n\n" +
-    "🐌 .ağırçekim\nAğır çekim efekti.\n\n" +
-    "⚙️ .interp\nFPS artırır.\n\n" +
-    "🔄 .döndür\nVideoyu döndürür.\n\n" +
-    "🔀 .flip\nVideoyu ters çevirir.\n\n" +
-    "⭕ .oval\nDaire yapar.\n\n" +
-    "📽️ .gif\nVideoyu GIF yapar.\n\n" +
-    "🖼️ .ss\nEkran görüntüsü alır.\n\n" +
-    "⏫ .url\nGörseli yükler.\n\n" +
-    "🎨 .renklendir\nMedyayı renklendirir.\n\n" +
-    "💻 .kodgörsel\nKoddan görsel yapar.\n\n" +
-    "😂 .meme\nMeme oluşturur.\n\n" +
-    "📐 .square\nKare yapar.\n\n" +
-    "📏 .resize\nBoyutlandırır.\n\n" +
-    "🗜️ .sıkıştır\nSıkıştırır.\n\n" +
-    "🎵 .tts\nMetni sese çevirir.\n\n" +
-    "🎬 .ytses\nYouTube'dan ses indirir.\n\n" +
-    "🔎 .ytara\nYouTube kanal bilgisi.\n\n" +
-    "🎞️ .mp4\nVideoya çevirir.\n\n" +
-    "⏫ .url\nGörseli yükler.\n"
+    "🎶 .şarkı\nYouTube'dan şarkı indirir.\nÖrnek: .şarkı Şarkı Adı\n\n" +
+    "🎧 .spotify\nSpotify'dan şarkı indirir.\nÖrnek: .spotify Şarkı Bağlantısı\n\n" +
+    "📹 .video\nYouTube'dan video indirir.\n\n" +
+    "🔽 .ytvideo\nYouTube'daki videoyu istediğiniz kalitede indirmenizi sağlar.\n\n" +
+    "" +
+    "📷 .insta\nInstagram'dan Gönderi/Reel İndirir.\nÖrnek: .insta bağlantı veya bağlantı mesajına yanıtlayın.\n\n" +
+    "🔎 .igara\nInstagram'dan kullanıcı bilgilerini getirir. (Stalk)\nÖrnek: .igara Kullanıcı Adı\n\n" +
+    "📘 .fb\nFacebook'dan gönderi/video indirir.\nÖrnek: .fb bağlantı veya bağlantı mesajına yanıtlayın\n\n" +
+    "" +
+    "📌 .pinterest\nPinterest içeriğini indirmeyi sağlar.\nÖrnek: .pinterest bağlantı veya bağlantı mesajına yanıtlayın.\n\n" +
+    "🎥 .tiktok\nTikTok'dan video indirir.\nÖrnek: .tiktok bağlantı veya bağlantı mesajına yanıtlayın.\n\n" +
+    "🔎 .ttara\nTiktok'dan kullanıcı bilgilerini getirir. (Stalk)\nÖrnek:* .ttara Kullanıcı Adı\n\n" +
+    "🔈 .ses\nYazıyı sese çevirir.\n\n" +
+    "🎙️ .dinle\nSes mesajını metne dönüştürür. (Bir ses mesajına yanıtlayarak kullanın)\n\n" +
+    "🔎 .bul\nYapay Zekayı kullanarak şarkının adını bulur.\nÖrnek: .bul (ses dosyasına etiketleyin)\n\n" +
+    "🖼️ .görsel\nGoogle Görsellerden fotoğraf indirir.\n\n" +
+    "⬆️ .upload\nMedya dosyalarını ham URL'den indirip yükler.\n\n" +
+    "" +
+    "📂 .belge\nEtiketlenen medyayı dosyaya dönüştürüp gönderir.\n\n" +
+    "📄 .pdf\nFotoğrafları PDF'ye dönüştürür.\nÖrnek: .pdf | .pdf get\n\n" +
+    "🖼️ .çıkartma\nYanıt verdiğiniz fotoğrafı veya videoyu çıkartmaya dönüştürür.\n\n" +
+    "🎵 .mp3\nVideodaki sesi, ses dosyasına dönüştürür.\n\n" +
+    "🐢 .slow\nMüziği yavaşlatır ve tonunu düşürür. (Slowed+reverb sesler için)\n\n" +
+    "⚡ .sped\nMüziği hızlandırır ve tonunu yükseltir. (Speed-up+reverb sesler için)\n\n" +
+    "🔊 .basartır\nBass ayarı yapar.\n\n" +
+    "🏞️ .foto\nÇıkartmayı fotoğrafa dönüştürür.\n\n" +
+    "✨ .yazıçıkartma\nMetni animasyonlu çıkartmaya dönüştürür.\n\n" +
+    "🎞️ .mp4\nAnimasyonlu çıkartmayı video dosyasına dönüştürür.\n\n" +
+    "👀 .vv\nTek seferlik görüntülenebilen medyayı gösterir.\n\n" +
+    "🔍 .apsil\nGörseldeki arka planı yapay zeka kullanarak kaldırır.\n\n" +
+    "⬆️ .hd\nGörsel kalitesini yapay zeka ile artırır/ölçeklendirir.\n\n" +
+    "" +
+    "✂️ .trim\nBelirttiğiniz medyanın belirli bir kısmını kesmenizi sağlar.\nÖrnek: .trim 60,120\n\n" +
+    "⚫ .siyahvideo\nVideo görüntüsünü siyah video yapar. (Sese müdahale edilmez)\n\n" +
+    "🎬 .birleştir\nSes ve video dosyasını birleştirir.\n\n" +
+    "🎥 .vmix\nİki video dosyasını birleştirir.\n\n" +
+    "🐌 .ağırçekim\nSes dosyasına ağır çekim efekti uygular.\n\n" +
+    "⚙️ .interp\nVideo'nun kare hızını artırır. (FPS)\n\n" +
+    "🔄 .döndür\nVideoyu döndürür. (Sola/Sağa)\nÖrnek: .rotate left|right|flip\n\n" +
+    "🔀 .flip\nVideoyu terse döndürür.\n\n" +
+    "⭕ .oval\nÇıkartma/fotoğrafı daire olarak kırpmayı sağlar.\n\n" +
+    "📽️ .gif\nVideoyu gif'e dönüştürür. (Sesle birlikte)\n\n" +
+    "" +
+    "🖼️ .ss\nBelirtilen sitenin ekran görüntüsünü alır.\n\n" +
+    "⏫ .url\nGörseli imgur.com'a yükler ve bağlantısını paylaşır.\n\n" +
+    "🖌️ .editör\nFotoğraf düzenleme komutlarını listeler.\n\n" +
+    "🏅 *SINAV BİLGİLENDİRME KOMUTLARI*\n" +
+    "🧠🤖 .soruçöz\nYapay Zekayı kullanarak sınav sorularını çözer.\n\n" +
+    "🎓 .bilgikaçnet\nÜniversite bölümleri için kaç net yapmak gerektiğini, bölümün tam olarak ne olduğunu, ne iş yaptığını ve iş olanaklarına dair detaylı bilgiler sağlar.\n\n" +
+    "⏳ .ykssayaç\nYKS sınavlarına ne kadar süre kaldığını hesaplar.\n\n" +
+    "📅 .kpsssayaç\nKPSS sınavlarına ne kadar süre kaldığını hesaplar.\n\n" +
+    "📜 .msüsayaç\nMSÜ sınavlarına ne kadar süre kaldığını hesaplar.\n\n" +
+    "🏫 .okulsayaç\nOkulların kapanmasına ne kadar süre kaldığını hesaplar.\n\n" +
+    "" +
+    "📅 *TARİH, SAAT VE PLANLAMA KOMUTLARI*\n" +
+    "🎂 .yaşhesap\nYaş hesaplar.\nÖrnek: .age 10/01/2021\n\n" +
+    "⏳ .gerisayım\nZaman hesabı yapar. Belirlediğiniz tarihe ne kadar kaldığını söyler.\nÖrnek: .cntd 10/01/2031\n\n" +
+    "🌙 .ramazansayaç\nRamazan ayına ne kadar süre kaldığını hesaplar.\n\n" +
+    "⏰ .planla\nYanıtlanan mesajı belirli bir zamanda gruba veya özele gönderir.\nÖrnek: .planla @üye 2 saat | .planla dm @üye 30 dakika\n\n" +
+    "📋 .plandurum\nPlanlanmış tüm mesajları ve gönderilme zamanlarını listeler.\n\n" +
+    "🗑️ .plansil\nPlanlanan mesajı ID numarasıyla iptal eder.\nÖrnek: .plansil 3\n\n" +
+    "🔧 *GRUP YÖNETİM KOMUTLARI*\n" +
+    "😈 .at\nEtiketlenen kişiyi (sürprizli bir şekilde) gruptan çıkarır.\n\n" +
+    "❌ .ban\nEtiketlenen kişiyi gruptan çıkarır.\n\n" +
+    "🛡️ .ytetiket\nTüm yöneticileri etiketlemeyi sağlar. (Olası bir olayda oldukça kullanışlıdır. Aynı zamanda şikayet/talep/öneri için de kullanılabilir)\n\n" +
+    "📢 .tagall\nEtiketlenen mesajı tüm grup üyelerini etiketleyecek şekilde yeniden gönderir. (Duyurular vb. için kullanışlıdır.)\n\n" +
+    "👥 .etiket\nGrubun tüm üyelerini etiketler.\n\n" +
+    "🗑️ .msjsil\nEtiketlenen mesajı herkesten siler.\n\n" +
+    "📌 .sabitle\nYanıtlanan mesajı belirli bir süre için sabitler.\nÖrnek: .sabitle 24s | .sabitle 7g | .sabitle 30g\n\n" +
+    "🛑 .filtre\nFiltre (otomatik yanıtı) ayarı yapar.\n\n" +
+    "🚫 .filtresil\nFiltreyi (otomatik yanıtı) durdurur.\n\n" +
+    "👋 .welcome\nGrup için hoş geldiniz mesajını ayarlar. Eğer mesaj yazmazsanız, ayarlı hoş geldiniz mesajını getirir.\n\n" +
+    "👋 .goodbye\nGrup için görüşürüz mesajını ayarlar. Eğer mesaj yazmazsanız, ayarlı görüşürüz mesajını getirir.\n\n" +
+    "✅ .istekler\nBekleyen katılım isteklerini toplu onaylamayı veya toplu reddetmeyi sağlar.\nÖrnek: .requests approve all ya da reject all\n\n" +
+    "💬 .quoted\nYanıtlanan mesajın yanıtını gösterir. Silinen mesajları geri almak için kullanışlıdır.\n\n" +
+    "📈 .mesajlar\nŞu ana kadar üyelerin gönderdiği mesajların sayısını gösterir. (Sadece Bot'un gruba dahil olduğu andan itibaren)\n\n" +
+    "👥 .üyetemizle\nAktif olmayan üyeleri tarar ve çıkartılmasını sağlar. (Bot'un gruba dahil olduğu zamandan itibaren)\nÖrnek: .üyetemizle 5 gün, .üyetemizle 4 hafta, .üyetemizle 30 gün çıkar\n\n" +
+    "🔇 .sohbetkapat\nGrup sohbetini kapatır. Yalnızca yöneticiler mesaj gönderebilir.\nÖrnek: .mute & .mute 5m vb.\nÖrnek: .mute 1h\nmute 5m\n\n" +
+    "🔊 .sohbetaç\nGrup sohbetini açar ve böylelikle herkes mesaj gönderebilir.\n\n" +
+    "🔍 .jid\nBelirtilen kişinin veya sohbetin JID adres bilgisini verir.\n\n" +
+    "🔗 .davetyenile\nGrubun davet bağlantısını sıfırlar.\n\n" +
+    "🏷️ .grupadı\nGrup başlığını değiştirir.\n\n" +
+    "📝 .grupaçıklama\nGrup açıklamasını değiştirir.\n\n" +
+    "🤝 .common\nİki grup arasındaki ortak katılımcıları alır ve .common kick jid komutuyla onları atar.\n\n" +
+    "🔍 .diff\nİki grup arasındaki katılımcı farklarını gösterir.\n\n" +
+    "🔗 .katıl\nBelirttiğiniz gruba katılmamı sağlar.\nÖrnek: .join https://chat.whatsapp.com/ladesbot\n\n" +
+    "📸 .pp\nEtiketlenen kişinin profil fotoğrafını gönderir.\n\n" +
+    "🌐 .grupfoto\nGrup logosunu değiştirmeyi sağlar.\n\n" +
+    "🗒️ .stickcmd\nÇıkartma komutlarına sabitleme yapar. Ve eğer o çıkartma sizden gönderilmişse, komut olarak çalışır!\nÖrnek: .stickcmd hmm\nUyarı! Sadece çıkartmalarda çalışır.\n\n" +
+    "❌ .otoçıkartmasil\nÇıkartmalarda sabitlenmiş komutları siler.\nÖrnek: .otoçıkartmasil hmm\n\n" +
+    "📋 .otoçıkartmalar\nÇıkartmalarda sabitlenmiş komutları gösterir.\n\n" +
+    "🕒 .otosohbetkapat\nGrubu belirlediğiniz saatte otomatik olarak mesajlaşmaya kapatır. (Hindistan saatine göre)\n\n" +
+    "📅 .otosohbetaç\nGrubu belirlediğiniz saatte otomatik olarak mesajlaşmaya açar. (Hindistan saatine göre)\n\n" +
+    "⏲️ .getmute\nAyarlanmış otomatik açma/kapama olup olmadığını kontrol eder.\n\n" +
+    "📝 .düzenle\nBot'un yazdığı mesajı düzenlemeye yarar.\n\n" +
+    "⚠️ .uyar\nMesajı yanıtlanan kişiyi uyarır. 3 uyarıdan sonra kişi otomatik olarak gruptan çıkarılır.\n\n" +
+    "📊 .kaçuyarı\nBelirtilen kişinin toplam uyarı sayısını gösterir.\n\n" +
+    "➖ .uyarısil\nSeçilen kişinin uyarı sayısını 1 azaltır.\n\n" +
+    "🔁 .sıfırlauyarı\nKişinin uyarı sayısını sıfırlar.\n\n" +
+    "⚙️ .uyarılimit\nGrubun maksimum uyarı limitini ayarlar. (Varsayılan: 3)"
   );
   return;
 }

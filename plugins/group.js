@@ -688,7 +688,7 @@ Module(
       await message.client.groupUpdateSubject(message.jid, finalName);
 
       return await message.sendReply(
-        `✅ _Grup adı değiştirildi!_\n\n*Şöyleydi:* ${censorBadWords(oldName)}\n*Şöyle oldu:* ${censorBadWords(finalName)}`
+        `✅ _Grup adı değiştirildi!_\n\n*Eski Adı:* ${censorBadWords(oldName)}\n*Yeni Adı:* ${censorBadWords(finalName)}`
       );
     } catch (error) {
       console.error("Grup adı değiştirme hatası:", error);
