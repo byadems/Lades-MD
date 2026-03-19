@@ -76,47 +76,48 @@ async function transcribeVoiceMessage(message, targetMessage) {
     processingMsg = await message.send("🎙️ _Ses analiz ediliyor..._");
     const audioBuffer = await voiceMsg.download("buffer");
     const boundary = `----WebKitFormBoundary${Date.now()}`;
-    const chunks = [];
-
-    chunks.push(Buffer.from(`--${boundary}\r\n`));
-    chunks.push(Buffer.from(`Content-Disposition: form-data; name="model"\r\n\r\n`));
-    chunks.push(Buffer.from(`whisper-large-v3-turbo\r\n`));
-    chunks.push(Buffer.from(`--${boundary}\r\n`));
-    chunks.push(Buffer.from(`Content-Disposition: form-data; name="language"\r\n\r\n`));
-    chunks.push(Buffer.from(`tr\r\n`));
-    chunks.push(Buffer.from(`--${boundary}\r\n`));
-    chunks.push(Buffer.from(`Content-Disposition: form-data; name="file"; filename="audio.ogg"\r\n`));
-    chunks.push(Buffer.from(`Content-Type: audio/ogg\r\n\r\n`));
-    chunks.push(audioBuffer);
-    chunks.push(Buffer.from(`\r\n`));
-    chunks.push(Buffer.from(`--${boundary}--\r\n`));
-
-    const body = Buffer.concat(chunks);
+    const buildBody = (modelName) => {
+  const c = [];
+  c.push(Buffer.from(`--${boundary}\r\n`));
+  c.push(Buffer.from(`Content-Disposition: form-data; name="model"\r\n\r\n`));
+  c.push(Buffer.from(`${modelName}\r\n`));
+  c.push(Buffer.from(`--${boundary}\r\n`));
+  c.push(Buffer.from(`Content-Disposition: form-data; name="language"\r\n\r\n`));
+  c.push(Buffer.from(`tr\r\n`));
+  c.push(Buffer.from(`--${boundary}\r\n`));
+  c.push(Buffer.from(`Content-Disposition: form-data; name="file"; filename="audio.ogg"\r\n`));
+  c.push(Buffer.from(`Content-Type: audio/ogg; codecs=opus\r\n\r\n`));
+  c.push(audioBuffer);
+  c.push(Buffer.from(`\r\n`));
+  c.push(Buffer.from(`--${boundary}--\r\n`));
+  return Buffer.concat(c);
+  };
     const useGroq = config.GROQ_API_KEY && config.GROQ_API_KEY !== '';
-    const makeRequest = (useOpenAI = false) => {
-      return new Promise((resolve, reject) => {
-        const options = useOpenAI ? {
-          hostname: 'api.openai.com',
-          port: 443,
-          path: '/v1/audio/transcriptions',
-          method: 'POST',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Authorization': `Bearer ${config.OPENAI_API_KEY}`,
-            'Content-Length': body.length
-          }
-        } : {
-          hostname: 'api.groq.com',
-          port: 443,
-          path: '/openai/v1/audio/transcriptions',
-          method: 'POST',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Authorization': `Bearer ${config.GROQ_API_KEY}`,
-            'Content-Length': body.length
-          }
-        };
-        const req = https.request(options, (res) => {
+const makeRequest = (useOpenAI = false) => {
+  const body = buildBody(useOpenAI ? "gpt-4o-mini-transcribe" : "whisper-large-v3");
+  return new Promise((resolve, reject) => {
+    const options = useOpenAI ? {
+      hostname: 'api.openai.com',
+      port: 443,
+      path: '/v1/audio/transcriptions',
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Authorization': `Bearer ${config.OPENAI_API_KEY}`,
+        'Content-Length': body.length
+      }
+    } : {
+      hostname: 'api.groq.com',
+      port: 443,
+      path: '/openai/v1/audio/transcriptions',
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Authorization': `Bearer ${config.GROQ_API_KEY}`,
+        'Content-Length': body.length
+      }
+    };
+      const req = https.request(options, (res) => {
           let data = '';
           res.on('data', (chunk) => { data += chunk; });
           res.on('end', () => {
@@ -130,7 +131,7 @@ async function transcribeVoiceMessage(message, targetMessage) {
         req.on('error', (err) => {
           reject({ error: err, useOpenAI });
         });
-        req.write(Buffer.from(body));
+        req.write(body);
         req.end();
       });
     };
