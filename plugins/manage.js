@@ -108,6 +108,7 @@ Module(
     fromMe: true,
     desc: "Bot değişkenlerini (variables) uzaktan ayarla",
     usage: ".setvar MY_VAR=some_value",
+    dontAddCommandList: true,
   },
   async (message, args) => {
     const input = args[1];
@@ -189,6 +190,7 @@ Module(
     fromMe: true,
     desc: "config.env'deki ortam değişkenlerini ayarla",
     usage: ".setenv MY_VAR=some_value",
+    dontAddCommandList: true,
   },
   async (message, args) => {
     const input = args[1];
@@ -328,6 +330,7 @@ Module(
     fromMe: true,
     desc: "Bot modunu genel (public) ve özel (private) olarak değiştirin",
     use: "settings",
+    dontAddCommandList: true,
   },
   async (message, match) => {
     const input = match[1]?.toLowerCase();
@@ -398,6 +401,7 @@ Module(
     pattern: "setsudo ?(.*)",
     fromMe: true,
     use: "owner",
+    dontAddCommandList: true,
   },
   async (message, mm) => {
     const m = message;
@@ -493,6 +497,7 @@ Module(
     pattern: "sudosil ?(.*)",
     fromMe: true,
     desc: "Yöneticiyi (sudo) siler",
+    dontAddCommandList: true,
   },
   async (m, mm) => {
     let targetLid;

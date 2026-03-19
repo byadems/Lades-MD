@@ -196,19 +196,14 @@ Module({
     "🧪 .testwelcome\nHoş geldiniz mesajını test eder.\n\n" +
     "🧪 .testgoodbye\nGörüşürüz mesajını test eder.\n\n" +
     "⚙️ *SETTINGS KOMUTLARI*\n" +
-    "🔧 .setvar\nDeğişken ayarlar.\n\n" +
-    "📖 .değişkengetir\nDeğişken getirir.\n\n" +
+    " .değişkengetir\nDeğişken getirir.\n\n" +
     "🗑️ .değişkensil\nDeğişken siler.\n\n" +
-    "🌐 .setenv\nOrtam değişkeni ayarlar.\n\n" +
     "📋 .değişkenler\nTüm değişkenleri listeler.\n\n" +
     "💻 .platform\nPlatform bilgisini gösterir.\n\n" +
     "🌍 .dil\nDil ayarları.\n\n" +
     "⚙️ .ayarlar\nBot ayarlarını gösterir.\n\n" +
-    "🔄 .mod\nBot modunu değiştirir.\n\n" +
-    "🛡️ .antisilme\nAnti-silme özelliği.\n\n" +
-    "👑 .setsudo\nSudo kullanıcısı ekler.\n\n" +
+    "️ .antisilme\nAnti-silme özelliği.\n\n" +
     "👑 .sudolar\nSudo kullanıcılarını listeler.\n\n" +
-    "🗑️ .sudosil\nSudo kullanıcıyı siler.\n\n" +
     "🔄 .toggle\nÖzellik aç/kapar.\n\n" +
     "🤖 .antibot\nBot koruması.\n\n" +
     "🚫 .antispam\nSpam koruması.\n\n" +
