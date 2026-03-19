@@ -130,7 +130,7 @@ async function transcribeVoiceMessage(message, targetMessage) {
         req.on('error', (err) => {
           reject({ error: err, useOpenAI });
         });
-        req.write(body);
+        req.write(Buffer.from(body));
         req.end();
       });
     };
