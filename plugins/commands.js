@@ -80,10 +80,26 @@ Module(
       }
     });
 
+    // Kategorileri öncelik sırasına göre düzenle
+    const categoryOrder = [
+      "utility", "system", "group", "download", "search", 
+      "whatsapp", "settings", "edit", "converters", "game", 
+      "misc", "owner", "Genel"
+    ];
+    
+    const sortedCategories = Object.keys(categorizedCommands).sort((a, b) => {
+      const orderA = categoryOrder.indexOf(a);
+      const orderB = categoryOrder.indexOf(b);
+      if (orderA === -1 && orderB === -1) return a.localeCompare(b);
+      if (orderA === -1) return 1;
+      if (orderB === -1) return -1;
+      return orderA - orderB;
+    });
+
     let responseMessage = `*📋 Toplam Mevcut Komut: ${totalCommandCount}*\n\n`;
     const handlerPrefix = HANDLERS.match(/\[(\W*)\]/)?.[1]?.[0] || ".";
 
-    for (const category in categorizedCommands) {
+    for (const category of sortedCategories) {
       const catLabel = CATEGORY_TR[category] || category.charAt(0).toUpperCase() + category.slice(1);
       responseMessage += `*───「 ${catLabel} 」───*\n\n`;
       categorizedCommands[category].forEach((cmd) => {
@@ -292,11 +308,28 @@ Module(
     const others = (use) => {
       return use === "" ? "diğer" : use;
     };
+    // Kategorileri öncelik sırasına göre düzenle
+    const categoryOrder = [
+      "utility", "system", "group", "download", "search", 
+      "whatsapp", "settings", "edit", "converters", "game", 
+      "misc", "owner", "Genel"
+    ];
+    
     let types = [
       ...new Set(
         visibleCommands.map((e) => e.use || "Genel")
       ),
     ];
+    
+    // Sıralamayı uygula
+    types.sort((a, b) => {
+      const orderA = categoryOrder.indexOf(a);
+      const orderB = categoryOrder.indexOf(b);
+      if (orderA === -1 && orderB === -1) return a.localeCompare(b);
+      if (orderA === -1) return 1;
+      if (orderB === -1) return -1;
+      return orderA - orderB;
+    });
 
     let cmd_obj = {};
     for (const command of visibleCommands) {
