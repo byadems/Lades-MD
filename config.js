@@ -22,7 +22,7 @@ const isKoyeb = !!process.env.KOYEB_PUBLIC_DOMAIN;
 const isHeroku = __dirname.startsWith("/lds") && !isKoyeb;
 const isVPS = !isHeroku && !isKoyeb && !isRailway;
 
-const baseLogger = P({ level: process.env.LOG_LEVEL || "warn" });
+const baseLogger = P({ level: process.env.LOG_LEVEL || "debug/trace" });
 
 // Baileys/Signal decryption hataları ve transaction rollback'leri sık görülür;
 // "No session found" / "No matching sessions" genelde LID/session senkronizasyonundan
