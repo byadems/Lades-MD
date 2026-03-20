@@ -103,7 +103,7 @@ Module({
     "🎥 `vmix`\nİki video dosyasını birleştirir.\n\n" +
     "🐌 `ağırçekim`\nSes dosyasına ağır çekim efekti uygular.\n\n" +
     "⚙️ `interp`\nVideo'nun kare hızını artırır. (FPS)\n\n" +
-    "🔄 `döndür`\nVideoyu döndürür. (Sola/Sağa)\nÖrnek: .rotate left|right|flip\n\n" +
+    "🔄 `döndür`\nVideoyu döndürür. (Sola/Sağa)\nÖrnek: .döndür left|right|flip\n\n" +
     "🔀 `flip`\nVideoyu terse döndürür.\n\n" +
     "⭕ `oval`\nÇıkartma/fotoğrafı daire olarak kırpmayı sağlar.\n\n" +
     "📽️ `gif`\nVideoyu gif'e dönüştürür. (Sesle birlikte)\n\n" +
@@ -120,8 +120,8 @@ Module({
     "🏫 `okulsayaç`\nOkulların kapanmasına ne kadar süre kaldığını hesaplar.\n\n" +
     "" +
     "📅 *TARİH, SAAT VE PLANLAMA KOMUTLARI*\n" +
-    "🎂 `yaşhesap`\nYaş hesaplar.\nÖrnek: .age 10/01/2021\n\n" +
-    "⏳ `gerisayım`\nZaman hesabı yapar. Belirlediğiniz tarihe ne kadar kaldığını söyler.\nÖrnek: .cntd 10/01/2031\n\n" +
+    "🎂 `yaşhesap`\nYaş hesaplar.\nÖrnek: .yaşhesap 10/01/2021\n\n" +
+    "⏳ `gerisayım`\nZaman hesabı yapar. Belirlediğiniz tarihe ne kadar kaldığını söyler.\nÖrnek: .gerisayım 10/01/2031\n\n" +
     "🌙 `ramazansayaç`\nRamazan ayına ne kadar süre kaldığını hesaplar.\n\n" +
     "⏰ `planla`\nYanıtlanan mesajı belirli bir zamanda gruba veya özele gönderir.\nÖrnek: .planla @üye 2 saat | .planla dm @üye 30 dakika\n\n" +
     "📋 `plandurum`\nPlanlanmış tüm mesajları ve gönderilme zamanlarını listeler.\n\n" +
@@ -138,7 +138,7 @@ Module({
     "🚫 `filtresil`\nFiltreyi (otomatik yanıtı) durdurur.\n\n" +
     "👋 `welcome`\nGrup için hoş geldiniz mesajını ayarlar. Eğer mesaj yazmazsanız, ayarlı hoş geldiniz mesajını getirir.\n\n" +
     "👋 `goodbye`\nGrup için görüşürüz mesajını ayarlar. Eğer mesaj yazmazsanız, ayarlı görüşürüz mesajını getirir.\n\n" +
-    "✅ `istekler`\nBekleyen katılım isteklerini toplu onaylamayı veya toplu reddetmeyi sağlar.\nÖrnek: .requests approve all ya da reject all\n\n" +
+    "✅ `istekler`\nBekleyen katılım isteklerini toplu onaylamayı veya toplu reddetmeyi sağlar.\nÖrnek: .istekler approve all ya da reject all\n\n" +
     "💬 `quoted`\nYanıtlanan mesajın yanıtını gösterir. Silinen mesajları geri almak için kullanışlıdır.\n\n" +
     "📈 `mesajlar`\nŞu ana kadar üyelerin gönderdiği mesajların sayısını gösterir. (Sadece Bot'un gruba dahil olduğu andan itibaren)\n\n" +
     "👥 `üyetemizle`\nAktif olmayan üyeleri tarar ve çıkartılmasını sağlar. (Bot'un gruba dahil olduğu zamandan itibaren)\nÖrnek: .üyetemizle 5 gün, .üyetemizle 4 hafta, .üyetemizle 30 gün çıkar\n\n" +
@@ -150,7 +150,7 @@ Module({
     "📝 `grupaçıklama`\nGrup açıklamasını değiştirir.\n\n" +
     "🤝 `common`\nİki grup arasındaki ortak katılımcıları alır ve .common kick jid komutuyla onları atar.\n\n" +
     "🔍 `diff`\nİki grup arasındaki katılımcı farklarını gösterir.\n\n" +
-    "🔗 `katıl`\nBelirttiğiniz gruba katılmamı sağlar.\nÖrnek: .join https://chat.whatsapp.com/ladesbot\n\n" +
+    "🔗 `katıl`\nBelirttiğiniz gruba katılmamı sağlar.\nÖrnek: .katıl https://chat.whatsapp.com/ladesbot\n\n" +
     "📸 `pp`\nEtiketlenen kişinin profil fotoğrafını gönderir.\n\n" +
     "🌐 `grupfoto`\nGrup logosunu değiştirmeyi sağlar.\n\n" +
     "🗒️ `stickcmd`\nÇıkartma komutlarına sabitleme yapar. Ve eğer o çıkartma sizden gönderilmişse, komut olarak çalışır!\nÖrnek: .stickcmd hmm\nUyarı! Sadece çıkartmalarda çalışır.\n\n" +
@@ -158,7 +158,7 @@ Module({
     "📋 `otoçıkartmalar`\nÇıkartmalarda sabitlenmiş komutları gösterir.\n\n" +
     "🕒 `otosohbetkapat`\nGrubu belirlediğiniz saatte otomatik olarak mesajlaşmaya kapatır. (Hindistan saatine göre)\n\n" +
     "📅 `otosohbetaç`\nGrubu belirlediğiniz saatte otomatik olarak mesajlaşmaya açar. (Hindistan saatine göre)\n\n" +
-    "⏲️ `getmute`\nAyarlanmış otomatik açma/kapama olup olmadığını kontrol eder.\n\n" +
+    "⏲️ `otosohbetkontrol`\nAyarlanmış otomatik açma/kapama olup olmadığını kontrol eder.\n\n" +
     "📝 `düzenle`\nBot'un yazdığı mesajı düzenlemeye yarar.\n\n" +
     "⚠️ `uyar`\nMesajı yanıtlanan kişiyi uyarır. 3 uyarıdan sonra kişi otomatik olarak gruptan çıkarılır.\n\n" +
     "📊 `kaçuyarı`\nBelirtilen kişinin toplam uyarı sayısını gösterir.\n\n" +
