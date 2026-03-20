@@ -1347,53 +1347,109 @@ Module(
         (karaListe.length ? ` _(${karaListe.length} grup atlandı)_` : "")
     );
 
-    let sent = 0;
-    let pinned = 0;
-    let failed = 0;
-
-    for (const jid of groupJids) {
-      try {
-        let sentMsg;
-        if (hasReply) {
-          sentMsg = await message.client.sendMessage(jid, { forward: message.quoted });
-          if (hasText) {
-            await message.client.sendMessage(jid, { text: announceText });
-          }
-        } else {
-          sentMsg = await message.client.sendMessage(jid, { text: announceText });
-        }
-        sent++;
-
-        if (pinDuration && sentMsg?.key) {
-          try {
-            await message.client.sendMessage(jid, {
-              pin: sentMsg.key,
-              type: 1,
-              time: pinDuration,
+      let sent = 0;
+      let pinned = 0;
+      let failed = 0;
+  
+      const BATCH_SIZE = pinDuration ? 5 : 10;
+      const BATCH_DELAY_MIN = pinDuration ? 12000 : 8000;
+      const BATCH_DELAY_EXTRA = pinDuration ? 8000 : 4000;
+      const PER_GROUP_DELAY_MIN = pinDuration ? 3000 : 1500;
+      const PER_GROUP_DELAY_EXTRA = pinDuration ? 3000 : 2000;
+      const PIN_RETRY_COUNT = 2;
+      const PIN_RETRY_DELAY = 5000;
+  
+      for (const jid of groupJids) {
+        try {
+          let sentMsg;
+          if (hasReply) {
+            sentMsg = await message.client.sendMessage(jid, {
+              forward: message.quoted,
             });
-            pinned++;
-          } catch (pinErr) {
-            console.warn(`[Duyuru] Sabitleme başarısız ${jid}:`, pinErr?.message || pinErr);
+            if (hasText) {
+              await message.client.sendMessage(jid, { text: announceText });
+            }
+          } else {
+            sentMsg = await message.client.sendMessage(jid, {
+              text: announceText,
+            });
+          }
+          sent++;
+  
+          if (pinDuration && sentMsg?.key) {
+            await new Promise((r) => setTimeout(r, 1500 + Math.random() * 1000));
+  
+            let pinSuccess = false;
+            for (let attempt = 1; attempt <= PIN_RETRY_COUNT; attempt++) {
+              try {
+                await message.client.sendMessage(jid, {
+                  pin: sentMsg.key,
+                  type: 1,
+                  time: pinDuration,
+                });
+                pinned++;
+                pinSuccess = true;
+                break;
+              } catch (pinErr) {
+                const errMsg = pinErr?.message || "";
+                console.warn(
+                  `[Duyuru] Sabitleme denemesi ${attempt}/${PIN_RETRY_COUNT} başarısız ${jid}:`,
+                  errMsg
+                );
+  
+                if (
+                  errMsg.includes("rate-overlimit") ||
+                  errMsg.includes("429") ||
+                  pinErr?.data === 429
+                ) {
+                  if (attempt < PIN_RETRY_COUNT) {
+                    const backoffDelay =
+                      PIN_RETRY_DELAY * attempt + Math.random() * 3000;
+                    console.log(
+                      `[Duyuru] Rate limit, ${Math.round(backoffDelay / 1000)}s bekleniyor...`
+                    );
+                    await new Promise((r) => setTimeout(r, backoffDelay));
+                  }
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+  
+          if (sent % BATCH_SIZE === 0) {
+            await new Promise((r) =>
+              setTimeout(r, BATCH_DELAY_MIN + Math.random() * BATCH_DELAY_EXTRA)
+            );
+          }
+  
+          const delayMs =
+            PER_GROUP_DELAY_MIN + Math.floor(Math.random() * PER_GROUP_DELAY_EXTRA);
+          await new Promise((r) => setTimeout(r, delayMs));
+        } catch (err) {
+          console.error(`[Duyuru] ${jid} için başarısız:`, err?.message || err);
+          failed++;
+  
+          const errMsg = err?.message || "";
+          if (
+            errMsg.includes("rate-overlimit") ||
+            errMsg.includes("429") ||
+            err?.data === 429
+          ) {
+            console.log("[Duyuru] Genel rate limit, 15s bekleniyor...");
+            await new Promise((r) => setTimeout(r, 15000 + Math.random() * 5000));
           }
         }
-
-        if (sent % 10 === 0) {
-          await new Promise((r) => setTimeout(r, 8000 + Math.random() * 4000));
-        }
-        const delayMs = 1500 + Math.floor(Math.random() * 2000);
-        await new Promise((r) => setTimeout(r, delayMs));
-      } catch (err) {
-        console.error(`[Duyuru] ${jid} için başarısız:`, err?.message || err);
-        failed++;
       }
-    }
-
-    let summary = `*📢 Duyuru tamamlandı!*\n\n` + `✅ _Gönderildi:_ *${sent}/${groupJids.length}*\n`;
-    if (karaListe.length) summary += `🚫 _Atlandı (kara liste):_ *${karaListe.length}*\n`;
-    if (pinDuration) summary += `📌 _Sabitlendi:_ *${pinned}/${sent}*\n`;
-    if (failed > 0) summary += `❌ _Başarısız:_ *${failed}*\n`;
-
-    await message.edit(summary, message.jid, confirmMsg.key);
+  
+      let summary =
+        `*📢 Duyuru tamamlandı!*\n\n` +
+        `✅ _Gönderildi:_ *${sent}/${groupJids.length}*\n`;
+      if (karaListe.length)
+        summary += `🚫 _Atlandı (kara liste):_ *${karaListe.length}*\n`;
+      if (pinDuration) summary += `📌 _Sabitlendi:_ *${pinned}/${sent}*\n`;
+      if (failed > 0) summary += `❌ _Başarısız:_ *${failed}*\n`;
+      await message.edit(summary, message.jid, confirmMsg.key);
   }
 );
 
