@@ -97,8 +97,18 @@ function applyResilience(sequelizeInstance, opts = {}) {
       normalizedSql.startsWith("DELETE") ||
       normalizedSql.startsWith("CREATE") ||
       normalizedSql.startsWith("ALTER") ||
-      normalizedSql.startsWith("DROP") ||
-      (dialect === "sqlite" && normalizedSql.startsWith("PRAGMA"))
+      normalizedSql.startsWith("DROP")
+    );
+  };
+
+  const isSchemaIntrospectionQuery = (sql) => {
+    if (dialect !== "sqlite" || !sql || typeof sql !== "string") return false;
+    const normalizedSql = sql.trim().toUpperCase();
+    return (
+      normalizedSql.startsWith("PRAGMA ") ||
+      normalizedSql.includes("SQLITE_MASTER") ||
+      normalizedSql.includes("TABLE_INFO(") ||
+      normalizedSql.includes("INDEX_LIST(")
     );
   };
 
@@ -222,6 +232,12 @@ function applyResilience(sequelizeInstance, opts = {}) {
   // --- Query interceptor fabrikası ---
   function createQueryInterceptor(originalFn) {
     return function serializedQuery(sql, ...rest) {
+      if (isSchemaIntrospectionQuery(sql)) {
+        // Sequelize'in describeTable/sync akışları PRAGMA sonuç formatına sıkı bağlıdır.
+        // Bu sorguları kuyruk/tampon katmanına sokmak metadata parse hatalarına yol açar.
+        return originalFn(sql, ...rest);
+      }
+
       if (isAntiDeleteQuery(sql)) {
         return Promise.resolve([[], 0]);
       }
