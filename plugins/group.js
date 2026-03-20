@@ -24,6 +24,7 @@ const {
   fetchRecentChats,
 } = require("../core/store");
 const { setVar } = require("./manage");
+const { isBotIdentifier } = require("./utils/lid-helper");
 const handler = config.HANDLER_PREFIX;
 
 
@@ -130,8 +131,7 @@ Module(
     }
     const user = message.mention?.[0] || message.reply_message?.jid;
     if (!user) return await message.sendReply(Lang.NEED_USER);
-    const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
-    if (user === botId) {
+    if (isBotIdentifier(user, message.client)) {
       return await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
     }
     await message.client.sendMessage(message.jid, {
@@ -187,12 +187,11 @@ Module(
       );
     }
 
-    const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
     let canKickAnyone = false;
     let adminUsers = [];
 
     for (const user of usersToKick) {
-      if (user === botId) {
+      if (isBotIdentifier(user, message.client)) {
         continue;
       }
       try {
@@ -221,7 +220,7 @@ Module(
 
     for (const user of usersToKick) {
       try {
-        if (user === botId) {
+        if (isBotIdentifier(user, message.client)) {
           await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
           continue;
         }
@@ -756,7 +755,7 @@ Module(
         let msg = `_${g1.subject}_ & _${g2.subject}_ grubundaki ortak katılımcılar atılıyor_\n_sayı: ${common.length}_\n`;
         common
           .map((e) => e.id)
-          .filter((e) => !e.includes(message.client.user?.id?.split(":")[0]))
+          .filter((e) => !isBotIdentifier(e, message.client))
           .map(async (s) => {
             msg += "```@" + s.split("@")[0] + "```\n";
             jids.push(s);
@@ -767,8 +766,7 @@ Module(
         });
         for (let user of jids) {
           await new Promise((r) => setTimeout(r, 1000));
-          const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
-          if (user === botId) {
+          if (isBotIdentifier(user, message.client)) {
             await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
             continue;
           }

@@ -10,14 +10,11 @@ const {
   getAllWarns,
   censorBadWords,
 } = require("./utils");
+const { getNumericId, isBotIdentifier } = require("./utils/lid-helper");
 
 const handler = HANDLER_PREFIX;
 const warnLimit = parseInt(WARN || "4");
 const sudoUsers = (SUDO || "").split(",");
-
-function getNumericId(jid = "") {
-  return String(jid).split("@")[0];
-}
 
 Module(
   {
@@ -78,8 +75,7 @@ Module(
       const remaining = warnData.kalan ?? warnData.remaining;
 
       if (warnData.exceeded) {
-        const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
-        if (targetUser === botId) {
+        if (isBotIdentifier(targetUser, message.client)) {
           return await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
         }
         try {
