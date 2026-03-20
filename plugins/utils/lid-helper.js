@@ -43,6 +43,22 @@ function getNumericId(identifier) {
     return identifier;
 }
 
+function getBotNumericIds(client) {
+    if (!client || !client.user) return [];
+
+    const botJidNumeric = getNumericId(getBotJid(client));
+    const botLidNumeric = getNumericId(getBotLid(client));
+
+    return [...new Set([botJidNumeric, botLidNumeric].filter(Boolean))];
+}
+
+function isBotIdentifier(identifier, client) {
+    const targetNumeric = getNumericId(identifier);
+    if (!targetNumeric) return false;
+
+    return getBotNumericIds(client).includes(targetNumeric);
+}
+
 function isSudo(identifier, sudoConfig) {
     if (!identifier || !sudoConfig) return false;
 
@@ -151,7 +167,9 @@ module.exports = {
     getBotJid,
     getBotLid,
     getBotNumericId,
+    getBotNumericIds,
     getNumericId,
+    isBotIdentifier,
     isLidParticipant,
     isSudo,
     isFromOwner,
