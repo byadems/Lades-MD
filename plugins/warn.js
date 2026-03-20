@@ -78,6 +78,10 @@ Module(
       const remaining = warnData.kalan ?? warnData.remaining;
 
       if (warnData.exceeded) {
+        const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
+        if (targetUser === botId) {
+          return await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
+        }
         try {
           await message.client.groupParticipantsUpdate(
             message.jid,

@@ -417,11 +417,14 @@ Module(
       if (!isAllowedNumber) {
         const isAdminAdd = await isAdmin(message);
         if (!isAdminAdd) return;
-        return await message.client.groupParticipantsUpdate(
-          message.jid,
-          [message.participant[0].id],
-          "remove"
-        );
+        const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
+        if (message.participant[0].id !== botId) {
+          return await message.client.groupParticipantsUpdate(
+            message.jid,
+            [message.participant[0].id],
+            "remove"
+          );
+        }
       }
     }
 

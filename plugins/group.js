@@ -130,6 +130,10 @@ Module(
     }
     const user = message.mention?.[0] || message.reply_message?.jid;
     if (!user) return await message.sendReply(Lang.NEED_USER);
+    const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
+    if (user === botId) {
+      return await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
+    }
     await message.client.sendMessage(message.jid, {
       text: mentionjid(user) + Lang.KICKED,
       mentions: [user],
@@ -210,7 +214,7 @@ Module(
           `❌ _Belirtilen kişi${adminUsers.length > 1 ? "lar" : ""} yönetici olduğu için atılamaz!_`
         );
       }
-      return await message.sendReply("❌ _Bot kendisini gruptan atamaz!_");
+      return await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
     }
 
     await sendBanAudio(message);
@@ -218,7 +222,7 @@ Module(
     for (const user of usersToKick) {
       try {
         if (user === botId) {
-          await message.sendReply("❌ _Bot kendisini gruptan atamaz!_");
+          await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
           continue;
         }
         const isTargetAdmin = await isAdmin(message, user);
@@ -763,6 +767,11 @@ Module(
         });
         for (let user of jids) {
           await new Promise((r) => setTimeout(r, 1000));
+          const botId = message.client.user.id.split(":")[0] + "@s.whatsapp.net";
+          if (user === botId) {
+            await message.sendReply("❌ _Üzgünüm, daha kendimi çıkaracak kadar delirmedim. 😉_");
+            continue;
+          }
           await message.client.groupParticipantsUpdate(
             message.jid,
             [user],
