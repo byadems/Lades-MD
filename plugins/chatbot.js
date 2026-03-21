@@ -35,7 +35,7 @@ const DEFAULT_MAX_ATTEMPTS = 4;
 const DEFAULT_TIMEOUT = 15000;
 
 let globalSystemPrompt =
-  "Lades adında yardımsever bir süper yapay zekâ asistanısın. Özlü, arkadaş canlısı ve sadece gerektiğinde bilgilendirici ol.";
+  "Lades adında yardımsever bir süper yapay zekâ asistanısın. Özlü, arkadaş canlısı ve sadece gerektiğinde bilgilendirici ol. Yanıtlarında konuya uygun emojiler kullanarak daha samimi ve anlaşılır ol.";
 
 async function logValidGeminiModels() {
   const apiKey = config.GEMINI_API_KEY;
@@ -762,42 +762,57 @@ Module({
     let prompt = "";
     let imageParts = [];
 
-    if (rawInput) {
-      prompt = rawInput;
-      // Eğer yanıtlanan bir metin mesajı varsa, onu da prompt'a ekle
-      if (message.reply_message?.text) {
-        prompt = `Yanıtlanan mesaj: "${message.reply_message.text}"\n\nSoru: ${rawInput}`;
-      }
-    } else if (message.reply_message?.text && !rawInput) {
-      // Sadece yanıtlanan metin mesajı varsa, onu analiz et
-      prompt = `Bu metni analiz et ve yanıtla: "${message.reply_message.text}"`;
-    } else if (message.reply_message?.image) {
+    // ─── 1. ADIM: Yanıtlanan mesajda görsel varsa HER ZAMAN indir ───
+    if (message.reply_message?.image) {
       try {
         const buffer = await message.reply_message.download("buffer");
         const imagePart = await imageToGenerativePart(buffer);
-        if (!imagePart) {
-          return await message.sendReply("❌ Görsel işlenemedi.");
-        }
-        imageParts.push(imagePart);
-        // Eğer görsele yanıt verilirken ek metin de yazıldıysa
-        if (rawInput) {
-          prompt = rawInput;
+        if (imagePart) {
+          imageParts.push(imagePart);
         } else {
-          prompt = "Bu görselde ne görüyorsun? Kısa ve net analiz et.";
+          return await message.sendReply("❌ Görsel işlenemedi.");
         }
       } catch (error) {
         console.error("YZ görsel analiz indirme hatası:", error);
         return await message.sendReply("❌ Görsel indirilemedi.");
       }
+    }
+
+    // ─── 2. ADIM: Prompt'u oluştur (görsel, metin, rawInput kombinasyonları) ───
+    const hasImage = imageParts.length > 0;
+    const hasReplyText = !!(message.reply_message?.text);
+
+    if (rawInput && hasImage && hasReplyText) {
+      // Görsele + yazılı mesaja yanıt + kullanıcı sorusu var
+      prompt = `Yanıtlanan mesaj: "${message.reply_message.text}"\n\n[Görsel ektedir, görseli de dikkate al]\n\nSoru: ${rawInput}`;
+    } else if (rawInput && hasImage) {
+      // Görsele yanıt + kullanıcı sorusu var (mesaj metni yok)
+      prompt = rawInput;
+    } else if (rawInput && hasReplyText) {
+      // Metne yanıt + kullanıcı sorusu var (görsel yok)
+      prompt = `Yanıtlanan mesaj: "${message.reply_message.text}"\n\nSoru: ${rawInput}`;
+    } else if (rawInput) {
+      // Sadece kullanıcı sorusu var
+      prompt = rawInput;
+    } else if (hasImage && hasReplyText) {
+      // Görsele + yazılı mesaja yanıt (soru yok)
+      prompt = `Bu görseli ve yanındaki mesajı analiz et: "${message.reply_message.text}"`;
+    } else if (hasImage) {
+      // Sadece görsele yanıt (soru yok)
+      prompt = "Bu görselde ne görüyorsun? Kısa ve net analiz et.";
+    } else if (hasReplyText) {
+      // Sadece metne yanıt (soru yok)
+      prompt = `Bu metni analiz et ve yanıtla: "${message.reply_message.text}"`;
     } else {
+      // Hiçbir şey yok — yardım menüsü
       return await message.sendReply(
         "✨ *Yapay Zeka (Lades AI) Kullanım Rehberi*\n\n" +
         "🤖 *Soru Sorma:*\n" +
         "└ `.yz yemek tarifi` — Herhangi bir konuda soru sorabilirsiniz.\n\n" +
-        "� *Metin Analizi:*\n" +
+        "📝 *Metin Analizi:*\n" +
         "└ Bir metne yanıt vererek `.yz` yazarsanız metni analiz ederim.\n" +
         "└ Bir metne yanıt vererek `.yz bu metni özetle` yazarsanız metne göre yanıt veririm.\n\n" +
-        "�🖼️ *Görsel Analizi:*\n" +
+        "🖼️ *Görsel Analizi:*\n" +
         "└ Bir görsele yanıt vererek `.yz` yazarsanız görseli analiz eder ve açıklarım.\n" +
         "└ Bir görsele yanıt vererek `.yz bu görselde ne var?` yazarsanız görseli açıklarsınız.\n\n" +
         "🎨 *Görsel Üretimi:*\n" +
@@ -806,6 +821,10 @@ Module({
         "└ Bir görsele yanıt vererek `.yzdüzenle yağlı boya yap` yazarsanız görseli düzenlerim.\n\n"
       );
     }
+
+    // ─── 3. ADIM: Emoji talimatını ekle ───
+    const emojiInstruction = "Yanıtında konuya uygun emojiler kullanarak daha anlaşılır ve samimi bir şekilde yanıt ver. ";
+    prompt = emojiInstruction + prompt;
 
     let sent_msg;
     try {
@@ -919,7 +938,9 @@ Module({
     let basePrompt =
       "Şimdi gönderilen sınav sorusunu adım adım çözelim. " +
       "Önce soruyu analiz et, sonra çözüm yolunu açık ve mantıklı bir şekilde adım adım göster. " +
-      "En sonunda ise net cevabı yaz.";
+      "En sonunda ise net cevabı yaz. " +
+      "Yanıtında uygun emojiler kullanarak adımları daha anlaşılır ve görsel olarak zengin hale getir " +
+      "(örneğin ✅ doğru cevap, 📌 önemli not, 🔍 analiz, 📝 çözüm adımı, 💡 ipucu, ⚠️ dikkat gibi).";
 
     if (extra) {
       basePrompt += "\n\nEk not: " + extra;
