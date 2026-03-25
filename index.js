@@ -15,6 +15,9 @@ installSSEGuard();
 if (process.env.SUPPRESS_PG_SAVEPOINT_LOG !== "false") {
   const config = require("./config");
   const origWrite = process.stderr.write.bind(process.stderr);
+if (!process.stderr.__ladesPatched) {
+  process.stderr.__ladesPatched = true;
+  const origWrite = process.stderr.write.bind(process.stderr);
   process.stderr.write = function (chunk, enc, cb) {
     const s = typeof chunk === "string" ? chunk : String(chunk || "");
     if (s.includes("savepoint") && s.includes("does not exist")) {
