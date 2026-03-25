@@ -6,8 +6,8 @@ const ffmpeg = require("fluent-ffmpeg");
 
 let TEMP_DIR;
 if (process.env.TEMP_DIR) {
-  TEMP_DIR = process.env.TEMP_DIR;
-  os.tmpdir = () => path.join(__dirname, "..", TEMP_DIR);
+  TEMP_DIR = path.resolve(process.env.TEMP_DIR);
+  process.env.TMPDIR = TEMP_DIR;
 } else {
   TEMP_DIR = path.join(os.tmpdir(), "lades");
 }
