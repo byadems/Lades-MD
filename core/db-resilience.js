@@ -1,4 +1,6 @@
 const P = require("pino");
+const path = require("path");
+const sqlite3 = require("sqlite3");
 
 /**
  * Birleştirilmiş veritabanı dayanıklılık katmanı.
@@ -41,26 +43,49 @@ function applyResilience(sequelizeInstance, opts = {}) {
       `PRAGMA busy_timeout=${busyTimeoutMs};`,
     ];
 
-    sequelizeInstance.addHook("afterConnect", async (connection) => {
-      if (!connection || typeof connection.exec !== "function") {
-        return;
-      }
+    const storage =
+      sequelizeInstance?.options?.storage ||
+      process.env.DATABASE_URL ||
+      process.env.SQLITE_DATABASE_PATH ||
+      "./bot.db";
+
+    const isLikelySqliteFile =
+      typeof storage === "string" &&
+      !/^postgres(ql)?:\/\//i.test(storage) &&
+      !/^mysql:\/\//i.test(storage) &&
+      !/^mariadb:\/\//i.test(storage) &&
+      !/^mssql:\/\//i.test(storage);
+
+    if (isLikelySqliteFile) {
       try {
-        for (const pragma of pragmas) {
-          await new Promise((resolve, reject) => {
-            connection.exec(pragma, (err) => (err ? reject(err) : resolve()));
-          });
-        }
+        const dbPath = path.resolve(storage);
+        const rawDb = new sqlite3.Database(dbPath);
+
+        rawDb.serialize(() => {
+          for (const pragma of pragmas) {
+            rawDb.run(pragma);
+          }
+        });
+
+        rawDb.close((err) => {
+          if (err) {
+            logger.warn({ err }, "SQLite bootstrap bağlantısı kapatılırken hata oluştu");
+          }
+        });
+
+        logger.info({ dbPath, pragmas }, "SQLite WAL/PRAGMA ayarları Sequelize öncesi uygulandı");
       } catch (error) {
-        logger.warn({ err: error }, "SQLite pragma ayarları uygulanamadı");
+        logger.warn({ err: error }, "SQLite WAL/PRAGMA bootstrap uygulanamadı");
       }
-    });
+    } else {
+      logger.warn({ storage }, "SQLite storage yolu tespit edilemedi, WAL bootstrap atlandı");
+    }
   }
 
   // --- Ortak buffer / queue ayarları ---
   const BUFFER_FLUSH_MS = dialect === "postgres"
-  ? parseInt(process.env.PG_BUFFER_FLUSH_MS || String(60 * 1000), 10)   // 60sn
-  : parseInt(process.env.SQLITE_BUFFER_FLUSH_MS || String(30 * 1000), 10); // 30sn
+    ? parseInt(process.env.PG_BUFFER_FLUSH_MS || String(60 * 1000), 10)   // 60sn
+    : parseInt(process.env.SQLITE_BUFFER_FLUSH_MS || String(30 * 1000), 10); // 30sn
 
   const BUFFER_MAX = dialect === "postgres"
     ? parseInt(process.env.PG_BUFFER_MAX || "300", 10)
@@ -182,7 +207,7 @@ function applyResilience(sequelizeInstance, opts = {}) {
           const result = await Promise.race([
             task(),
             new Promise((_, rej) => {
-              timeout = setTimeout(() => rej(new Error('DB query timeout')), DB_QUERY_TIMEOUT_MS);
+              timeout = setTimeout(() => rej(new Error("DB query timeout")), DB_QUERY_TIMEOUT_MS);
             })
           ]);
           if (resolve) resolve(result);
@@ -201,7 +226,7 @@ function applyResilience(sequelizeInstance, opts = {}) {
       }
 
       if (priorityQueue.length > 0 || bulkQueue.length > 0) {
-        await new Promise(resolve => setImmediate(resolve));
+        await new Promise((resolve) => setImmediate(resolve));
       }
     }
 
