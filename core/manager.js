@@ -26,10 +26,18 @@ class BotManager {
                     logger.error({ session: sessionId }, `Oturum için bot nesnesi başlatılamadı (sock null).`);
                 }
             } catch (error) {
-
-                logger.error({ session: sessionId, err: error }, `BotManager'da bot başlatma başarısız`);
-            }
-        }
+      logger.error({ session: sessionId, err: error },
+    `BotManager'da bot başlatma başarısız`);
+      failedSessions.push(sessionId);
+    }
+    if (failedSessions.length === SESSION.length) {
+      logger.fatal({ failedSessions },
+    "Hiçbir session başlatılamadı — process çıkıyor");
+      process.exit(1);
+    }
+    if (failedSessions.length > 0) {
+      logger.warn({ failedSessions },
+    "Bazı sessionlar başlatılamadı ama bot devam ediyor");
     }
 
     getBot(sessionId) {
