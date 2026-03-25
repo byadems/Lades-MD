@@ -44,10 +44,10 @@ const { noteError, hasAnyDegradedSession, withLogThrottle } = require("./core/au
 // 0.2 vCPU / 512MB RAM için optimize edilmiş değerler
 const MEMORY_CHECK_INTERVAL = 2 * 60 * 1000; // 2 dakikada bir
 const HEAP_WARN_THRESHOLD_MB = 250;
-// Her JID için tutulacak maksimum mesaj sayısı
-const MAX_MESSAGES_PER_JID = 15;
-// Store'da tutulacak maksimum JID (sohbet) sayısı
-const MAX_STORE_JIDS = 100;
+const MAX_MESSAGES_PER_JID = parseInt(
+  process.env.MAX_MESSAGES_PER_JID || "50", 10);
+const MAX_STORE_JIDS = parseInt(
+  process.env.MAX_STORE_JIDS || "300", 10);
 
 let _memoryMonitorTimer = null;
 let _runtimeWatchdogTimer = null;
