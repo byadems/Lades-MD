@@ -31,6 +31,8 @@ module.exports = {
       max_restarts: 10,
       min_uptime: "60s",
       kill_timeout: 15000,
+      wait_ready: true,
+      listen_timeout: 30000,
       env: {
         MEMORY_PROFILE: profileName,
         HEAP_LIMIT_MB: String(heapLimitMb),

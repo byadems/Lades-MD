@@ -137,7 +137,8 @@ function getBotAuthProblem(bot) {
 
 
 function attachProcessAuthErrorMonitor(botManager) {
-  process.on("unhandledRejection", (reason) => {
+  process.on("unhandledRejection", (reason, promise) => {
+    config.logger.error({ reason, promise }, "Unhandled Rejection at Global Level");
     try {
       const text = reason?.message || String(reason || "");
       if (!isLikelyPermanentAuthError(text)) return;
@@ -147,6 +148,12 @@ function attachProcessAuthErrorMonitor(botManager) {
     } catch (_) {
       // best effort
     }
+  });
+
+  process.on("uncaughtException", (error) => {
+    config.logger.fatal({ error }, "Uncaught Exception at Global Level");
+    // Optionally: do not exit immediately for bot stability, or exit gracefully.
+    // We'll keep it running since it's a bot, but PM2 would restart it if we exited.
   });
 }
 
@@ -511,8 +518,30 @@ async function main() {
 
     const server = http.createServer((req, res) => {
       if (req.url === "/health") {
-        res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end("OK");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        const mem = process.memoryUsage();
+        const metrics = {
+          status: "OK",
+          uptime: process.uptime(),
+          memory: {
+            heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
+            heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
+            rssMB: Math.round(mem.rss / 1024 / 1024)
+          },
+          timestamp: new Date().toISOString()
+        };
+        res.end(JSON.stringify(metrics));
+      } else if (req.url === "/metrics") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        const states = [];
+        for (const [sessionId, bot] of botManager.bots.entries()) {
+          states.push({ session: sessionId, ...getBotSocketState(bot, sessionId) });
+        }
+        res.end(JSON.stringify({
+          bots: states,
+          uptime: process.uptime(),
+          eventLoopLag: _eventLoopBreachHistory.filter(Boolean).length
+        }));
       } else {
         res.writeHead(200, { "Content-Type": "text/plain" });
         res.end("Lades Bot çalışıyor!");
@@ -520,7 +549,7 @@ async function main() {
     });
 
     server.listen(PORT, () => {
-      logger.info(`Web sunucusu ${PORT} portunda dinleniyor`);
+      logger.info(`Web sunucusu ${PORT} portunda dinleniyor. /health ve /metrics endpointleri aktif.`);
     });
   };
 
@@ -529,6 +558,10 @@ async function main() {
   startMemoryMonitor(botManager);
   startRuntimeWatchdog(botManager);
   startTempCleanup();
+  
+  if (typeof process.send === "function") {
+    process.send("ready");
+  }
 }
 
 if (require.main === module) {

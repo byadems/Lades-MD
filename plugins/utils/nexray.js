@@ -4,6 +4,7 @@
  */
 const axios = require("axios");
 const FormData = require("form-data");
+const { withRetry, CircuitBreaker } = require("./circuit-breaker");
 
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 60000;
@@ -13,48 +14,66 @@ function withSignal(options = {}, signal) {
   return { ...options, signal };
 }
 
+// Circuit breaker for Nexray API calls to prevent hanging if the API goes down
+const nxCircuitBreaker = new CircuitBreaker(async (url, config) => {
+  return await axios.get(url, config);
+}, {
+  failureThreshold: 5,
+  successThreshold: 2,
+  timeout: 30000 // 30s open state before retry
+});
+
 async function nx(path, opts = {}) {
-  const res = await axios.get(`${BASE}${path}`, withSignal({
-    timeout: opts.timeout || TIMEOUT,
-    validateStatus: () => true,
-    responseType: opts.buffer ? "arraybuffer" : "json",
-  }, opts.signal));
+  const fetchAction = async () => {
+    const res = await nxCircuitBreaker.fire(`${BASE}${path}`, withSignal({
+      timeout: opts.timeout || TIMEOUT,
+      validateStatus: () => true,
+      responseType: opts.buffer ? "arraybuffer" : "json",
+    }, opts.signal));
 
-  if (opts.buffer) {
-    // If we requested a buffer but got JSON (happens on some errors or redirected tools like ssweb)
-    const contentType = res.headers["content-type"] || "";
-    if (res.status === 200 && contentType.includes("application/json")) {
-      const jsonStr = Buffer.from(res.data).toString();
-      try {
-        const d = JSON.parse(jsonStr);
-        if (d.result?.file_url) return { url: d.result.file_url };
-        if (d.status === false) throw new Error(d.error || d.message || "API Hatası");
-      } catch (e) {
-        // Not JSON after all or no file_url, continue to size check
+    if (opts.buffer) {
+      // If we requested a buffer but got JSON (happens on some errors or redirected tools like ssweb)
+      const contentType = res.headers["content-type"] || "";
+      if (res.status === 200 && contentType.includes("application/json")) {
+        const jsonStr = Buffer.from(res.data).toString();
+        try {
+          const d = JSON.parse(jsonStr);
+          if (d.result?.file_url) return { url: d.result.file_url };
+          if (d.status === false) throw new Error(d.error || d.message || "API Hatası");
+        } catch (e) {
+          // Not JSON after all or no file_url, continue to size check
+        }
       }
+
+      if (res.status === 200 && res.data?.byteLength > 100) {
+        return Buffer.from(res.data);
+      }
+
+      // Attempt to extract error from buffer if it's small (likely JSON error)
+      if (res.data?.byteLength < 500) {
+        try {
+          const errJson = JSON.parse(Buffer.from(res.data).toString());
+          throw new Error(errJson.error || errJson.message || `HTTP ${res.status}`);
+        } catch (e) { }
+      }
+      throw new Error(`API hatası: HTTP ${res.status}`);
     }
 
-    if (res.status === 200 && res.data?.byteLength > 100) {
-      return Buffer.from(res.data);
-    }
+    const d = res.data;
+    if (d?.status === true && d?.result !== undefined) return d.result;
+    if (d?.status && d?.data !== undefined) return d.data;
+    if (d?.result !== undefined) return d.result;
+    if (d?.data !== undefined) return d.data;
+    if (res.status === 200 && d && typeof d === "object") return d;
+    throw new Error(d?.message || d?.error || `API hatası: HTTP ${res.status}`);
+  };
 
-    // Attempt to extract error from buffer if it's small (likely JSON error)
-    if (res.data?.byteLength < 500) {
-      try {
-        const errJson = JSON.parse(Buffer.from(res.data).toString());
-        throw new Error(errJson.error || errJson.message || `HTTP ${res.status}`);
-      } catch (e) { }
-    }
-    throw new Error(`API hatası: HTTP ${res.status}`);
-  }
-
-  const d = res.data;
-  if (d?.status === true && d?.result !== undefined) return d.result;
-  if (d?.status && d?.data !== undefined) return d.data;
-  if (d?.result !== undefined) return d.result;
-  if (d?.data !== undefined) return d.data;
-  if (res.status === 200 && d && typeof d === "object") return d;
-  throw new Error(d?.message || d?.error || `API hatası: HTTP ${res.status}`);
+  // Use exponential backoff for resilience
+  return await withRetry(fetchAction, {
+    maxRetries: 3,
+    baseDelay: 1000,
+    maxDelay: 5000
+  });
 }
 
 async function nxTry(paths, opts = {}) {

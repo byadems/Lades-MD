@@ -1,5 +1,6 @@
 const axios = require("axios");
 const FormData = require("form-data");
+const { withRetry } = require("./circuit-breaker");
 
 const VOICES = Object.freeze([
   "nova",
@@ -27,20 +28,32 @@ async function aiTTS(text, voice = "coral", speed = "1.00") {
   formData.append("lang", selectedVoice);
   formData.append("speed", speed);
   formData.append("source", "ttsmp3");
-  try {
+
+  const fetchTTS = async () => {
     const { data } = await axios.post(
       "https://ttsmp3.com/makemp3_ai.php",
       formData,
-      { headers: formData.getHeaders() }
+      { headers: formData.getHeaders(), timeout: 15000 }
     );
     if (data?.Error === "Usage Limit exceeded") {
-      return { error: "TTS API kullanım limiti aşıldı", response: data };
+      throw new Error("Usage Limit exceeded");
     }
     if (data?.Error === 0 && data?.URL) {
       return { url: data.URL };
     }
-    return { error: "TTS oluşturma başarısız", response: data };
+    throw new Error("TTS oluşturma başarısız");
+  };
+
+  try {
+    return await withRetry(fetchTTS, {
+      maxRetries: 3,
+      baseDelay: 1000,
+      maxDelay: 5000
+    });
   } catch (error) {
+    if (error.message === "Usage Limit exceeded") {
+       return { error: "TTS API kullanım limiti aşıldı" };
+    }
     return { error: error.message };
   }
 }
