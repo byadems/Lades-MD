@@ -59,8 +59,8 @@ function applyResilience(sequelizeInstance, opts = {}) {
 
   // --- Ortak buffer / queue ayarları ---
   const BUFFER_FLUSH_MS = dialect === "postgres"
-    ? parseInt(process.env.PG_BUFFER_FLUSH_MS || String(30 * 60 * 1000), 10)
-    : 10 * 60 * 1000;
+  ? parseInt(process.env.PG_BUFFER_FLUSH_MS || String(60 * 1000), 10)   // 60sn
+  : parseInt(process.env.SQLITE_BUFFER_FLUSH_MS || String(30 * 1000), 10); // 30sn
 
   const BUFFER_MAX = dialect === "postgres"
     ? parseInt(process.env.PG_BUFFER_MAX || "300", 10)
