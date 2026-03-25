@@ -60,7 +60,7 @@ const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "12000
 const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String((IS_PRODUCTION ? 60 : 30) * 60 * 1000), 10);
 const EVENT_LOOP_BREACH_WINDOW = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_WINDOW || "10", 10), 1);
 const EVENT_LOOP_BREACH_REQUIRED = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_REQUIRED || "7", 10), 1);
-const EVENT_LOOP_MITIGATION_COOLDOWN_MS = parseInt(process.env.EVENT_LOOP_MITIGATION_COOLDOWN_MS || "300000", 10);
+const EVENT_LOOP_MITIGATION_COOLDOWN_MS = parseInt(process.env.EVENT_LOOP_MITIGATION_COOLDOWN_MS || "30000", 10);
 const EXIT_GUARD_WINDOW_MS = parseInt(process.env.WATCHDOG_EXIT_GUARD_MS || String(5 * 60 * 1000), 10);
 
 let _allBotsDownSince = null;
@@ -143,40 +143,24 @@ function attachProcessAuthErrorMonitor(botManager) {
 
 function applyCommandIntakeBackpressure(botManager, reason) {
   const pauseMs = EVENT_LOOP_MITIGATION_COOLDOWN_MS;
-  const pauseUntil = Date.now() + pauseMs;
-  global.__LADES_WATCHDOG_INTAKE_PAUSED_UNTIL = pauseUntil;
-
-  const pausedSessions = [];
-  for (const [sessionId, bot] of botManager.bots.entries()) {
-    const socket = bot?.sock?.ws?._socket;
-    if (socket && typeof socket.pause === "function") {
-      try {
-        socket.pause();
-        pausedSessions.push(sessionId);
-      } catch (_) {
-        // best effort
-      }
-    }
-  }
+  global.__LADES_WATCHDOG_INTAKE_PAUSED_UNTIL = Date.now() + pauseMs;
 
   if (_intakeResumeTimer) clearTimeout(_intakeResumeTimer);
+
   _intakeResumeTimer = setTimeout(() => {
-    for (const [, bot] of botManager.bots.entries()) {
-      const socket = bot?.sock?.ws?._socket;
-      if (socket && typeof socket.resume === "function") {
-        try {
-          socket.resume();
-        } catch (_) {
-          // best effort
-        }
-      }
-    }
     global.__LADES_WATCHDOG_INTAKE_PAUSED_UNTIL = 0;
-    logger.info({ reason, pauseMs }, "Watchdog backpressure kaldırıldı, komut alımı normale dönüyor");
+    logger.info(
+      { reason, pauseMs },
+      "Watchdog backpressure kaldırıldı, komut alımı normale dönüyor"
+    );
   }, pauseMs);
+
   if (_intakeResumeTimer.unref) _intakeResumeTimer.unref();
 
-  logger.warn({ reason, pauseMs, pausedSessions }, "Watchdog: yeni komut alımı geçici olarak yavaşlatıldı/durduruldu");
+  logger.warn(
+    { reason, pauseMs },
+    "Watchdog: yeni komut alımı geçici olarak yavaşlatıldı"
+  );
 }
 
 function triggerSelfHeal(reason) {
