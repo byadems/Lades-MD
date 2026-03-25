@@ -43,7 +43,13 @@ const { noteError, hasAnyDegradedSession, withLogThrottle } = require("./core/au
 
 // 0.2 vCPU / 512MB RAM için optimize edilmiş değerler
 const MEMORY_CHECK_INTERVAL = 2 * 60 * 1000; // 2 dakikada bir
-const HEAP_WARN_THRESHOLD_MB = 250;
+const _heapLimitMb = parseInt(process.env.HEAP_LIMIT_MB || "320", 10);
+const HEAP_WARN_THRESHOLD_MB = parseInt(
+  process.env.HEAP_WARN_THRESHOLD_MB ||
+  String(Math.floor(_heapLimitMb * 0.70)), // heap limitinin %70'i
+  10
+);
+
 const MAX_MESSAGES_PER_JID = parseInt(
   process.env.MAX_MESSAGES_PER_JID || "50", 10);
 const MAX_STORE_JIDS = parseInt(
