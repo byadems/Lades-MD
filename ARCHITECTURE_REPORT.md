@@ -8,8 +8,12 @@ Bu rapor, sistemin %99.9 uptime hedefiyle kesintisiz çalışması amacıyla yap
 - **Sorun:** Bot asenkron işlemler sırasında (örn. API çağrıları veya dosya indirme) hata fırlattığında `unhandledRejection` ve `uncaughtException` süreçleri ele alınmıyor, process'in dengesiz bir state'e geçmesine sebep oluyordu.
 - **Risk Seviyesi:** High Impact, High Probability.
 - **Çözüm:** `index.js` içerisinde global `uncaughtException` ve `unhandledRejection` listener'ları eklendi. Yapılandırılmış loglama (Pino) üzerinden yakalanan hatalar `fatal` seviyesinde loglandı. Node.js process'i PM2 üzerinden otomatik yeniden başlatılabilecek şekilde `guardedExit` mekanizması korundu.
+- **Log Maskeleme:** Pino logger konfigürasyonuna hassas verilerin (JID, Token, Session ID vb.) loglarda açık şekilde görünmemesi için `redact` özelliği eklendi.
 
-### Memory Leak Tespiti ve Çözümler
+### Dayanıklılık (Resilience) ve Hata Sınıfları
+- **Resilience Modülü:** `plugins/utils/resilience.js` oluşturularak projenin tamamında kullanılabilecek standart hata sınıfları (`LadesError`, `DatabaseError`, `ExternalServiceError`) ve retry/circuit breaker fonksiyonları merkezi bir yerde toplandı.
+- **DB Retry:** Veritabanı başlatma aşamasına (`initializeDatabase`) 5 kez deneme (exponential backoff ile) özelliği eklenerek geçici DB kesintilerinde botun çökmesi engellendi.
+- **Mesaj Tekilleştirme (Idempotency):** `main.js` içerisinde `node-cache` tabanlı bir deduplication (tekilleştirme) mekanizması kuruldu. Botun hızlı restart durumlarında aynı mesajı tekrar işleyip mükerrer cevap vermesi veya hata döngüsüne girmesi engellendi.
 - Mevcut durumda `v8` `--expose-gc` kullanılarak bellek sızıntıları kontrol altında tutuluyor.
 - `HEAP_WARN_THRESHOLD_MB` aşıldığında Baileys store (eski mesajlar) temizleniyor ve `global.gc()` manuel tetiklenerek bellek optimize ediliyor.
 

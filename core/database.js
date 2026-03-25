@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { logger, sequelize } = require('../config');
+const { withRetry, DatabaseError } = require('../plugins/utils/resilience');
 
 const WhatsappSession = sequelize.define('WhatsappSession', {
     sessionId: {
@@ -50,17 +51,29 @@ const BotVariable = sequelize.define('BotVariable', {
 });
 
 async function initializeDatabase() {
+    const init = async () => {
+        try {
+            await sequelize.authenticate();
+            logger.info('Veritabanı bağlantısı kuruldu.');
+            await WhatsappSession.sync();
+            logger.info('WhatsappSession tablosu eşlendi.');
+            await BotVariable.sync();
+            logger.info('BotVariable tablosu eşlendi.');
+        } catch (error) {
+            throw new DatabaseError(`Veritabanı başlatılamadı: ${error.message}`, { original: error });
+        }
+    };
+
     try {
-        await sequelize.authenticate();
-        logger.info('Veritabanı bağlantısı kuruldu.');
-        await WhatsappSession.sync();
-        logger.info('WhatsappSession tablosu eşlendi.');
-
-        await BotVariable.sync();
-        logger.info('BotVariable tablosu eşlendi.');
-
+        await withRetry(init, {
+            maxRetries: 5,
+            baseDelay: 2000,
+            onRetry: (err, attempt, delay) => {
+                logger.warn(`Veritabanı bağlantısı tekrar deneniyor (Deneme: ${attempt}, Bekleme: ${delay}ms): ${err.message}`);
+            }
+        });
     } catch (error) {
-        logger.error('Veritabanı başlatma hatası:', error);
+        logger.error('Veritabanı başlatma hatası (Tüm denemeler başarısız):', error);
         throw error;
     }
 }

@@ -4,7 +4,7 @@
  */
 const axios = require("axios");
 const FormData = require("form-data");
-const { withRetry, CircuitBreaker } = require("./circuit-breaker");
+const { withRetry, CircuitBreaker } = require("./resilience");
 
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 60000;
@@ -20,7 +20,7 @@ const nxCircuitBreaker = new CircuitBreaker(async (url, config) => {
 }, {
   failureThreshold: 5,
   successThreshold: 2,
-  timeout: 30000 // 30s open state before retry
+  openTimeout: 30000 // 30s open state before retry
 });
 
 async function nx(path, opts = {}) {

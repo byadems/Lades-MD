@@ -1,6 +1,6 @@
 const axios = require("axios");
 const FormData = require("form-data");
-const { withRetry } = require("./circuit-breaker");
+const { withRetry } = require("./resilience");
 
 const VOICES = Object.freeze([
   "nova",
