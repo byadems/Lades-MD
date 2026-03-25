@@ -187,6 +187,17 @@ const FilterDB = config.sequelize.define("filter", {
   },
 }, { indexes: [{ fields: ['jid'] }, { fields: ['trigger'] }] });
 
+const PluginDB = config.sequelize.define("Plugin", {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  url: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+}, { indexes: [{ fields: ['url'] }] });
+
 // handler.js (obfuscated) doğrudan .sync() çağırıyor ve
 // PostgreSQL index metadata sorgusu timeout'a neden oluyor.
 // Tablolar zaten mevcut — sync'i hafif CREATE IF NOT EXISTS ile değiştir.
@@ -205,7 +216,7 @@ function overrideSyncForModel(Model) {
 
 [warnDB, FakeDB, AntilinkConfigDB, antiSpamDB, PDMDB,
  antiDemote, antiPromote, antiBotDB, antiWordDB,
- WelcomeDB, GoodbyeDB, FilterDB].forEach(overrideSyncForModel);
+ WelcomeDB, GoodbyeDB, FilterDB, PluginDB].forEach(overrideSyncForModel);
 
 module.exports = {
   warnDB,
@@ -220,4 +231,5 @@ module.exports = {
   WelcomeDB,
   GoodbyeDB,
   FilterDB,
+  PluginDB,
 };

@@ -3,14 +3,7 @@ const config = require("../config");
 const axios = require("axios");
 const { setVar } = require("./manage");
 const fs = require("fs");
-const {
-  addExif,
-  webp2mp4,
-  addID3,
-  getBuffer,
-  uploadToImgbb,
-  uploadToCatbox,
-} = require("./utils");
+const { getBuffer, uploadToImgbb } = require("./utils");
 const nexray = require("./utils/nexray");
 const { callGenerativeAI } = require("./utils/misc");
 
@@ -210,7 +203,7 @@ async function postWithRetry(url, payload, opts = {}) {
 }
 
 async function getAIResponse(message, chatJid, imageBuffer = null, retryCount = 0) {
-  const MAX_MODEL_RETRIES = 10;
+
   const apiKey = config.GEMINI_API_KEY;
   if (!apiKey) {
     return "_❌ GEMINI_API_KEY yapılandırılmamış. Lütfen `.setvar GEMINI_API_KEY` komutunu kullanarak ayarlayın._";

@@ -1,8 +1,9 @@
 const { Module } = require("../main");
-const { isAdmin, censorBadWords } = require("./utils");
-const { ADMIN_ACCESS } = require("../config");
+const { censorBadWords } = require("./utils");
 const config = require("../config");
 const { setVar, getVar, delVar } = require("./manage");
+let { getString } = require("./utils/lang");
+let Lang = getString("afk");
 
 const afkCache = new Map();
 
