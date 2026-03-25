@@ -88,10 +88,10 @@ const sequelize = (() => {
         max: 3,
       },
       pool: {
-        max: 5,
-        min: 1,
-        acquire: 30000,
-        idle: 10000,
+        max: 1,
+        min: 0,
+        acquire: 15000,
+        idle: 5000,
       },
     });
 
