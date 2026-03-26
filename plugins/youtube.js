@@ -696,13 +696,19 @@ Module(
         }
 
         const selectedVideo = results[selectedNumber - 1];
-        let downloadMsg;
-
         try {
           const safeTitle = censorBadWords(selectedVideo.title);
-          downloadMsg = await message.sendReply(
-            `_🔻 İndirilip yükleniyor..._ *${safeTitle}*`
-          );
+          const quotedListKey =
+            message.reply_message?.data?.key || message.reply_message?.key;
+          const canEditQuotedList = !!quotedListKey;
+
+          if (canEditQuotedList) {
+            await message.edit(
+              `_🔻 İndirilip yükleniyor..._ *${safeTitle}*`,
+              message.jid,
+              quotedListKey
+            );
+          }
 
           const result = await nexray.downloadYtMp3(selectedVideo.url);
           if (!result || !result.url) throw new Error("Nexray failed");
@@ -713,19 +719,27 @@ Module(
             fileName: `${safeTitle}.mp3`,
           }, { quoted: message.data });
 
-          await message.edit(
-            `_✅ Hazır!_ *${safeTitle}*`,
-            message.jid,
-            downloadMsg.key
-          );
+          if (canEditQuotedList) {
+            await message.edit(
+              `_✅ Hazır!_ *${safeTitle}*`,
+              message.jid,
+              quotedListKey
+            );
+          } else {
+            await message.sendReply(`_✅ Hazır!_ *${safeTitle}*`);
+          }
         } catch (error) {
           console.error("Şarkı indirme hatası:", error);
-          if (downloadMsg) {
+          const quotedListKey =
+            message.reply_message?.data?.key || message.reply_message?.key;
+          if (quotedListKey) {
             await message.edit(
               "_⚠️ İndirme başarısız! Lütfen tekrar deneyin._",
               message.jid,
-              downloadMsg.key
+              quotedListKey
             );
+          } else {
+            await message.sendReply("_⚠️ İndirme başarısız! Lütfen tekrar deneyin._");
           }
         }
       } catch (error) {
@@ -1146,4 +1160,3 @@ Module(
     }
   }
 );
-
