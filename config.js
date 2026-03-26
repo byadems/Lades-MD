@@ -50,10 +50,15 @@ const NOISY_PATTERNS = [
   "timed out waiting for message",
   "Buffer timeout reached",
   "LID alınamadı",
+  "SSE connection error",
+  "SSE recoverable connection",
+  "SSE reconnect scheduled",
+  "SSE stream closed",
 ];
 
 const _originalLog = console.log.bind(console);
 const _originalInfo = console.info.bind(console);
+const _originalError = console.error.bind(console);
 const _isNoisy = (msg) => NOISY_PATTERNS.some((p) => msg.includes(p));
 console.log = (...args) => {
   const msg = String(args[0] || "");
@@ -70,6 +75,11 @@ console.warn = (...args) => {
   if (msg.includes("[NODE-CRON]")) return;
   if (_isNoisy(msg)) return;
   _originalWarn(...args);
+};
+console.error = (...args) => {
+  const msg = String(args[0] || "");
+  if (_isNoisy(msg)) return;
+  _originalError(...args);
 };
 
 const baseLogger = P({

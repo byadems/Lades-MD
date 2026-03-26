@@ -2,7 +2,7 @@ const Module = require("module");
 const { logger } = require("../config");
 const { withLogThrottle } = require("./auth-health");
 
-const RECOVERABLE_SSE_REGEX = /(terminated:\s*other side closed|other side closed|econnreset|socket hang up)/i;
+const RECOVERABLE_SSE_REGEX = /(terminated|other side closed|econnreset|socket hang up|econnrefused|etimedout|epipe|invalid character in chunk)/i;
 const BASE_BACKOFF_MS = [1000, 2000, 5000];
 const MAX_BACKOFF_MS = 30000;
 const JITTER_RATIO = 0.2;
@@ -192,11 +192,17 @@ function buildGuardedEventSource(NativeEventSource) {
           return;
         }
 
-        logger.error(
-          { session: this.sessionKey, reason, event },
-          "SSE connection error"
+        state.failures += 1;
+        const backoffMs = applyJitter(computeBackoffMs(state.failures));
+
+        withLogThrottle(
+          `sse-unknown:${this.sessionKey}`,
+          "warn",
+          { session: this.sessionKey, reason, failures: state.failures, nextRetryMs: backoffMs },
+          "SSE connection error, scheduling retry"
         );
 
+        this._scheduleRetry("unknown-error", backoffMs);
         this._dispatch("error", event);
       };
     }
