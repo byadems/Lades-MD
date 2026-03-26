@@ -22,8 +22,56 @@ const isKoyeb = !!process.env.KOYEB_PUBLIC_DOMAIN;
 const isHeroku = __dirname.startsWith("/lds") && !isKoyeb;
 const isVPS = !isHeroku && !isKoyeb && !isRailway;
 
+// Baileys/Signal ve History Sync logları logları çok gürültülüdür.
+// Bunları tamamen sessize al veya sadece hata durumunda göster.
+const SUPPRESS_DECRYPTION_LOGS = process.env.SUPPRESS_DECRYPTION_LOGS !== "false";
+const NOISY_PATTERNS = [
+  "failed to decrypt",
+  "transaction failed",
+  "unprocessable update",
+  "Added message to retry cache",
+  "Event buffer activated",
+  "sending receipt for messages",
+  "Added message to recent cache",
+  "got history notification",
+  "History sync is disabled",
+  "Connection is now AwaitingInitialSync",
+  "Flushing event buffer",
+  "handled",
+  "offline messages",
+  "bulk device migration",
+  "synced regular",
+  "resyncing regular",
+  "offline preview received",
+  "communication recv",
+  "PreKey validation",
+  "logging in...",
+  "Credentials updated",
+  "clean dirty bits",
+  "opened connection to WA",
+  "Using PN identity",
+  "Decrypted message with closed session",
+  "Own LID session created",
+  "Connection established",
+  "no name present, ignoring presence update",
+  "sent ack"
+];
+
+const _originalLog = console.log.bind(console);
+const _originalInfo = console.info.bind(console);
+console.log = (...args) => {
+  const msg = String(args[0] || "");
+  if (NOISY_PATTERNS.some((p) => msg.includes(p))) return;
+  _originalLog(...args);
+};
+console.info = (...args) => {
+  const msg = String(args[0] || "");
+  if (NOISY_PATTERNS.some((p) => msg.includes(p))) return;
+  _originalInfo(...args);
+};
+
 const baseLogger = P({
-  level: process.env.LOG_LEVEL || "debug",
+  level: process.env.LOG_LEVEL || "warn",
   redact: {
     paths: [
       "*.sessionId",
@@ -32,35 +80,49 @@ const baseLogger = P({
       "*.key",
       "*.password",
       "*.phoneNumber",
-      "*.jid"
+      "*.jid",
+      "*.attrs",
+      "*.frame",
+      "*.syncAction",
+      "*.histNotification"
     ],
     placeholder: "[SENSITIVE]",
   },
 });
 
-// Baileys/Signal decryption hataları ve transaction rollback'leri sık görülür;
-// "No session found" / "No matching sessions" genelde LID/session senkronizasyonundan
-// kaynaklanır, kritik değildir. Bu logları debug seviyesine indirerek gürültüyü azalt.
-const SUPPRESS_DECRYPTION_LOGS = process.env.SUPPRESS_DECRYPTION_LOGS !== "false";
-const NOISY_ERROR_PATTERNS = [
-  "failed to decrypt",
-  "transaction failed",
-];
-
 function wrapLogger(log) {
   if (!log || !SUPPRESS_DECRYPTION_LOGS) return log;
-  const origError = log.error.bind(log);
-  const origChild = log.child?.bind(log);
+  
+  const originalMethods = {
+    info: log.info.bind(log),
+    debug: log.debug.bind(log),
+    error: log.error.bind(log),
+    trace: log.trace.bind(log),
+    warn: log.warn.bind(log),
+    child: log.child?.bind(log)
+  };
+
+  const silentFilter = (...args) => {
+    const msg = typeof args[0] === "string" ? args[0] : (args[1] || "");
+    if (typeof msg === "string" && NOISY_PATTERNS.some((p) => msg.includes(p))) {
+      return; // Do nothing, suppress it
+    }
+    return true;
+  };
+
   Object.assign(log, {
+    info(...args) { if (silentFilter(...args)) originalMethods.info(...args); },
+    debug(...args) { if (silentFilter(...args)) originalMethods.debug(...args); },
+    trace(...args) { if (silentFilter(...args)) originalMethods.trace(...args); },
     error(...args) {
-      const msg = typeof args[0] === "string" ? args[0] : args[1];
-      if (typeof msg === "string" && NOISY_ERROR_PATTERNS.some((p) => msg.includes(p))) {
-        return log.trace(...args);
+      const msg = typeof args[0] === "string" ? args[0] : (args[1] || "");
+      if (typeof msg === "string" && NOISY_PATTERNS.some((p) => msg.includes(p))) {
+        return originalMethods.trace(...args); // Downgrade to trace
       }
-      return origError(...args);
+      return originalMethods.error(...args);
     },
     child(...args) {
-      const child = origChild ? origChild(...args) : log;
+      const child = originalMethods.child ? originalMethods.child(...args) : log;
       return wrapLogger(child);
     },
   });

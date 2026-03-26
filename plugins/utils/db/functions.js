@@ -11,7 +11,6 @@ const {
   WelcomeDB,
   GoodbyeDB,
   FilterDB,
-  PluginDB,
 } = require("./models");
 const config = require("../../../config");
 
@@ -641,25 +640,13 @@ const filter = {
   checkMatch: checkFilterMatch,
 };
 
-async function installPlugin(address, file) {
-  var Plugin = await PluginDB.findAll({
-    where: { url: address },
-  });
-
-  if (Plugin.length >= 1) {
-    return false;
-  } else {
-    return await PluginDB.create({ url: address, name: file });
-  }
-}
-
 module.exports = {
   syncWarnsSequence,
   getWarn,
   setWarn,
   resetWarn,
-  decrementWarn,
   getWarnCount,
+  decrementWarn,
   getAllWarns,
   antilinkConfig,
   antiword,
@@ -672,6 +659,4 @@ module.exports = {
   welcome,
   goodbye,
   filter,
-  installPlugin,
-  PluginDB,
 };
