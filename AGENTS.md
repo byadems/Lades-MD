@@ -21,6 +21,32 @@ Lades-MD is a WhatsApp bot built on Node.js (CommonJS) using the Baileys library
 - `GEMINI_API_KEY` — Required for chatbot/ai/yz commands (get from aistudio.google.com)
 - `GROQ_API_KEY` — Required for voice transcription (dinle command)
 
+### Deobfuscating core files
+
+The 5 obfuscated core files can be partially deobfuscated for analysis:
+
+```bash
+npm run deobfuscate
+# OR individually:
+node deobfuscate.js core/auth.js core/auth.deobf.js
+```
+
+This generates `core/*.deobf.js` files (git-ignored). What the tool resolves:
+- **String literals**: `I27f5m(0x2bc)` → `"handleMessage"` (decoder call substitution)
+- **Numeric constants**: `z9dl8No[0x4]` → `"length"` / `z9dl8No[0x0]` → `0` (literal array lookups)
+- **Code formatting**: minified → indented with js-beautify
+
+What CANNOT be recovered: original variable/function names (permanently randomised).
+
+Results per file (string calls replaced + literal lookups resolved):
+| File | Strings decoded | Literal lookups |
+|---|---|---|
+| auth.js | 206 | 3487 |
+| bot.js | 636 | 4814 |
+| handler.js | 158 | 3763 |
+| store.js | 378 | 3595 |
+| schedulers.js | 46 | 2996 |
+
 ### Key gotchas
 
 - Some core files (`core/auth.js`, `core/bot.js`, `core/handler.js`, `core/store.js`, `core/schedulers.js`) are obfuscated and must not be modified.

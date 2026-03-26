@@ -7,7 +7,8 @@
   "scripts": {
     "start": "pm2 start ecosystem.config.js --attach",
     "postinstall": "node scripts/patch-libsignal.js",
-    "test": "node --test"
+    "test": "node --test",
+    "deobfuscate": "node deobfuscate.js core/auth.js core/auth.deobf.js && node deobfuscate.js core/bot.js core/bot.deobf.js && node deobfuscate.js core/handler.js core/handler.deobf.js && node deobfuscate.js core/store.js core/store.deobf.js && node deobfuscate.js core/schedulers.js core/schedulers.deobf.js"
   },
   "keywords": [
     "whatsapp",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "eslint": "^9.39.4",
     "eslint-plugin-node": "^11.1.0",
+    "js-beautify": "^1.15.4",
     "pm2": "^6.0.8"
   }
 }
