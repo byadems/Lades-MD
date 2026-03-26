@@ -1,6 +1,14 @@
-const { PluginDB, installPlugin } = require("../utils/db/functions");
+const { PluginDB } = require("../utils/db/models");
 
-module.exports = {
-  PluginDB: PluginDB,
-  installPlugin: installPlugin
-};
+async function installPlugin(address, file) {
+  const existing = await PluginDB.findAll({
+    where: { url: address },
+  });
+
+  if (existing.length >= 1) {
+    return false;
+  }
+  return await PluginDB.create({ url: address, name: file });
+}
+
+module.exports = { PluginDB, installPlugin };

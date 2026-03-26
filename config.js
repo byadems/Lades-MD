@@ -30,7 +30,6 @@ const NOISY_PATTERNS = [
   "History sync is disabled",
   "Connection is now AwaitingInitialSync",
   "Flushing event buffer",
-  "handled",
   "offline messages",
   "bulk device migration",
   "synced regular",
@@ -75,22 +74,6 @@ console.warn = (...args) => {
 
 const baseLogger = P({
   level: process.env.LOG_LEVEL || "warn",
-  redact: {
-    paths: [
-      "*.sessionId",
-      "*.sessionData",
-      "*.token",
-      "*.key",
-      "*.password",
-      "*.phoneNumber",
-      "*.jid",
-      "*.attrs",
-      "*.frame",
-      "*.syncAction",
-      "*.histNotification"
-    ],
-    placeholder: "[SENSITIVE]",
-  },
 });
 
 function wrapLogger(log) {

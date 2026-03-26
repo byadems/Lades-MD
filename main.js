@@ -1,8 +1,4 @@
 const config = require("./config");
-const NodeCache = require("node-cache");
-
-// Message deduplication cache to prevent re-processing on rapid restarts
-const messageDeduplicationCache = new NodeCache({ stdTTL: 60, checkperiod: 30 });
 
 const Commands = [];
 let commandPrefix;
@@ -214,29 +210,19 @@ function Module(info, func) {
     "start",
   ];
 
-  const wrappedFunc = async (...args) => {
-    const message = args[0];
-    if (message && message.id) {
-      if (messageDeduplicationCache.has(message.id)) {
-        return; // Already processed
+  const wrappedFunc = config.PARALLEL_COMMANDS
+    ? async (...args) => {
+        const commandName = info.pattern || info.on || "message";
+        enqueueCommand(
+          () =>
+            runWithTimeout(func, args, {
+              commandName,
+              enqueuedAt: Date.now(),
+            }),
+          { commandName }
+        );
       }
-      messageDeduplicationCache.set(message.id, true);
-    }
-
-    if (config.PARALLEL_COMMANDS) {
-      const commandName = info.pattern || info.on || "message";
-      enqueueCommand(
-        () =>
-          runWithTimeout(func, args, {
-            commandName,
-            enqueuedAt: Date.now(),
-          }),
-        { commandName }
-      );
-    } else {
-      return await func(...args);
-    }
-  };
+    : func;
 
   const commandInfo = {
     fromMe: info.fromMe ?? config.isPrivate,
