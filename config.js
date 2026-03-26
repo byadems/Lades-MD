@@ -2,16 +2,8 @@ const P = require("pino");
 const fs = require("fs");
 const { Sequelize } = require("sequelize");
 
-// Suppress node-cron "missed execution" uyarı — these are triggered when the
-// event loop is delayed by >1 second (common under DB load on Koyeb/Heroku).
-// They are purely cosmetic log noise and do not affect scheduling correctness.
-// Only the specific node-cron pattern is filtered; all other warnings pass through.
+// _originalWarn captured early so no other module can intercept first
 const _originalWarn = console.warn.bind(console);
-console.warn = (...args) => {
-  const msg = args[0];
-  if (typeof msg === "string" && msg.includes("[NODE-CRON]")) return;
-  _originalWarn(...args);
-};
 
 function convertToBool(text, fault = "true", fault2 = "on") {
   return text === fault || text === fault2;
@@ -27,6 +19,7 @@ const isVPS = !isHeroku && !isKoyeb && !isRailway;
 const SUPPRESS_DECRYPTION_LOGS = process.env.SUPPRESS_DECRYPTION_LOGS !== "false";
 const NOISY_PATTERNS = [
   "failed to decrypt",
+  "Failed to decrypt",
   "transaction failed",
   "unprocessable update",
   "Added message to retry cache",
@@ -54,20 +47,30 @@ const NOISY_PATTERNS = [
   "Own LID session created",
   "Connection established",
   "no name present, ignoring presence update",
-  "sent ack"
+  "sent ack",
+  "timed out waiting for message",
+  "Buffer timeout reached",
+  "LID alınamadı",
 ];
 
 const _originalLog = console.log.bind(console);
 const _originalInfo = console.info.bind(console);
+const _isNoisy = (msg) => NOISY_PATTERNS.some((p) => msg.includes(p));
 console.log = (...args) => {
   const msg = String(args[0] || "");
-  if (NOISY_PATTERNS.some((p) => msg.includes(p))) return;
+  if (_isNoisy(msg)) return;
   _originalLog(...args);
 };
 console.info = (...args) => {
   const msg = String(args[0] || "");
-  if (NOISY_PATTERNS.some((p) => msg.includes(p))) return;
+  if (_isNoisy(msg)) return;
   _originalInfo(...args);
+};
+console.warn = (...args) => {
+  const msg = String(args[0] || "");
+  if (msg.includes("[NODE-CRON]")) return;
+  if (_isNoisy(msg)) return;
+  _originalWarn(...args);
 };
 
 const baseLogger = P({
@@ -111,9 +114,10 @@ function wrapLogger(log) {
   };
 
   Object.assign(log, {
-    info(...args) { if (silentFilter(...args)) originalMethods.info(...args); },
+    info(...args)  { if (silentFilter(...args)) originalMethods.info(...args); },
     debug(...args) { if (silentFilter(...args)) originalMethods.debug(...args); },
     trace(...args) { if (silentFilter(...args)) originalMethods.trace(...args); },
+    warn(...args)  { if (silentFilter(...args)) originalMethods.warn(...args); },
     error(...args) {
       const msg = typeof args[0] === "string" ? args[0] : (args[1] || "");
       if (typeof msg === "string" && NOISY_PATTERNS.some((p) => msg.includes(p))) {
