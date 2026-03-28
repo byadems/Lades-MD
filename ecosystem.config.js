@@ -33,6 +33,8 @@ module.exports = {
       kill_timeout: 15000,
       wait_ready: true,
       listen_timeout: 30000,
+      pmx: false,
+      automation: false,
       env: {
         MEMORY_PROFILE: profileName,
         HEAP_LIMIT_MB: String(heapLimitMb),
