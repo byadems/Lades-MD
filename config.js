@@ -54,6 +54,9 @@ const NOISY_PATTERNS = [
   "SSE recoverable connection",
   "SSE reconnect scheduled",
   "SSE stream closed",
+  "Invalid mex newsletter",
+  "Unexpected non-whitespace character after JSON",
+  "FOREIGN KEY constraint failed",
 ];
 
 const _originalLog = console.log.bind(console);
@@ -98,10 +101,15 @@ function wrapLogger(log) {
     child: log.child?.bind(log)
   };
 
+  const _matchesNoisy = (str) => typeof str === "string" && str.length > 0 && NOISY_PATTERNS.some((p) => str.includes(p));
+
   const silentFilter = (...args) => {
     const msg = typeof args[0] === "string" ? args[0] : (args[1] || "");
-    if (typeof msg === "string" && NOISY_PATTERNS.some((p) => msg.includes(p))) {
-      return; // Do nothing, suppress it
+    if (_matchesNoisy(msg)) return;
+    if (typeof args[0] === "object" && args[0] !== null) {
+      const errMsg = args[0].err?.message || args[0].error?.message || "";
+      const pinoMsg = args[0].msg || "";
+      if (_matchesNoisy(errMsg) || _matchesNoisy(pinoMsg)) return;
     }
     return true;
   };
@@ -112,10 +120,7 @@ function wrapLogger(log) {
     trace(...args) { if (silentFilter(...args)) originalMethods.trace(...args); },
     warn(...args)  { if (silentFilter(...args)) originalMethods.warn(...args); },
     error(...args) {
-      const msg = typeof args[0] === "string" ? args[0] : (args[1] || "");
-      if (typeof msg === "string" && NOISY_PATTERNS.some((p) => msg.includes(p))) {
-        return originalMethods.trace(...args); // Downgrade to trace
-      }
+      if (!silentFilter(...args)) return;
       return originalMethods.error(...args);
     },
     child(...args) {

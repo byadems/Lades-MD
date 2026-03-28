@@ -9,7 +9,7 @@ const { uploadToImgbb } = require("./utils/upload");
 const { setVar } = require("./manage");
 const { getTotalUserCount } = require("../core/store");
 const { parseAliveMessage, sendAliveMessage } = require("./utils/alive-parser");
-const { badWords, censorBadWords } = require("./utils/censor");
+const { containsBadWord, censorBadWords } = require("./utils/censor");
 const { nxTry } = require("./utils");
 
 const isPrivateMode = MODE === "private";
@@ -454,9 +454,10 @@ Module(
     use: "settings",
   },
   async (message, match) => {
-    const name = match[1]?.trim();
-    if (!name)
+    const rawName = match[1]?.trim();
+    if (!rawName)
       return await message.sendReply("_💬 İsim verin: .setname Lades_");
+    const name = censorBadWords(rawName);
     const parts = config.BOT_INFO.split(";");
     parts[0] = name;
     await setVar("BOT_INFO", parts.join(";"));
@@ -602,9 +603,7 @@ Module(
       );
     }
 
-    const kufurIceriyor = badWords.some((word) =>
-      metin.toLowerCase().includes(word.toLowerCase())
-    );
+    const kufurIceriyor = containsBadWord(metin);
     const iletilecekMetin = kufurIceriyor ? censorBadWords(metin) : metin;
 
     const hedefJid = getBildirimJid();

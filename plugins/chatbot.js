@@ -3,7 +3,7 @@ const config = require("../config");
 const axios = require("axios");
 const { setVar } = require("./manage");
 const fs = require("fs");
-const { getBuffer, uploadToImgbb } = require("./utils");
+const { getBuffer, uploadToImgbb, censorBadWords } = require("./utils");
 const nexray = require("./utils/nexray");
 const { callGenerativeAI } = require("./utils/misc");
 
@@ -735,7 +735,7 @@ Module(
       const aiResponse = await getAIResponse(responseText, chatJid, imageBuffer);
 
       if (aiResponse) {
-        await message.sendReply(aiResponse);
+        await message.sendReply(censorBadWords(aiResponse));
       }
     } catch (error) {
       console.error("Mesaj işleyicisinde hata:", error);
@@ -829,7 +829,7 @@ Module({
         return;
       }
 
-      await message.edit(fullText, message.jid, sent_msg.key);
+      await message.edit(censorBadWords(fullText), message.jid, sent_msg.key);
     } catch (error) {
       console.error("YZ komut hatası:", error.message);
       if (sent_msg) {
@@ -987,7 +987,7 @@ Module({
         );
       }
 
-      await message.edit(result, message.jid, sent.key);
+      await message.edit(censorBadWords(result), message.jid, sent.key);
     } catch (err) {
       console.error("SORU ÇÖZME HATASI:", err);
       if (sent) {

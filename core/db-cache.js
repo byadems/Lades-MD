@@ -79,6 +79,31 @@ function applyDatabaseCaching() {
 
   alignUserStatsModel(UserStats);
 
+  // ─── FK parent guarantee: UserStats insert'ten önce User+Chat DB'de olmalı ──
+  const _origUserUpsertRaw = User.upsert.bind(User);
+  const _origChatUpsertRaw = Chat.upsert.bind(Chat);
+  const _parentEnsureCache = new Set();
+
+  async function ensureParentRecords(userJid, chatJid) {
+    const parentKey = `${userJid}::${chatJid}`;
+    if (_parentEnsureCache.has(parentKey)) return;
+
+    try {
+      if (userJid) {
+        await _origUserUpsertRaw({ jid: userJid }, { conflictFields: ["jid"] }).catch(() => {});
+      }
+      if (chatJid) {
+        const chatType = chatJid.endsWith("@g.us") ? "group" : "private";
+        await _origChatUpsertRaw({ jid: chatJid, type: chatType }, { conflictFields: ["jid"] }).catch(() => {});
+      }
+      _parentEnsureCache.add(parentKey);
+      if (_parentEnsureCache.size > MAX_CACHE_SIZE) {
+        const first = _parentEnsureCache.values().next().value;
+        _parentEnsureCache.delete(first);
+      }
+    } catch (_) {}
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // 1. AntiDeleteCache → tamamen in-memory, DB'ye hiç gitmez
   // ═══════════════════════════════════════════════════════════════════════════
@@ -301,6 +326,26 @@ function applyDatabaseCaching() {
   const _origStatsCreate = UserStats.create.bind(UserStats);
   const _origStatsUpsert = UserStats.upsert?.bind(UserStats);
 
+  UserStats.create = async function (values, options) {
+    if (values?.userJid && values?.chatJid) {
+      await ensureParentRecords(values.userJid, values.chatJid);
+      const key = `${values.userJid}::${values.chatJid}`;
+      const result = await _origStatsCreate(values, options);
+      if (result) { userStatsCache.set(key, result); pruneMap(userStatsCache); }
+      return result;
+    }
+    return _origStatsCreate(values, options);
+  };
+
+  if (_origStatsUpsert) {
+    UserStats.upsert = async function (values, options) {
+      if (values?.userJid && values?.chatJid) {
+        await ensureParentRecords(values.userJid, values.chatJid);
+      }
+      return _origStatsUpsert(values, options);
+    };
+  }
+
   UserStats.findOne = async function (options) {
     const userJid = options?.where?.userJid;
     const chatJid = options?.where?.chatJid;
@@ -389,14 +434,19 @@ function applyDatabaseCaching() {
       if (!instance?.dataValues) continue;
 
       try {
+        const dv = instance.dataValues;
+        if (dv.userJid && dv.chatJid) {
+          await ensureParentRecords(dv.userJid, dv.chatJid);
+        }
+
         if (_origStatsUpsert) {
-          await _origStatsUpsert(instance.dataValues, {
+          await _origStatsUpsert(dv, {
             conflictFields: ["userJid", "chatJid"],
           });
         } else if (_origStatsSave && typeof instance.changed === "function") {
           await _origStatsSave.call(instance);
         } else {
-          const vals = { ...instance.dataValues };
+          const vals = { ...dv };
           delete vals.id;
           const [existing] = await _origStatsFindAll({
             where: { userJid: vals.userJid, chatJid: vals.chatJid },
@@ -410,9 +460,14 @@ function applyDatabaseCaching() {
         }
         flushed++;
       } catch (e) {
+        const isFKError = e?.name === "SequelizeForeignKeyConstraintError" ||
+          (e?.parent?.code === "SQLITE_CONSTRAINT" && String(e?.message).includes("FOREIGN KEY"));
+        if (isFKError) {
+          _parentEnsureCache.delete(`${instance.dataValues?.userJid}::${instance.dataValues?.chatJid}`);
+        }
         errors++;
         _statsDirtyKeys.add(key);
-        if (errors <= 3) {
+        if (errors <= 3 && !isFKError) {
           logger.error({ err: e, key }, "db-cache: UserStats flush hatası");
         }
       }

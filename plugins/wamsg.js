@@ -83,7 +83,7 @@ Module(
       return await m.sendReply("_❌ Gönderilecek mesaj metni eksik!_" );
     }
 
-    await m.client.sendMessage(jid, { text });
+    await m.client.sendMessage(jid, { text: censorBadWords(text) });
     return await m.sendReply("_✅ Mesaj gönderildi!_");
   }
 );
@@ -127,7 +127,7 @@ Module(
       return await m.sendReply("_❌ Gönderilecek mesaj metni eksik!_" );
     }
 
-    await m.client.sendMessage(jid, { text }, {
+    await m.client.sendMessage(jid, { text: censorBadWords(text) }, {
       contextInfo: { isForwarded: true, forwardingScore: 2 },
     });
     return await m.sendReply("_✅ Mesaj gönderildi!_");

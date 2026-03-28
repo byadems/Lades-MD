@@ -15,7 +15,7 @@ const config = require("../config");
 const axios = require("axios");
 const fileType = require("file-type");
 const { getTempPath, getTempSubdir } = require("../core/helpers");
-const { badWords } = require("./utils/censor");
+const { containsBadWord } = require("./utils/censor");
 
 /** TTS için metni google-tts-api limitine (200 karakter) uygun hale getirir. */
 function prepareTtsText(text) {
@@ -474,78 +474,6 @@ Module(
 );
 Module(
   {
-    pattern: "tts ?(.*)",
-    desc: Lang.TTS_DESC,
-    use: "utility",
-  },
-  async (message, match) => {
-    let query = match[1] || message.reply_message.text;
-    if (!query) return await message.sendReply(Lang.TTS_NEED_REPLY);
-    const ttsDir = getTempSubdir("tts");
-    query = query.replace("tts", "");
-    let lng = "en";
-    if (/[\u0D00-\u0D7F]+/.test(query)) lng = "ml";
-    let LANG = lng,
-      ttsMessage = query,
-      SPEED = 1.0,
-      VOICE = "nova";
-    if ((langMatch = query.match("\\{([a-z]{2})\\}"))) {
-      LANG = langMatch[1];
-      ttsMessage = ttsMessage.replace(langMatch[0], "");
-    }
-    if ((speedMatch = query.match("\\{([0-9]+\\.[0-9]+)\\}"))) {
-      SPEED = parseFloat(speedMatch[1]);
-      ttsMessage = ttsMessage.replace(speedMatch[0], "");
-    }
-    if (
-      (voiceMatch = query.match(
-        "\\{(nova|alloy|ash|coral|echo|fable|onyx|sage|shimmer)\\}"
-      ))
-    ) {
-      VOICE = voiceMatch[1];
-      ttsMessage = ttsMessage.replace(voiceMatch[0], "");
-    }
-    let audio;
-
-    const ttsText = prepareTtsText(ttsMessage);
-    if (LANG === "ml") {
-      try {
-        audio = await gtts(ttsText, LANG);
-      } catch (e) {
-        console.error("TTS Hatası:", e?.message || e);
-        return await message.sendReply("_" + Lang.TTS_ERROR + "_");
-      }
-    } else {
-      try {
-        const ttsResult = await aiTTS(ttsText, VOICE, SPEED.toFixed(2));
-        if (ttsResult && ttsResult.url) {
-          audio = { url: ttsResult.url };
-        } else {
-          throw new Error(
-            ttsResult && ttsResult.error ? ttsResult.error : "YZ Seslendirme başarısız"
-          );
-        }
-      } catch (e) {
-        console.error("Yapay zeka TTS başarısız, gtts kullanılıyor:", e);
-        try {
-          audio = await gtts(ttsText, LANG);
-        } catch (err) {
-          console.error("TTS Hatası:", err?.message || err);
-          return await message.sendReply("_" + Lang.TTS_ERROR + "_");
-        }
-      }
-    }
-
-    await message.sendMessage(audio, "audio", {
-      quoted: message.data,
-      mimetype: "audio/mpeg",
-      ptt: true,
-    });
-  }
-);
-
-Module(
-  {
     pattern: "ses ?(.*)",
     fromMe: false,
     desc: Lang.TTS_DESC,
@@ -620,23 +548,7 @@ Module(
       return await message.sendReply("❌ Seslendirilecek metin bulunamadı.");
     }
 
-    function makeBadWordRegex(word) {
-      const pattern = word
-        .replace(/a/g, "[a4@]")
-        .replace(/i/g, "[i1!İî]")
-        .replace(/o/g, "[o0ö]")
-        .replace(/u/g, "[uü]")
-        .replace(/s/g, "[s5$ş]")
-        .replace(/c/g, "[cç]")
-        .replace(/g/g, "[gğ9]")
-        .replace(/e/g, "[e3]")
-        .replace(/\s+|\./g, "(\\s|\\.|-|_)*");
-      return new RegExp(`\\b${pattern}\\b`, "iu");
-    }
-
-    const filterRegexes = badWords.map(makeBadWordRegex);
-    const containsBadWord = filterRegexes.some((rx) => rx.test(ttsMessage));
-    if (containsBadWord) {
+    if (containsBadWord(ttsMessage)) {
       return await message.sendReply("🚫 OPS! Seslendirme hatası.");
     }
 
@@ -651,7 +563,7 @@ Module(
         }
       } catch (e) {
         console.log("YZ TTS hatası, Google TTS'e geçiliyor:", e.message);
-        audio = await gtts(ttsMessage, LANG);
+        audio = await gtts(prepareTtsText(ttsMessage), LANG);
       }
 
       await message.client.sendMessage(message.jid, {

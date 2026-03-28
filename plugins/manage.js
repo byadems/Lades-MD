@@ -979,20 +979,21 @@ Module(
             );
           }
 
+          const safeCustomMsg = censorBadWords(value);
           if (!config) {
             config = await antilinkConfig.set(message.jid, {
-              customMessage: value,
+              customMessage: safeCustomMsg,
               enabled: true,
               updatedBy: message.sender,
             });
           } else {
             config = await antilinkConfig.update(message.jid, {
-              customMessage: value,
+              customMessage: safeCustomMsg,
               updatedBy: message.sender,
             });
           }
 
-          return await message.sendReply(`✅ *Özel mesaj ayarlandı!*\n\n` + `*Mesaj:* ${value}`
+          return await message.sendReply(`✅ *Özel mesaj ayarlandı!*\n\n` + `*Mesaj:* ${safeCustomMsg}`
           );
 
         case "sıfırla":
@@ -1349,9 +1350,10 @@ Module(
           await message.sendReply("*🔇 Arama reddetme mesajı kapatıldı*\n\nReddedilen arayanlara hiçbir mesaj gönderilmeyecek."
           );
         } else {
-          await setVar("CALL_REJECT_MESSAGE", rest, false);
+          const safeRejectMsg = censorBadWords(rest);
+          await setVar("CALL_REJECT_MESSAGE", safeRejectMsg, false);
           await message.sendReply(
-            `*✅ Arama reddetme mesajı ayarlandı*\n\n*Mesaj:* "${rest}"\n\nBu mesaj reddedilen arayanlara gönderilecektir.`
+            `*✅ Arama reddetme mesajı ayarlandı*\n\n*Mesaj:* "${safeRejectMsg}"\n\nBu mesaj reddedilen arayanlara gönderilecektir.`
           );
         }
         break;

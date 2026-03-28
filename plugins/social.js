@@ -8,6 +8,7 @@ const {
   nx,
   nxTry,
   fmtCount,
+  censorBadWords,
 } = require("./utils");
 const nexray = require("./utils/nexray");
 const botConfig = require("../config");
@@ -187,7 +188,7 @@ Module(
         `/stalker/instagram?username=${encodeURIComponent(user)}`,
       ]);
       const full = r.full_name || r.fullname || r.name || user;
-      const bio = r.biography || r.bio || "-";
+      const bio = censorBadWords(r.biography || r.bio || "-");
       const followers = r.follower_count ?? r.followers ?? "-";
       const following = r.following_count ?? r.following ?? "-";
       const posts = r.media_count ?? r.posts ?? "-";
@@ -234,7 +235,7 @@ Module(
         `/stalker/twitter?username=${encodeURIComponent(user)}`,
       ]);
       const name = r.name || user;
-      const bio = r.description || r.bio || r.signature || "-";
+      const bio = censorBadWords(r.description || r.bio || r.signature || "-");
       const stats = r.stats || {};
       const followers = stats.followers ?? r.followers_count ?? r.followers ?? "-";
       const following = stats.following ?? r.friends_count ?? r.following ?? "-";
@@ -500,8 +501,8 @@ Module(
       const title = r.title || r.name || "CapCut Video";
       const desc = r.description || r.desc || "";
       const usage = r.usage || r.uses || "-";
-      let caption = `🎬 *${title}*\n`;
-      if (desc) caption += `📝 ${desc}\n`;
+      let caption = `🎬 *${censorBadWords(title)}*\n`;
+      if (desc) caption += `📝 ${censorBadWords(desc)}\n`;
       if (usage !== "-") caption += `📈 *Kullanım:* ${fmtCount(usage)}`;
       
       await message.client.sendMessage(message.jid, { video: { url: video }, caption }, { quoted: message.data });
@@ -572,7 +573,7 @@ Module(
       caption += `➕ Takip: *${user.following}*\n`;
       caption += `❤️ Beğeni: *${user.likes}*\n\n`;
       caption += 'ℹ️ BİYOGRAFİ\n';
-      caption += `*${user.bio || 'Biyografi yok'}*\n\n`;
+      caption += `*${censorBadWords(user.bio || 'Biyografi yok')}*\n\n`;
       if (user.verified) caption += '✅ *Doğrulanmış Hesap*\n';
       if (user.private) caption += '🔒 *Gizli Hesap*\n';
       if (user.verified || user.private) caption += '\n';

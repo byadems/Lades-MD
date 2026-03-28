@@ -687,7 +687,7 @@ Module(
       const oldName = (await message.client.groupMetadata(message.jid)).subject || "Bilinmeyen Grup";
       const finalName = newName.slice(0, 25);
 
-      await message.client.groupUpdateSubject(message.jid, finalName);
+      await message.client.groupUpdateSubject(message.jid, censorBadWords(finalName));
 
       return await message.sendReply(
         `✅ _Grup adı değiştirildi!_\n\n*Eski Adı:* ${censorBadWords(oldName)}\n*Yeni Adı:* ${censorBadWords(finalName)}`
@@ -718,7 +718,7 @@ Module(
     try {
       return await message.client.groupUpdateDescription(
         message.jid,
-        (match[1] || message.reply_message?.text).slice(0, 512)
+        censorBadWords((match[1] || message.reply_message?.text).slice(0, 512))
       );
     } catch {
       return await message.sendReply("_❌ Değiştirilemedi!_");
@@ -873,7 +873,7 @@ Module(
       await message.forwardMessage(message.jid, message.quoted,{detectLinks: true,contextInfo: {mentionedJid: targets, isForwarded: false}});
     } else if (hasCustomText) {
       await message.client.sendMessage(message.jid, {
-        text: customText,
+        text: censorBadWords(customText),
         mentions: targets,
       });
     } else {
@@ -1318,7 +1318,7 @@ Module(
       );
     }
 
-    let announceText = input;
+    let announceText = censorBadWords(input);
     let pinDuration = null;
     const pipeIndex = input.lastIndexOf("|");
     if (pipeIndex !== -1) {

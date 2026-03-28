@@ -1,6 +1,7 @@
 const { Module } = require("../main");
 const axios = require("axios");
 const config = require("../config");
+const { censorBadWords } = require("./utils/censor");
 
 const BASE = "https://api.nexray.web.id";
 const TIMEOUT = 30000;
@@ -253,9 +254,9 @@ Module(
 
     lyrics = lyrics.length > 3000 ? lyrics.substring(0, 3000) + "\n..." : lyrics;
     await message.sendReply(
-      `🎵 *${title}*\n` +
-      (artist ? `👤 _${artist}_\n\n` : "\n") +
-      lyrics
+      `🎵 *${censorBadWords(title)}*\n` +
+      (artist ? `👤 _${censorBadWords(artist)}_\n\n` : "\n") +
+      censorBadWords(lyrics)
     );
   }
 );
@@ -405,7 +406,7 @@ Module(
       if (!result) throw new Error("Yorum alınamadı");
       const interpretation = typeof result === "string" ? result : JSON.stringify(result);
       await message.edit("🌙 *Rüya Yorumu*", message.jid, sent.key);
-      await message.sendReply(`🌙 *Rüya Yorumu*\n\n💭 _"${text.substring(0, 100)}${text.length > 100 ? "..." : ""}"_\n\n🔮 ${interpretation}`);
+      await message.sendReply(`🌙 *Rüya Yorumu*\n\n💭 _"${censorBadWords(text.substring(0, 100))}${text.length > 100 ? "..." : ""}"_\n\n🔮 ${censorBadWords(interpretation)}`);
     } catch (e) {
       await message.sendReply(`❌ _Rüya yorumlanamadı:_ ${e.message}`);
     }
@@ -552,7 +553,7 @@ Module(
       if (!translated) {
         return await message.sendReply("❌ Çeviri alınamadı.");
       }
-      return await message.sendReply(`🌍 *Çeviri (${src} → ${dst})*\n\n${translated}`);
+      return await message.sendReply(`🌍 *Çeviri (${src} → ${dst})*\n\n${censorBadWords(translated)}`);
     } catch (err) {
       return await message.sendReply("❌ Hata oluştu.");
     }

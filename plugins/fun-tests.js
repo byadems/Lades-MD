@@ -1,5 +1,5 @@
 const { Module } = require("../main");
-const { mentionjid, nx, trToEn, uploadToCatbox } = require("./utils");
+const { mentionjid, nx, trToEn, uploadToCatbox, censorBadWords } = require("./utils");
 const { getString } = require("./utils/lang");
 const config = require("../config");
 
@@ -235,7 +235,7 @@ Module(
     try {
       const result = await nx(`/fun/alay?text=${encodeURIComponent(text)}`);
       const alay = typeof result === "string" ? result : result?.result || result?.text || JSON.stringify(result);
-      await message.sendReply(`😜 ${alay}`);
+      await message.sendReply(`😜 ${censorBadWords(alay)}`);
     } catch (e) {
       await message.sendReply(`❌ _Dönüştürme başarısız:_ ${e.message}`);
     }

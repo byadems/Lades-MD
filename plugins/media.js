@@ -696,7 +696,7 @@ Module(
       ]);
       const text = typeof result === "string" ? result : result?.text || result?.result || JSON.stringify(result);
       if (!text || text === "null") throw new Error("Metin bulunamadı");
-      await message.sendReply(`📝 *Görselde şunlar yazıyor:*\n\n${text}`);
+      await message.sendReply(`📝 *Görselde şunlar yazıyor:*\n\n${censorBadWords(text)}`);
     } catch (e) {
       await message.sendReply(`❌ _Metni okuyamadım:_ ${e.message}`);
     }
@@ -764,7 +764,7 @@ Module(
         { buffer: true }
       );
       await message.edit("😂", message.jid, wait.key);
-      await message.client.sendMessage(message.jid, { image: result, caption: `😂 *${top}* — *${bottom}*` }, { quoted: message.data });
+      await message.client.sendMessage(message.jid, { image: result, caption: `😂 *${censorBadWords(top)}* — *${censorBadWords(bottom)}*` }, { quoted: message.data });
     } catch (e) {
       await message.sendReply(`❌ _Meme oluşturamadım:_ ${e.message}`);
     }
