@@ -60,26 +60,26 @@ function applyResilience(sequelizeInstance, opts = {}) {
       try {
         const dbPath = path.resolve(storage);
         const rawDb = new sqlite3.Database(dbPath);
-
         rawDb.serialize(() => {
-          for (const pragma of pragmas) {
-            rawDb.run(pragma);
-          }
+          for (const pragma of pragmas) rawDb.run(pragma);
         });
-
-        rawDb.close((err) => {
-          if (err) {
-            logger.warn({ err }, "SQLite bootstrap bağlantısı kapatılırken hata oluştu");
-          }
-        });
-
-        logger.info({ dbPath, pragmas }, "SQLite WAL/PRAGMA ayarları Sequelize öncesi uygulandı");
+        rawDb.close(() => {});
+        logger.info({ dbPath }, "SQLite WAL/PRAGMA bootstrap tamamlandı");
       } catch (error) {
         logger.warn({ err: error }, "SQLite WAL/PRAGMA bootstrap uygulanamadı");
       }
-    } else {
-      logger.warn({ storage }, "SQLite storage yolu tespit edilemedi, WAL bootstrap atlandı");
     }
+
+    sequelizeInstance.addHook("afterConnect", async (connection) => {
+      if (!connection || typeof connection.exec !== "function") return;
+      try {
+        for (const pragma of pragmas) {
+          await new Promise((resolve, reject) => {
+            connection.exec(pragma, (err) => (err ? reject(err) : resolve()));
+          });
+        }
+      } catch (_) {}
+    });
   }
 
   // --- Ortak buffer / queue ayarları ---
@@ -94,7 +94,7 @@ function applyResilience(sequelizeInstance, opts = {}) {
   const DB_QUERY_TIMEOUT_MS = parseInt(process.env.DB_QUERY_TIMEOUT_MS || "8000", 10);
   const DB_BATCH_SIZE = parseInt(process.env.DB_BATCH_SIZE || "3", 10);
   const DISABLE_SESSION_DB_WRITES = process.env.DISABLE_SESSION_DB_WRITES === "true";
-  const SESSION_WRITE_COALESCE_MS = parseInt(process.env.SESSION_WRITE_COALESCE_MS || "2000", 10);
+  const SESSION_WRITE_COALESCE_MS = parseInt(process.env.SESSION_WRITE_COALESCE_MS || "5000", 10);
 
   const originalQuery = sequelizeInstance.query.bind(sequelizeInstance);
   const priorityQueue = [];
@@ -111,6 +111,7 @@ function applyResilience(sequelizeInstance, opts = {}) {
 
   const PRIORITY_TABLES = [
     "sessions", "auth", "auth_state", "botvars", "bot_vars",
+    "whatsappsessions", "bot_variables",
   ];
 
   const isWriteQuery = (sql) => {
@@ -167,14 +168,19 @@ function applyResilience(sequelizeInstance, opts = {}) {
     return isWriteQuery(sql);
   };
 
+  const SESSION_TABLE_PATTERNS = ["sessions", "whatsappsessions"];
+
   const isSessionWriteQuery = (sql) => {
     if (!sql || typeof sql !== "string") return false;
     const lower = sql.toLowerCase();
-    return (
-      lower.includes('into "sessions"') || lower.includes("into `sessions`") || lower.includes("into sessions ") ||
-      lower.includes('update "sessions"') || lower.includes("update `sessions`") || lower.includes("update sessions ") ||
-      lower.includes('delete from "sessions"') || lower.includes("delete from `sessions`") || lower.includes("delete from sessions ")
-    );
+    for (const t of SESSION_TABLE_PATTERNS) {
+      if (
+        lower.includes(`into "${t}"`) || lower.includes(`into \`${t}\``) || lower.includes(`into ${t} `) ||
+        lower.includes(`update "${t}"`) || lower.includes(`update \`${t}\``) || lower.includes(`update ${t} `) ||
+        lower.includes(`delete from "${t}"`) || lower.includes(`delete from \`${t}\``) || lower.includes(`delete from ${t} `)
+      ) return true;
+    }
+    return false;
   };
 
   const isPriorityQuery = (sql) => {
@@ -212,27 +218,45 @@ function applyResilience(sequelizeInstance, opts = {}) {
         batch.push(priorityQueue.shift());
       }
 
-      for (const { task, resolve, reject, isBuffered } of batch) {
+      for (const item of batch) {
+        const { task, resolve, reject, isBuffered } = item;
         let timeout;
-        try {
-          const result = await Promise.race([
-            task(),
-            new Promise((_, rej) => {
-              timeout = setTimeout(() => rej(new Error("DB query timeout")), DB_QUERY_TIMEOUT_MS);
-            })
-          ]);
-          if (resolve) resolve(result);
-        } catch (error) {
-          if (!isBuffered) {
-            if (reject) reject(error);
-          } else {
-            logger.warn(
-              { err: error.message, priorityLen: priorityQueue.length, bulkLen: bulkQueue.length },
-              "Bekleyen veritabanı yazma sorgusu başarısız (atlandı)"
-            );
+        let retries = 0;
+        const maxRetries = 2;
+        let lastError;
+
+        while (retries <= maxRetries) {
+          try {
+            const result = await Promise.race([
+              task(),
+              new Promise((_, rej) => {
+                timeout = setTimeout(() => rej(new Error("DB query timeout")), DB_QUERY_TIMEOUT_MS);
+              })
+            ]);
+            if (resolve) resolve(result);
+            lastError = null;
+            break;
+          } catch (error) {
+            lastError = error;
+            clearTimeout(timeout);
+            const isBusy = error?.parent?.code === "SQLITE_BUSY" ||
+              String(error?.message).includes("database is locked") ||
+              error?.name === "SequelizeTimeoutError";
+            if (isBusy && retries < maxRetries) {
+              retries++;
+              await new Promise((r) => setTimeout(r, 200 * retries));
+              continue;
+            }
+            break;
+          } finally {
+            clearTimeout(timeout);
           }
-        } finally {
-          clearTimeout(timeout);
+        }
+
+        if (lastError) {
+          if (!isBuffered) {
+            if (reject) reject(lastError);
+          }
         }
       }
 

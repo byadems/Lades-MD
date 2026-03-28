@@ -57,6 +57,10 @@ const NOISY_PATTERNS = [
   "Invalid mex newsletter",
   "Unexpected non-whitespace character after JSON",
   "FOREIGN KEY constraint failed",
+  "SQLITE_BUSY",
+  "database is locked",
+  "SequelizeTimeoutError",
+  "Bekleyen veritabanı yazma sorgusu",
 ];
 
 const _originalLog = console.log.bind(console);
@@ -163,12 +167,12 @@ const sequelize = (() => {
       logging: DEBUG,
       retry: {
         match: [/SQLITE_BUSY/, /database is locked/, /EBUSY/],
-        max: 3,
+        max: 5,
       },
       pool: {
         max: 1,
         min: 0,
-        acquire: 15000,
+        acquire: 20000,
         idle: 5000,
       },
     });
