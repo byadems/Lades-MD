@@ -12,6 +12,10 @@ const { installSSEGuard } = require("./core/sse-guard");
 suppressLibsignalLogs();
 installSSEGuard();
 
+process.on("warning", (warning) => {
+  if (warning.code === "DEP0040") return;
+});
+
 // PostgreSQL savepoint rollback gürültüsünü azalt (bağlantı havuzu otomatik düzeltiyor)
 if (process.env.SUPPRESS_PG_SAVEPOINT_LOG !== "false") {
   if (!process.stderr.__ladesPatched) {
@@ -66,7 +70,8 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const EVENT_LOOP_WARN_MS = parseInt(process.env.EVENT_LOOP_WARN_MS || (IS_PRODUCTION ? "5000" : "3000"), 10);
 const EVENT_LOOP_RESTART_MS = parseInt(process.env.EVENT_LOOP_RESTART_MS || (IS_PRODUCTION ? "60000" : "30000"), 10);
 const WATCHDOG_INTERVAL_MS = parseInt(process.env.WATCHDOG_INTERVAL_MS || "120000", 10);
-const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String((IS_PRODUCTION ? 60 : 30) * 60 * 1000), 10);
+const ALL_BOTS_DOWN_RESTART_MS = parseInt(process.env.ALL_BOTS_DOWN_RESTART_MS || String(5 * 60 * 1000), 10);
+const RECONNECT_ATTEMPT_AFTER_MS = parseInt(process.env.RECONNECT_ATTEMPT_AFTER_MS || String(2 * 60 * 1000), 10);
 const EVENT_LOOP_BREACH_WINDOW = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_WINDOW || "10", 10), 1);
 const EVENT_LOOP_BREACH_REQUIRED = Math.max(parseInt(process.env.EVENT_LOOP_BREACH_REQUIRED || "7", 10), 1);
 const EVENT_LOOP_MITIGATION_COOLDOWN_MS = parseInt(process.env.EVENT_LOOP_MITIGATION_COOLDOWN_MS || "30000", 10);
@@ -79,6 +84,9 @@ let _intakeResumeTimer = null;
 let _lastExitAt = 0;
 let _scheduledExitTimer = null;
 let _manualReauthMode = false;
+let _reconnectInProgress = false;
+let _lastReconnectAttemptAt = 0;
+const RECONNECT_COOLDOWN_MS = 90 * 1000;
 const _botConnectionStateMap = new Map();
 
 
@@ -244,6 +252,38 @@ function setupConnectionStateTracking(botManager) {
   }
 }
 
+async function attemptBotReconnect(botManager) {
+  if (_reconnectInProgress) return;
+  const now = Date.now();
+  if (now - _lastReconnectAttemptAt < RECONNECT_COOLDOWN_MS) return;
+
+  _reconnectInProgress = true;
+  _lastReconnectAttemptAt = now;
+
+  for (const [sessionId, bot] of botManager.bots.entries()) {
+    const { state } = getBotSocketState(bot, sessionId);
+    if (state === "open") continue;
+
+    logger.warn({ session: sessionId, state }, "Watchdog: oturum kapalı, yeniden bağlanma deneniyor");
+    try {
+      if (bot.sock?.ws) {
+        try { bot.sock.ws.close(); } catch (_) {}
+      }
+      await bot.initialize();
+      if (bot.sock) {
+        const { wrapGroupOpsForSession } = require("./core/auth-health");
+        wrapGroupOpsForSession(bot, sessionId);
+        botManager.bots.set(sessionId, bot);
+        setupConnectionStateTracking(botManager);
+        logger.info({ session: sessionId }, "Watchdog: oturum yeniden bağlandı");
+      }
+    } catch (err) {
+      logger.error({ session: sessionId, err: err?.message || err }, "Watchdog: yeniden bağlanma başarısız");
+    }
+  }
+  _reconnectInProgress = false;
+}
+
 function startRuntimeWatchdog(botManager) {
   const histogram = monitorEventLoopDelay({ resolution: 20 });
   histogram.enable();
@@ -292,17 +332,21 @@ function startRuntimeWatchdog(botManager) {
         return;
       }
 
-      if (unknownCount > 0) {
-        logger.debug({ unknownCount, sessions: states }, "Watchdog: bazı oturumların state bilgisi unknown (telemetry eksik)");
-      }
-
       if (!_allBotsDownSince) {
         _allBotsDownSince = Date.now();
       }
       const downForMs = Date.now() - _allBotsDownSince;
-      if (downForMs > 3 * 60 * 1000) {
-        logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları kesin down durumda (" + Math.round(downForMs / 60000) + " dk)");
+
+      if (downForMs >= RECONNECT_ATTEMPT_AFTER_MS) {
+        attemptBotReconnect(botManager).catch((err) => {
+          logger.error({ err: err?.message }, "Watchdog reconnect denemesi başarısız");
+        });
       }
+
+      if (downForMs > 60 * 1000) {
+        logger.warn({ downForMs, sessions: states }, "Tüm WhatsApp oturumları down (" + Math.round(downForMs / 60000) + " dk)");
+      }
+
       if (downForMs > ALL_BOTS_DOWN_RESTART_MS) {
         const authIssues = states
           .map(({ session }) => ({ session, issue: getBotAuthProblem(botManager.bots.get(session)) }))

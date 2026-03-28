@@ -127,13 +127,23 @@ function applyResilience(sequelizeInstance, opts = {}) {
   };
 
   const isSchemaIntrospectionQuery = (sql) => {
-    if (dialect !== "sqlite" || !sql || typeof sql !== "string") return false;
+    if (!sql || typeof sql !== "string") return false;
     const normalizedSql = sql.trim().toUpperCase();
+    if (dialect === "sqlite") {
+      return (
+        normalizedSql.startsWith("PRAGMA ") ||
+        normalizedSql.includes("SQLITE_MASTER") ||
+        normalizedSql.includes("TABLE_INFO(") ||
+        normalizedSql.includes("INDEX_LIST(")
+      );
+    }
     return (
-      normalizedSql.startsWith("PRAGMA ") ||
-      normalizedSql.includes("SQLITE_MASTER") ||
-      normalizedSql.includes("TABLE_INFO(") ||
-      normalizedSql.includes("INDEX_LIST(")
+      normalizedSql.includes("INFORMATION_SCHEMA") ||
+      normalizedSql.includes("PG_CLASS") ||
+      normalizedSql.includes("PG_ATTRIBUTE") ||
+      normalizedSql.includes("PG_NAMESPACE") ||
+      normalizedSql.includes("PG_INDEX") ||
+      normalizedSql.includes("PG_GET_SERIAL_SEQUENCE")
     );
   };
 
@@ -153,7 +163,8 @@ function applyResilience(sequelizeInstance, opts = {}) {
 
   const isAntiDeleteQuery = (sql) => {
     if (!sql || typeof sql !== "string") return false;
-    return sql.toLowerCase().includes("antideletecache");
+    if (!sql.toLowerCase().includes("antideletecache")) return false;
+    return isWriteQuery(sql);
   };
 
   const isSessionWriteQuery = (sql) => {
